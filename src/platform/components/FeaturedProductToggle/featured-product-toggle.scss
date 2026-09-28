@@ -1,0 +1,103 @@
+.workspace-featured-control {
+  display: grid;
+  gap: 6px;
+}
+.featured-product-toggle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: var(--ws-muted, #637089);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 12px;
+  gap: 7px;
+  min-height: 32px;
+  padding: 0;
+  text-align: left;
+  transition: color 150ms ease;
+  white-space: nowrap;
+}
+.featured-product-toggle__track {
+  align-items: center;
+  background: #bdc6d5;
+  border-radius: 999px;
+  display: flex;
+  flex-shrink: 0;
+  height: 20px;
+  justify-content: flex-start;
+  padding: 3px;
+  transition: background 150ms ease;
+  width: 34px;
+}
+.featured-product-toggle__track i {
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgb(24 35 59 / 15%);
+  height: 14px;
+  transition: transform 150ms ease;
+  width: 14px;
+}
+.featured-product-toggle--active {
+  color: var(--ws-primary, #315be8);
+}
+.featured-product-toggle--active .featured-product-toggle__track {
+  background: var(--ws-primary, #315be8);
+}
+.featured-product-toggle--active .featured-product-toggle__track i {
+  transform: translateX(14px);
+}
+.featured-product-toggle__track svg {
+  animation: workspace-featured-spin 900ms linear infinite;
+  color: #fff;
+  margin: auto;
+}
+.featured-product-toggle:hover {
+  color: var(--ws-primary, #315be8);
+}
+.featured-product-toggle:focus-visible {
+  outline: 3px solid #b9c8ff;
+  outline-offset: 4px;
+}
+.featured-product-toggle:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+.workspace-featured-control__error {
+  color: #b42318;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.workspace-featured-control__error button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--ws-primary, #315be8);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  gap: 4px;
+  padding: 2px 0;
+}
+.workspace-featured-control__error button:focus-visible {
+  outline: 3px solid #b9c8ff;
+  outline-offset: 3px;
+}
+@keyframes workspace-featured-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .featured-product-toggle,
+  .featured-product-toggle__track,
+  .featured-product-toggle__track i {
+    transition: none;
+  }
+  .featured-product-toggle__track svg {
+    animation: none;
+  }
+}

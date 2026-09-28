@@ -9,28 +9,36 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 import { anyone } from '../access/anyone'
-import { authenticated } from '../access/authenticated'
+import { contentEditors, siteAdmins } from '../access/roles'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export const Media: CollectionConfig = {
   slug: 'media',
+  labels: { singular: '媒体文件', plural: '媒体资源' },
+  admin: {
+    group: '素材资源',
+    defaultColumns: ['filename', 'alt', 'updatedAt'],
+    useAsTitle: 'filename',
+  },
   folders: true,
   access: {
-    create: authenticated,
-    delete: authenticated,
+    create: contentEditors,
+    delete: siteAdmins,
     read: anyone,
-    update: authenticated,
+    update: contentEditors,
   },
   fields: [
     {
       name: 'alt',
+      label: '图片说明',
       type: 'text',
       //required: true,
     },
     {
       name: 'caption',
+      label: '图片图注',
       type: 'richText',
       editor: lexicalEditor({
         features: ({ rootFeatures }) => {
@@ -42,6 +50,7 @@ export const Media: CollectionConfig = {
   upload: {
     // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload
     staticDir: path.resolve(dirname, '../../public/media'),
+    mimeTypes: ['image/jpeg', 'image/png', 'image/svg+xml', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska', 'video/mpeg', 'video/ogg', 'video/3gpp'],
     adminThumbnail: 'thumbnail',
     focalPoint: true,
     imageSizes: [

@@ -7,11 +7,21 @@ const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 import { redirects } from './redirects'
 
-const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
+const NEXT_PUBLIC_SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
   : process.env.__NEXT_PRIVATE_ORIGIN || 'http://localhost:3000'
 
+// Cloudflare Quick Tunnels generate a new random subdomain every time. Allowing
+// only one previous hostname makes the page render while blocking its client-side
+// scripts on the next tunnel. The wildcard is limited to Cloudflare's temporary
+// Quick Tunnel domain and applies only in local development.
+const tunnelHost = process.env.NOVASITE_TUNNEL_HOST
+
 const nextConfig: NextConfig = {
+  output: 'standalone',
+  // Keep production verification isolated from an active local development server.
+  distDir: process.env.NOVASITE_BUILD_DIR || '.next',
+  allowedDevOrigins: ['*.trycloudflare.com', ...(tunnelHost ? [tunnelHost] : [])],
   // Temporarily required on Windows until Next.js fixes Turbopack Sass resolution.
   // See: https://github.com/vercel/next.js/issues/86431
   sassOptions: {

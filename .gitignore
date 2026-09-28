@@ -1,11 +1,32 @@
-build
-dist / media
+build/
+dist/
 node_modules
 .DS_Store
 .env
+deploy/.env.production
 .next
 next-env.d.ts
 .vercel
+
+# Local secrets and generated runtime state
+.env.*
+!.env.example
+!*.env.example
+.codex-runtime/
+.pnpm-store/
+*.tsbuildinfo
+*.log
+*.pid
+*.sql
+*.dump
+*.backup
+*.har
+
+# Historical screenshots and checks can contain customer/account data
+docs/evidence/
+
+# Local recovery archives may contain customer content and must not enter source control.
+backups/
 
 # Payload default media upload directory
 public/media/

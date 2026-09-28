@@ -15,17 +15,13 @@ export interface LoginOptions {
  */
 export async function login({
   page,
-  serverURL = 'http://localhost:3000',
+  serverURL = 'http://localhost:3100',
   user,
 }: LoginOptions): Promise<void> {
-  await page.goto(`${serverURL}/admin/login`)
+  const response = await page.request.post(`${serverURL}/api/users/login`, { data: user })
+  expect(response.ok()).toBeTruthy()
+  await page.goto(`${serverURL}/admin`)
+  await page.waitForURL(`${serverURL}/workspace/companies`, { waitUntil: 'domcontentloaded' })
 
-  await page.fill('#field-email', user.email)
-  await page.fill('#field-password', user.password)
-  await page.click('button[type="submit"]')
-
-  await page.waitForURL(`${serverURL}/admin`)
-
-  const dashboardArtifact = page.locator('span[title="Dashboard"]')
-  await expect(dashboardArtifact).toBeVisible()
+  await expect(page.getByRole('heading', { name: '选择公司' })).toBeVisible()
 }

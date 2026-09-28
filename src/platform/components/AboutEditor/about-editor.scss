@@ -1,0 +1,53 @@
+.about-manager__panel { background: var(--ws-surface, #fff); border: 1px solid var(--ws-line, #e2e7ef); border-radius: 12px; overflow: hidden; }
+.about-manager__toolbar { align-items: flex-start; border-bottom: 1px solid var(--ws-line, #e2e7ef); display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; padding: 20px; }
+.about-manager__toolbar h2 { font-size: 18px; margin: 0 0 8px; }
+.about-manager__toolbar p { color: var(--ws-muted, #637089); font-size: 14px; line-height: 1.7; margin: 0; max-width: 720px; white-space: pre-wrap; }
+.about-manager__toolbar > span { background: #f1f4fa; border-radius: 20px; color: var(--ws-muted, #637089); flex: none; font-size: 12px; padding: 7px 12px; }
+.about-manager__rows article { align-items: start; border-bottom: 1px solid #edf0f5; display: grid; gap: 20px; grid-template-columns: 96px minmax(0, 1fr); padding: 20px; }
+.about-manager__rows article:last-child { border: 0; }
+.about-manager__image { align-items: center; background: #f4f6fa; border: 1px solid #e7ebf2; border-radius: 8px; color: #8c98aa; display: flex; height: 84px; justify-content: center; overflow: hidden; width: 96px; }
+.about-manager__image img { height: 100%; object-fit: cover; width: 100%; }
+.about-manager__copy > div { align-items: center; display: flex; flex-wrap: wrap; gap: 12px; }
+.about-manager__copy small { color: #8894a8; font-size: 11px; }
+.about-manager__copy span { background: #fff5e3; border-radius: 20px; color: #85601e; font-size: 11px; padding: 4px 8px; }
+.about-manager__copy span.is-complete { background: #edf7f1; color: #28724d; }
+.about-manager__copy h3 { font-size: 16px; margin: 8px 0; overflow-wrap: anywhere; }
+.about-manager__copy p { color: var(--ws-muted, #637089); font-size: 14px; line-height: 1.7; margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.about-manager__empty { color: var(--ws-muted, #637089); padding: 48px 20px; text-align: center; }
+.about-manager__empty h3 { color: var(--ws-ink, #18233b); font-size: 16px; margin-bottom: 8px; }
+.about-manager__empty p { font-size: 13px; }
+.about-manager__empty button { background: #fff; border: 1px solid #d6def2; border-radius: 8px; color: var(--ws-primary, #315be8); cursor: pointer; min-height: 40px; padding: 0 16px; }
+.about-manager__dialog { background: #fff; border: 1px solid var(--ws-line, #e2e7ef); border-radius: 12px; box-shadow: 0 24px 70px #15233b33; color: var(--ws-ink, #18233b); max-height: calc(100dvh - 40px); padding: 0; width: min(820px, calc(100vw - 32px)); }
+.about-manager__dialog[open] { animation: about-panel-enter .2s ease-out; }
+.about-manager__dialog::backdrop { background: #17233f66; }
+.about-manager__dialog form { display: flex; flex-direction: column; max-height: calc(100dvh - 40px); }
+.about-manager__dialog form > header { align-items: center; border-bottom: 1px solid var(--ws-line, #e2e7ef); display: flex; flex: none; justify-content: space-between; padding: 18px 24px; }
+.about-manager__dialog header p { color: var(--ws-muted, #637089); font-size: 12px; margin: 0 0 4px; }
+.about-manager__dialog header h2 { font-size: 19px; margin: 0; }
+.about-manager__dialog header button { align-items: center; background: #f5f7fa; border: 0; border-radius: 8px; color: #69778e; cursor: pointer; display: flex; height: 36px; justify-content: center; width: 36px; }
+.about-manager__drawer-body { border: 0; margin: 0; min-height: 0; overflow-y: auto; padding: 24px; }
+.about-manager__drawer-body label { display: block; font-size: 13px; margin-bottom: 16px; }
+.about-manager__drawer-body label > span { color: #bd3446; }
+.about-manager__drawer-body input, .about-manager__drawer-body textarea { display: block; margin-top: 8px; }
+.about-manager__drawer-body textarea { min-height: 110px; }
+.about-manager__module { border: 1px solid var(--ws-line, #e2e7ef); border-radius: 10px; margin: 16px 0; padding: 16px; }
+.about-manager__module-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; margin-bottom: 16px; }
+.about-manager__module-heading h3 { font-size: 16px; margin: 0; }
+.about-manager__module-heading > button { align-items: center; background: #fff; border: 1px solid var(--ws-line, #e2e7ef); border-radius: 8px; color: var(--ws-primary, #315be8); cursor: pointer; display: inline-flex; gap: 5px; min-height: 40px; padding: 0 12px; }
+.about-manager__actions { display: flex; gap: 4px; }
+.about-manager__actions button { align-items: center; background: #fff; border: 1px solid var(--ws-line, #e2e7ef); border-radius: 7px; color: var(--ws-muted, #637089); cursor: pointer; display: flex; height: 36px; justify-content: center; width: 36px; }
+.about-manager__actions .is-danger { color: #bd3446; }
+.about-manager__order { max-width: 180px; }
+.about-manager__dialog footer { align-items: center; background: #fff; border-top: 1px solid var(--ws-line, #e2e7ef); display: flex; flex: none; gap: 10px; justify-content: flex-end; padding: 16px 24px; }
+.about-manager__dialog footer > span { color: var(--ws-muted, #637089); font-size: 12px; margin-right: auto; }
+.about-manager__cancel { background: #fff; border: 1px solid var(--ws-line, #e2e7ef); border-radius: 8px; color: var(--ws-muted, #637089); cursor: pointer; min-height: 40px; padding: 0 16px; }
+.about-manager__save { align-items: center; display: inline-flex; gap: 6px; }
+.about-manager__status { background: #edf3ff; border: 1px solid #d4defa; border-radius: 8px; color: #305ab3; font-size: 13px; padding: 12px 16px; }
+.about-manager__status.is-error { background: #fff2f3; border-color: #efc7ce; color: #a93040; }
+.about-manager button:focus-visible { outline: 3px solid #a7b9f7; outline-offset: 3px; }
+.about-manager button { transition: background .15s, border-color .15s; }
+.about-manager button:disabled { cursor: not-allowed; opacity: .45; }
+@media (min-width: 760px) { .about-manager__rows article { grid-template-columns: 160px minmax(0, 1fr); padding: 24px; }.about-manager__image { height: 120px; width: 160px; } }
+@media (max-width: 600px) { .about-manager__rows article { gap: 12px; padding: 16px; }.about-manager__dialog form > header, .about-manager__drawer-body, .about-manager__dialog footer { padding: 16px; }.about-manager__dialog footer > span { display: none; } }
+@keyframes about-panel-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .about-manager * { transition: none !important; animation: none !important; } }

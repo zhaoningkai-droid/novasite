@@ -1,0 +1,14 @@
+{$SITE_DOMAIN} {
+  encode zstd gzip
+
+  # Public customer-domain traffic is mapped to one selected site and locale.
+  # Keep platform, API, health and Next asset routes available to operators.
+  @customerSite {
+    not path /_next/* /api/* /admin* /health /workspace/*
+  }
+  handle @customerSite {
+    rewrite * /s/{env.SITE_SLUG}/{env.SITE_LOCALE}{uri}
+  }
+
+  reverse_proxy app:3000
+}

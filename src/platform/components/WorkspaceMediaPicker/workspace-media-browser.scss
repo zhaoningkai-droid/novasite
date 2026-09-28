@@ -1,0 +1,278 @@
+.workspace-media-browser__trigger {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--ws-line, #e2e7ef);
+  border-radius: 8px;
+  color: var(--ws-primary, #315be8);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 6px;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 12px;
+}
+.workspace-media-browser {
+  background: #fff;
+  border: 1px solid var(--ws-line, #e2e7ef);
+  border-radius: 14px;
+  box-shadow: 0 24px 80px rgba(18, 33, 63, 0.2);
+  color: var(--ws-ink, #18233b);
+  max-height: min(82vh, 780px);
+  max-width: 840px;
+  overflow: auto;
+  padding: 0;
+  width: calc(100% - 32px);
+}
+.workspace-media-browser::backdrop {
+  background: rgba(16, 28, 52, 0.42);
+}
+.workspace-media-browser[open] {
+  animation: workspace-media-enter 180ms ease-out;
+}
+.workspace-media-browser > header {
+  align-items: flex-start;
+  border-bottom: 1px solid #e2e7ef;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  padding: 24px;
+}
+.workspace-media-browser h2 {
+  font-size: 19px;
+  margin: 0 0 7px;
+}
+.workspace-media-browser p {
+  color: #637089;
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0;
+}
+.workspace-media-browser button {
+  background: #fff;
+  border: 1px solid #e2e7ef;
+  border-radius: 8px;
+  color: #315be8;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  min-height: 34px;
+  padding: 0 12px;
+}
+.workspace-media-browser button:disabled,
+.workspace-media-browser__trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.workspace-media-browser :is(input, button):focus-visible,
+.workspace-media-browser__trigger:focus-visible {
+  outline: 3px solid #b7c9ff;
+  outline-offset: 3px;
+}
+.workspace-media-browser .workspace-media-browser__close {
+  align-items: center;
+  border: 0;
+  color: #637089;
+  display: flex;
+  flex: 0 0 32px;
+  justify-content: center;
+  padding: 0;
+}
+.workspace-media-browser__search {
+  align-items: center;
+  background: #f8f9fc;
+  border: 1px solid #dce3ee;
+  border-radius: 8px;
+  color: #7b879c;
+  display: flex;
+  gap: 10px;
+  margin: 20px 24px 0;
+  padding: 5px 5px 5px 12px;
+}
+.workspace-media-browser__search input {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: #18233b;
+  flex: 1;
+  font: inherit;
+  font-size: 13px;
+  min-height: 32px;
+  min-width: 0;
+  outline: none;
+  padding: 0;
+}
+.workspace-media-browser__search input:focus-visible {
+  outline: none;
+}
+.workspace-media-browser__search:focus-within {
+  border-color: #315be8;
+  box-shadow: 0 0 0 3px rgba(49, 91, 232, 0.1);
+}
+.workspace-media-browser__body {
+  min-height: 260px;
+  padding: 20px 24px 24px;
+}
+.workspace-media-browser__grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.workspace-media-browser__grid > button {
+  border-color: #e2e7ef;
+  color: #18233b;
+  display: block;
+  min-width: 0;
+  padding: 7px;
+  text-align: left;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease;
+}
+.workspace-media-browser__grid > button:hover {
+  background: #f5f7fe;
+  border-color: #8da7ef;
+}
+.workspace-media-browser__grid > button.is-selected {
+  background: #f2f5ff;
+  border-color: #97adf2;
+  opacity: 1;
+}
+.workspace-media-browser__image {
+  aspect-ratio: 1;
+  background: #f4f6fa;
+  border-radius: 5px;
+  display: block;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+.workspace-media-browser__image img {
+  object-fit: contain;
+}
+.workspace-media-browser__image em {
+  align-items: center;
+  background: #315be8;
+  border-radius: 5px;
+  bottom: 6px;
+  color: #fff;
+  display: flex;
+  font-size: 10px;
+  font-style: normal;
+  gap: 3px;
+  left: 6px;
+  padding: 3px 6px;
+}
+.workspace-media-browser__grid strong,
+.workspace-media-browser__grid small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.workspace-media-browser__grid strong {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 9px;
+}
+.workspace-media-browser__grid small {
+  color: #637089;
+  font-size: 10px;
+  margin: 4px 0;
+}
+.workspace-media-browser__empty {
+  align-items: center;
+  color: #7b879b;
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  gap: 12px;
+  justify-content: center;
+  min-height: 260px;
+  text-align: center;
+}
+.workspace-media-browser__empty b {
+  color: #39465e;
+  font-weight: 600;
+}
+.workspace-media-browser__empty span {
+  font-size: 12px;
+}
+.workspace-media-browser__error {
+  align-items: center;
+  background: #fff2f3;
+  border: 1px solid #eec9d0;
+  border-radius: 8px;
+  color: #b4334a;
+  display: flex;
+  font-size: 12px;
+  gap: 12px;
+  justify-content: space-between;
+  margin: 16px 24px 0;
+  padding: 10px 12px;
+}
+.workspace-media-browser footer {
+  align-items: center;
+  border-top: 1px solid #e2e7ef;
+  color: #637089;
+  display: flex;
+  font-size: 12px;
+  gap: 16px;
+  justify-content: space-between;
+  padding: 16px 24px;
+}
+.workspace-media-browser footer > div {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+.workspace-media-browser footer button {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  padding: 0 8px;
+}
+.workspace-media-browser__spinner {
+  animation: workspace-media-spin 900ms linear infinite;
+}
+@keyframes workspace-media-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes workspace-media-enter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 650px) {
+  .workspace-media-browser__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .workspace-media-browser footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .workspace-media-browser > header,
+  .workspace-media-browser__body {
+    padding: 20px 16px;
+  }
+  .workspace-media-browser__search {
+    margin: 16px 16px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace-media-browser *,
+  .workspace-media-browser,
+  .workspace-media-browser__trigger {
+    animation: none !important;
+    transition: none !important;
+  }
+}

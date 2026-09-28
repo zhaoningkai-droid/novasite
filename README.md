@@ -1,3 +1,60 @@
+# NovaSite V1 — Google 外贸独立站平台
+
+这是与旧版 VoltTrans 隔离的新生产基座。它使用 Next.js App Router、Payload CMS、PostgreSQL 和官方 Multi-Tenant 插件，面向“一个后台代运营多个 Google 独立站”，不是单站 JSON 后台。
+
+## 当前可用入口
+
+- 新平台后台：<http://localhost:3100/admin>
+- 新平台前台：<http://localhost:3100>
+- 旧版 VoltTrans：<http://localhost:3000/en>
+- 本地 PostgreSQL：`127.0.0.1:5433`
+
+管理员账号由部署环境自行创建；仓库不包含现有账号密码、数据库或客户上传文件。测试及初始化脚本通过 `SEED_ADMIN_EMAIL` 和 `SEED_ADMIN_PASSWORD` 环境变量读取账号。正式上线前请为 `.env` 中的密钥设置独立随机值。
+
+## V1 源码版本
+
+此版本为 `v1.0.0` 源码快照，包含当前运营后台、多租户内容管理、企业站模板和部署配置。正式上线与完整端到端验收尚需在目标环境完成。
+
+本仓库不上传本机 `.env`、数据库备份、`public/media` 客户图片/视频、临时公网日志和历史验收截图。在新电脑部署时，需要另外配置数据库、管理员和媒体存储；仅克隆源码不会复制本机客户数据。
+
+## 启动
+
+```bash
+cd "/Users/yunduo/Documents/ChatGPT/网站类/platform-v1"
+docker compose up -d postgres
+npm install
+npm run dev
+```
+
+完整基础设施（PostgreSQL、Redis、MinIO、Mailpit）：
+
+```bash
+npm run infra:up
+```
+
+生产构建校验：
+
+```bash
+npm run generate:types
+npm run generate:importmap
+npm run build
+```
+
+## 已建立的数据域
+
+- 站点与域名、品牌、四语种、全局 Google SEO
+- 模块化页面、新闻、博客、分类、媒体、表单
+- 多语言产品、产品分类、图库、规格参数、PDF 规格书
+- 询盘来源、UTM、意向产品和销售跟进状态
+- 模板中心、发布中心、不可篡改的操作审计
+- 多租户后台切换、站点级数据隔离、角色字段
+- 草稿、自动保存、历史版本、定时发布、在线预览
+- SEO 字段、重定向、搜索和 Sitemap 基础能力
+
+架构边界与 Google 发布门禁见 [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)。
+
+---
+
 # Payload Website Template
 
 This is the official [Payload Website Template](https://github.com/payloadcms/payload/blob/3.x/templates/website). Use it to power websites, blogs, or portfolios from small to enterprise. This repo includes a fully-working backend, enterprise-grade admin panel, and a beautifully designed, production-ready website.
@@ -174,7 +231,7 @@ Core features:
 
 ### Cache
 
-Although Next.js includes a robust set of caching strategies out of the box, Payload Cloud proxies and caches all files through Cloudflare using the [Official Cloud Plugin](https://www.npmjs.com/package/@payloadcms/payload-cloud). This means that Next.js caching is not needed and is disabled by default. If you are hosting your app outside of Payload Cloud, you can easily reenable the Next.js caching mechanisms by removing the `no-store` directive from all fetch requests in `./src/app/_api` and then removing all instances of `export const dynamic = 'force-dynamic'` from pages files, such as `./src/app/(pages)/[slug]/page.tsx`. For more details, see the official [Next.js Caching Docs](https://nextjs.org/docs/app/building-your-application/caching).
+This project is self-hosted and has no Payload Cloud runtime or deployment dependency. PostgreSQL and object storage are selected through the adapter boundary in `src/platform/adapters`. Production media should use S3-compatible storage (AWS S3, Cloudflare R2, MinIO, and similar services). See `docs/SELF_HOSTING.md` for the supported deployment matrix and required environment variables.
 
 ## Development
 

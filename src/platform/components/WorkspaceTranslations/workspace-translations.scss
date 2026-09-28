@@ -1,0 +1,116 @@
+.workspace-translations {
+  &__summary {
+    align-items: center;
+    color: #637089;
+    display: flex;
+    flex: 0 0 auto;
+    font-size: 12px;
+    gap: 10px;
+  }
+  &__summary > svg {
+    color: #315be8;
+  }
+  &__summary b {
+    color: #18233b;
+    display: block;
+    font-size: 20px;
+    font-weight: 650;
+    margin-bottom: 5px;
+  }
+  &__progress {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-bottom: 24px;
+  }
+  button.workspace-translations__locale {
+    align-items: stretch;
+    background: #fff;
+    border: 1px solid #e2e7ef;
+    border-radius: 10px;
+    color: #18233b;
+    display: grid;
+    gap: 18px;
+    padding: 17px 18px;
+    text-align: left;
+  }
+  button.workspace-translations__locale:hover {
+    background: #f8faff;
+    border-color: #b5c6f4;
+  }
+  button.workspace-translations__locale--active {
+    background: #f4f7ff;
+    border-color: #315be8;
+    box-shadow: 0 0 0 1px #315be8;
+  }
+  &__locale > span {
+    align-items: center;
+    display: flex;
+    font-size: 14px;
+    gap: 10px;
+    justify-content: space-between;
+  }
+  &__locale > span strong {
+    font-weight: 650;
+  }
+  &__locale > span small {
+    color: #8a96aa;
+    font-size: 10px;
+  }
+  &__state {
+    align-items: center;
+    color: #8b691f;
+    display: inline-flex;
+    font-size: 11px;
+    font-weight: 500;
+    gap: 5px;
+  }
+  &__state.is-complete {
+    color: #277c54;
+  }
+  &__state.is-dirty {
+    color: #9d6a14;
+  }
+  &__form {
+    background: #fff;
+    border: 1px solid #e2e7ef;
+    border-radius: 12px;
+    max-width: 1060px;
+    padding: 26px;
+  }
+  &__form fieldset {
+    border: 0;
+    margin: 0;
+    min-width: 0;
+    padding: 0;
+  }
+  &__form footer {
+    align-items: center;
+    border-top: 1px solid #e2e7ef;
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    margin-top: 28px;
+    padding-top: 20px;
+  }
+  &__form footer p {
+    font-size: 12px;
+    margin: 0;
+  }
+  &__form footer button {
+    flex: 0 0 auto;
+  }
+}
+@media (max-width: 750px) {
+  .workspace-translations__progress {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .workspace-translations__form {
+    padding: 20px 16px;
+  }
+  .workspace-translations__form footer {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+  }
+}

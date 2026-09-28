@@ -1,0 +1,9 @@
+title = "NovaSite source secret scanning"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Public sample product slugs; these are content identifiers, not API keys"
+regexTarget = "secret"
+regexes = ['''^din-933-hex-bolt$''', '''^a2-70-stainless-screw$''', '''^grade-10-9-bolt$''']

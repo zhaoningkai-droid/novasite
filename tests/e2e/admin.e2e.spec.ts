@@ -1,41 +1,41 @@
-import { test, expect, Page } from '@playwright/test'
+import { expect, test } from '@playwright/test'
+
 import { login } from '../helpers/login'
-import { seedTestUser, cleanupTestUser, testUser } from '../helpers/seedUser'
+
+const adminUser = {
+  email: process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local',
+  password: process.env.SEED_ADMIN_PASSWORD || '',
+}
 
 test.describe('Admin Panel', () => {
-  let page: Page
+  test.beforeEach(async ({ page }) => login({ page, user: adminUser }))
 
-  test.beforeAll(async ({ browser }, testInfo) => {
-    await seedTestUser()
-
-    const context = await browser.newContext()
-    page = await context.newPage()
-
-    await login({ page, user: testUser })
+  test('sends an authenticated user to company selection', async ({ page }) => {
+    await expect(page).toHaveURL(/\/workspace\/companies$/)
+    await expect(page.getByRole('heading', { name: '选择公司' })).toBeVisible()
+    await expect(page.getByRole('button', { name: '选择公司' })).toHaveCount(2)
   })
 
-  test.afterAll(async () => {
-    await cleanupTestUser()
-  })
+  for (const path of ['tenants', 'products', 'posts', 'leads', 'templates', 'deployments']) {
+    test(`opens ${path}`, async ({ page }) => {
+      await page.goto(`/admin/collections/${path}`)
+      await expect(page).toHaveURL(new RegExp(`/admin/collections/${path}(?:\\?.*)?$`))
+      await expect(page.locator('h1').first()).toBeVisible()
+    })
+  }
 
-  test('can navigate to dashboard', async () => {
-    await page.goto('http://localhost:3000/admin')
-    await expect(page).toHaveURL('http://localhost:3000/admin')
-    const dashboardArtifact = page.locator('span[title="Dashboard"]').first()
-    await expect(dashboardArtifact).toBeVisible()
-  })
-
-  test('can navigate to list view', async () => {
-    await page.goto('http://localhost:3000/admin/collections/users')
-    await expect(page).toHaveURL('http://localhost:3000/admin/collections/users')
-    const listViewArtifact = page.locator('h1', { hasText: 'Users' }).first()
-    await expect(listViewArtifact).toBeVisible()
-  })
-
-  test('can navigate to edit view', async () => {
-    await page.goto('http://localhost:3000/admin/collections/pages/create')
-    await expect(page).toHaveURL(/\/admin\/collections\/pages\/[a-zA-Z0-9-_]+/)
-    const editViewArtifact = page.locator('input[name="title"]')
-    await expect(editViewArtifact).toBeVisible()
+  test('keeps one clean navigation entry per entity and collapses system settings', async ({ page }) => {
+    await page.goto('/admin/collections/products')
+    await page.getByRole('button', { name: /打开.*菜单/ }).click()
+    const adminNavigation = page.getByRole('complementary').getByRole('navigation')
+    for (const group of ['建站与发布', '内容运营', '产品中心', '客户与询盘']) {
+      await adminNavigation.getByRole('button', { name: group }).click()
+    }
+    for (const label of ['页面', '案例', 'FAQ', '博客', '产品管理', '产品分类', '询盘收件箱', '网站导航', '产品技术参数']) {
+      await expect(adminNavigation.getByText(label, { exact: true })).toHaveCount(1)
+    }
+    await expect(adminNavigation.locator('a[href="/admin/globals/header"]')).toHaveCount(0)
+    await expect(adminNavigation.locator('a[href="/admin/globals/footer"]')).toHaveCount(0)
+    await expect(page.locator('#nav-group-系统设置 .nav-group__toggle')).not.toHaveClass(/nav-group__toggle--open/)
   })
 })

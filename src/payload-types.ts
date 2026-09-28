@@ -67,14 +67,27 @@ export interface Config {
   };
   blocks: {};
   collections: {
+    tenants: Tenant;
+    'site-navigation': SiteNavigation;
+    'site-template-changes': SiteTemplateChange;
     pages: Page;
+    cases: Case;
+    'case-categories': CaseCategory;
+    faqs: Faq;
+    products: Product;
+    'product-specifications': ProductSpecification;
+    'product-categories': ProductCategory;
     posts: Post;
-    media: Media;
+    news: News;
+    'news-categories': NewsCategory;
     categories: Category;
+    media: Media;
+    leads: Lead;
+    templates: Template;
+    deployments: Deployment;
+    'audit-logs': AuditLog;
     users: User;
     redirects: Redirect;
-    forms: Form;
-    'form-submissions': FormSubmission;
     search: Search;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -89,14 +102,27 @@ export interface Config {
     };
   };
   collectionsSelect: {
+    tenants: TenantsSelect<false> | TenantsSelect<true>;
+    'site-navigation': SiteNavigationSelect<false> | SiteNavigationSelect<true>;
+    'site-template-changes': SiteTemplateChangesSelect<false> | SiteTemplateChangesSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
+    cases: CasesSelect<false> | CasesSelect<true>;
+    'case-categories': CaseCategoriesSelect<false> | CaseCategoriesSelect<true>;
+    faqs: FaqsSelect<false> | FaqsSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
+    'product-specifications': ProductSpecificationsSelect<false> | ProductSpecificationsSelect<true>;
+    'product-categories': ProductCategoriesSelect<false> | ProductCategoriesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
-    media: MediaSelect<false> | MediaSelect<true>;
+    news: NewsSelect<false> | NewsSelect<true>;
+    'news-categories': NewsCategoriesSelect<false> | NewsCategoriesSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
+    leads: LeadsSelect<false> | LeadsSelect<true>;
+    templates: TemplatesSelect<false> | TemplatesSelect<true>;
+    deployments: DeploymentsSelect<false> | DeploymentsSelect<true>;
+    'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
-    forms: FormsSelect<false> | FormsSelect<true>;
-    'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     search: SearchSelect<false> | SearchSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -106,9 +132,10 @@ export interface Config {
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
-  fallbackLocale: null;
+  fallbackLocale:
+    ('false' | 'none' | 'null') | false | null | ('en' | 'zh' | 'ru' | 'id') | ('en' | 'zh' | 'ru' | 'id')[];
   globals: {
     header: Header;
     footer: Footer;
@@ -117,7 +144,7 @@ export interface Config {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
   };
-  locale: null;
+  locale: 'en' | 'zh' | 'ru' | 'id';
   widgets: {
     collections: CollectionsWidget;
   };
@@ -153,129 +180,223 @@ export interface UserAuthOperations {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "pages".
+ * via the `definition` "tenants".
  */
-export interface Page {
-  id: string;
-  title: string;
-  hero: {
-    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
-    richText?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-    links?:
-      | {
-          link: {
-            type?: ('reference' | 'custom') | null;
-            newTab?: boolean | null;
-            reference?:
-              | ({
-                  relationTo: 'pages';
-                  value: string | Page;
-                } | null)
-              | ({
-                  relationTo: 'posts';
-                  value: string | Post;
-                } | null);
-            url?: string | null;
-            label: string;
-            /**
-             * Choose how the link should be rendered.
-             */
-            appearance?: ('default' | 'outline') | null;
-          };
-          id?: string | null;
-        }[]
-      | null;
-    media?: (string | null) | Media;
-  };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
-  meta?: {
-    title?: string | null;
-    /**
-     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
-     */
-    image?: (string | null) | Media;
-    description?: string | null;
-  };
-  publishedAt?: string | null;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
+export interface Tenant {
+  id: number;
+  name: string;
   slug: string;
+  status: 'building' | 'published' | 'suspended';
+  /**
+   * 不含协议，例如 www.volttrans.com。未绑定域名时可留空。
+   */
+  primaryDomain?: string | null;
+  /**
+   * 平台自动分配的预览地址。
+   */
+  previewDomain?: string | null;
+  defaultLocale: 'en' | 'zh' | 'ru' | 'id';
+  /**
+   * 只读展示当前模板；请在站点管理的模板库中预览、应用或恢复版本。
+   */
+  selectedTemplate?: (number | null) | Template;
+  templateVersion?: string | null;
+  templateAppliedAt?: string | null;
+  templateRevision?: number | null;
+  /**
+   * 受模板注册表校验的展示覆盖，不存储客户内容。
+   */
+  templateSettings?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  enabledLocales: ('en' | 'zh' | 'ru' | 'id')[];
+  branding: {
+    companyName: string;
+    tagline?: string | null;
+    logo?: (number | null) | Media;
+    /**
+     * 显示在浏览器标签页的小图标。建议上传正方形 PNG 或 ICO 文件。
+     */
+    favicon?: (number | null) | Media;
+    primaryColor?: string | null;
+    accentColor?: string | null;
+    heroImageURL?: string | null;
+    mobileHeroImageURL?: string | null;
+    navigationBannerURL?: string | null;
+  };
+  contact?: {
+    email?: string | null;
+    phone?: string | null;
+    whatsapp?: string | null;
+    wechatInternationalQRCode?: (number | null) | Media;
+    wechatQRCode?: (number | null) | Media;
+    whatsappQRCode?: (number | null) | Media;
+    address?: string | null;
+    linkedin?: string | null;
+  };
+  seo?: {
+    titleSuffix?: string | null;
+    defaultDescription?: string | null;
+    googleSiteVerification?: string | null;
+    googleAnalyticsId?: string | null;
+    indexingEnabled?: boolean | null;
+  };
+  /**
+   * 旧版导航字段，已由“网站导航”统一管理，保留历史数据但不再编辑。
+   */
+  siteNavigation?:
+    | {
+        label?: string | null;
+        /**
+         * 站内链接以 / 开头，例如 /products。
+         */
+        href: string;
+        children?:
+          | {
+              label?: string | null;
+              href: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  fixedPages?: {
+    homepage?: {
+      heroEyebrow?: string | null;
+      heroTitle?: string | null;
+      heroDescription?: string | null;
+      banners?:
+        | {
+            [k: string]: unknown;
+          }
+        | unknown[]
+        | string
+        | number
+        | boolean
+        | null;
+      showCompanyIntro?: boolean | null;
+      companyIntroTitle?: string | null;
+      companyIntro?: string | null;
+      showStrength?: boolean | null;
+      showFeaturedProducts?: boolean | null;
+      showVideo?: boolean | null;
+      videoTitle?: string | null;
+      videoDescription?: string | null;
+      /**
+       * 填写公开 HTTPS 视频链接。
+       */
+      videoURL?: string | null;
+      videoSource?: ('external' | 'local') | null;
+      videoMedia?: (number | null) | Media;
+      featuredNewsCategory?: (number | null) | NewsCategory;
+      introImage?: (number | null) | Media;
+      strengthItems?:
+        | {
+            image?: (number | null) | Media;
+            value: string;
+            unit?: string | null;
+            label: string;
+            sortOrder?: number | null;
+            id?: string | null;
+          }[]
+        | null;
+      showInquiryForm?: boolean | null;
+      inquiryTitle?: string | null;
+      inquiryDescription?: string | null;
+      inquiryRequiredFields?:
+        | {
+            [k: string]: unknown;
+          }
+        | unknown[]
+        | string
+        | number
+        | boolean
+        | null;
+      showNews?: boolean | null;
+      showCases?: boolean | null;
+    };
+    about?: {
+      title?: string | null;
+      intro?: string | null;
+      certificates?: string | null;
+      modules?:
+        | {
+            image?: (number | null) | Media;
+            title: string;
+            description: string;
+            sortOrder?: number | null;
+            id?: string | null;
+          }[]
+        | null;
+      showStrength?: boolean | null;
+    };
+    contactPage?: {
+      title?: string | null;
+      intro?: string | null;
+      showInquiryForm?: boolean | null;
+    };
+    footer?: {
+      intro?: string | null;
+      socialLinks?:
+        | {
+            [k: string]: unknown;
+          }
+        | unknown[]
+        | string
+        | number
+        | boolean
+        | null;
+      quickLinks?:
+        | {
+            label?: string | null;
+            href: string;
+            id?: string | null;
+          }[]
+        | null;
+    };
+  };
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "posts".
+ * via the `definition` "templates".
  */
-export interface Post {
-  id: string;
-  title: string;
-  heroImage?: (string | null) | Media;
-  content: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
+export interface Template {
+  id: number;
+  name: string;
+  key: string;
+  version: string;
+  schemaVersion: number;
+  referenceCode?: string | null;
+  referenceURL?: string | null;
+  industry: 'home-interior' | 'power-equipment' | 'auto-parts' | 'machinery' | 'renewable-energy' | 'general-b2b';
+  thumbnail?: (number | null) | Media;
+  description?: string | null;
+  visual?: {
+    heroStyle?: ('industrial' | 'technical' | 'minimal') | null;
+    cardStyle?: ('bordered' | 'elevated' | 'flat') | null;
+    navigationStyle?: ('dark' | 'light' | 'transparent') | null;
   };
-  relatedPosts?: (string | Post)[] | null;
-  categories?: (string | Category)[] | null;
-  meta?: {
-    title?: string | null;
-    /**
-     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
-     */
-    image?: (string | null) | Media;
-    description?: string | null;
-  };
-  publishedAt?: string | null;
-  authors?: (string | User)[] | null;
-  populatedAuthors?:
-    | {
-        id?: string | null;
-        name?: string | null;
-      }[]
-    | null;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug: string;
+  status?: ('draft' | 'published' | 'deprecated') | null;
+  capabilities?: ('products' | 'blog' | 'news' | 'cases' | 'rfq' | 'seo' | 'multilingual')[] | null;
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
-  id: string;
+  id: number;
+  tenant?: (number | null) | Tenant;
   alt?: string | null;
   caption?: {
     root: {
@@ -292,7 +413,8 @@ export interface Media {
     };
     [k: string]: unknown;
   } | null;
-  folder?: (string | null) | FolderInterface;
+  prefix?: string | null;
+  folder?: (number | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -368,18 +490,18 @@ export interface Media {
  * via the `definition` "payload-folders".
  */
 export interface FolderInterface {
-  id: string;
+  id: number;
   name: string;
-  folder?: (string | null) | FolderInterface;
+  folder?: (number | null) | FolderInterface;
   documentsAndFolders?: {
     docs?: (
       | {
           relationTo?: 'payload-folders';
-          value: string | FolderInterface;
+          value: number | FolderInterface;
         }
       | {
           relationTo?: 'media';
-          value: string | Media;
+          value: number | Media;
         }
     )[];
     hasNextPage?: boolean;
@@ -391,22 +513,47 @@ export interface FolderInterface {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "categories".
+ * via the `definition` "news-categories".
  */
-export interface Category {
-  id: string;
-  title: string;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
+export interface NewsCategory {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  name: string;
   slug: string;
-  parent?: (string | null) | Category;
-  breadcrumbs?:
+  description?: string | null;
+  parent?: (number | null) | NewsCategory;
+  sortOrder: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-navigation".
+ */
+export interface SiteNavigation {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  title: string;
+  localeCode: 'en' | 'zh' | 'ru' | 'id';
+  footerIntro?: string | null;
+  items?:
     | {
-        doc?: (string | null) | Category;
-        url?: string | null;
-        label?: string | null;
+        label: string;
+        href: string;
+        children?:
+          | {
+              label: string;
+              href: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  quickLinks?:
+    | {
+        label: string;
+        href: string;
         id?: string | null;
       }[]
     | null;
@@ -415,11 +562,62 @@ export interface Category {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-template-changes".
+ */
+export interface SiteTemplateChange {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  operation: 'apply' | 'rollback';
+  fromTemplate?: (number | null) | Template;
+  toTemplate?: (number | null) | Template;
+  fromVersion?: string | null;
+  toVersion?: string | null;
+  fromRevision: number;
+  toRevision: number;
+  beforeSettings:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  afterSettings:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  revertsChange?: (number | null) | SiteTemplateChange;
+  actor: number | User;
+  actorEmail?: string | null;
+  idempotencyKey: string;
+  requestHash: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
   name?: string | null;
+  roles?: ('super-admin' | 'site-admin' | 'editor' | 'sales' | 'viewer')[] | null;
+  /**
+   * 留空表示长期有效。到期后账号将无法继续登录或访问工作台。
+   */
+  expiresAt?: string | null;
+  tenants?:
+    | {
+        tenant: number | Tenant;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -438,6 +636,153 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  title: string;
+  hero: {
+    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    richText?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    links?:
+      | {
+          link: {
+            type?: ('reference' | 'custom') | null;
+            newTab?: boolean | null;
+            reference?:
+              | ({
+                  relationTo: 'pages';
+                  value: number | Page;
+                } | null)
+              | ({
+                  relationTo: 'posts';
+                  value: number | Post;
+                } | null);
+            url?: string | null;
+            label: string;
+            /**
+             * Choose how the link should be rendered.
+             */
+            appearance?: ('default' | 'outline') | null;
+          };
+          id?: string | null;
+        }[]
+      | null;
+    media?: (number | null) | Media;
+  };
+  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock)[];
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    description?: string | null;
+  };
+  publishedAt?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  title: string;
+  heroImage?: (number | null) | Media;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  relatedPosts?: (number | Post)[] | null;
+  categories?: (number | Category)[] | null;
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    description?: string | null;
+  };
+  publishedAt?: string | null;
+  authors?: (number | User)[] | null;
+  populatedAuthors?:
+    | {
+        id?: string | null;
+        name?: string | null;
+      }[]
+    | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  title: string;
+  sortOrder: number;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  parent?: (number | null) | Category;
+  breadcrumbs?:
+    | {
+        doc?: (number | null) | Category;
+        url?: string | null;
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -467,11 +812,11 @@ export interface CallToActionBlock {
           reference?:
             | ({
                 relationTo: 'pages';
-                value: string | Page;
+                value: number | Page;
               } | null)
             | ({
                 relationTo: 'posts';
-                value: string | Post;
+                value: number | Post;
               } | null);
           url?: string | null;
           label: string;
@@ -517,11 +862,11 @@ export interface ContentBlock {
           reference?:
             | ({
                 relationTo: 'pages';
-                value: string | Page;
+                value: number | Page;
               } | null)
             | ({
                 relationTo: 'posts';
-                value: string | Post;
+                value: number | Post;
               } | null);
           url?: string | null;
           label: string;
@@ -542,7 +887,7 @@ export interface ContentBlock {
  * via the `definition` "MediaBlock".
  */
 export interface MediaBlock {
-  media: string | Media;
+  media: number | Media;
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaBlock';
@@ -569,12 +914,12 @@ export interface ArchiveBlock {
   } | null;
   populateBy?: ('collection' | 'selection') | null;
   relationTo?: 'posts' | null;
-  categories?: (string | Category)[] | null;
+  categories?: (number | Category)[] | null;
   limit?: number | null;
   selectedDocs?:
     | {
         relationTo: 'posts';
-        value: string | Post;
+        value: number | Post;
       }[]
     | null;
   id?: string | null;
@@ -583,12 +928,16 @@ export interface ArchiveBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FormBlock".
+ * via the `definition` "cases".
  */
-export interface FormBlock {
-  form: string | Form;
-  enableIntro?: boolean | null;
-  introContent?: {
+export interface Case {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  title: string;
+  slug: string;
+  category: number | CaseCategory;
+  summary: string;
+  content: {
     root: {
       type: string;
       children: {
@@ -602,133 +951,49 @@ export interface FormBlock {
       version: number;
     };
     [k: string]: unknown;
-  } | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'formBlock';
+  };
+  country?: string | null;
+  industry?: string | null;
+  products?: (number | Product)[] | null;
+  cover?: (number | null) | Media;
+  featured?: boolean | null;
+  sortOrder?: number | null;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "forms".
+ * via the `definition` "case-categories".
  */
-export interface Form {
-  id: string;
+export interface CaseCategory {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  name: string;
+  slug: string;
+  description?: string | null;
+  parent?: (number | null) | CaseCategory;
+  sortOrder: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: number;
+  tenant?: (number | null) | Tenant;
   title: string;
-  fields?:
-    | (
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            required?: boolean | null;
-            defaultValue?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'checkbox';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'country';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'email';
-          }
-        | {
-            message?: {
-              root: {
-                type: string;
-                children: {
-                  type: any;
-                  version: number;
-                  [k: string]: unknown;
-                }[];
-                direction: ('ltr' | 'rtl') | null;
-                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-                indent: number;
-                version: number;
-              };
-              [k: string]: unknown;
-            } | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'message';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: number | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'number';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: string | null;
-            placeholder?: string | null;
-            options?:
-              | {
-                  label: string;
-                  value: string;
-                  id?: string | null;
-                }[]
-              | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'select';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'state';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: string | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'text';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: string | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'textarea';
-          }
-      )[]
-    | null;
-  submitButtonLabel?: string | null;
   /**
-   * Choose whether to display an on-page message or redirect to a different page after they submit the form.
+   * 历史字段保留；当前内容管理不再要求填写。
    */
-  confirmationType?: ('message' | 'redirect') | null;
-  confirmationMessage?: {
+  model?: string | null;
+  slug: string;
+  category: number | ProductCategory;
+  summary?: string | null;
+  description: {
     root: {
       type: string;
       children: {
@@ -742,41 +1007,215 @@ export interface Form {
       version: number;
     };
     [k: string]: unknown;
-  } | null;
-  redirect?: {
-    url: string;
   };
+  detailHTML?: string | null;
+  keywords?: string | null;
   /**
-   * Send custom emails when the form submits. Use comma separated lists to send the same email to multiple recipients. To reference a value from this form, wrap that field's name with double curly brackets, i.e. {{firstName}}. You can use a wildcard {{*}} to output all data and {{*:table}} to format it as an HTML table in the email.
+   * 至少添加一个标签；标签可由编辑者直接新建。
    */
-  emails?:
+  tags?:
     | {
-        emailTo?: string | null;
-        cc?: string | null;
-        bcc?: string | null;
-        replyTo?: string | null;
-        emailFrom?: string | null;
-        subject: string;
-        /**
-         * Enter the message that should be sent in this email.
-         */
-        message?: {
-          root: {
-            type: string;
-            children: {
-              type: any;
-              version: number;
-              [k: string]: unknown;
-            }[];
-            direction: ('ltr' | 'rtl') | null;
-            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-            indent: number;
-            version: number;
-          };
-          [k: string]: unknown;
-        } | null;
+        label: string;
         id?: string | null;
       }[]
+    | null;
+  sortOrder?: number | null;
+  /**
+   * 最多 5 张；建议使用 800×800、单张不超过 500KB 的图片。
+   */
+  gallery?: (number | Media)[] | null;
+  /**
+   * 支持 Unsplash 等公开 HTTPS 图片，用于种子数据和快速建站。
+   */
+  externalImages?:
+    | {
+        url: string;
+        alt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * 历史数据保留。请使用“产品技术参数”维护各语言参数。
+   */
+  specifications?:
+    | {
+        label?: string | null;
+        value?: string | null;
+        group?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  datasheet?: (number | null) | Media;
+  featured?: boolean | null;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-categories".
+ */
+export interface ProductCategory {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  name: string;
+  slug: string;
+  description?: string | null;
+  parent?: (number | null) | ProductCategory;
+  cover?: (number | null) | Media;
+  sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs".
+ */
+export interface Faq {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  question: string;
+  answer: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  category?: string | null;
+  sortOrder: number;
+  enabled?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-specifications".
+ */
+export interface ProductSpecification {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  title: string;
+  product: number | Product;
+  localeCode: 'en' | 'zh' | 'ru' | 'id';
+  items?:
+    | {
+        label: string;
+        value: string;
+        group?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "news".
+ */
+export interface News {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  title: string;
+  slug: string;
+  category: number | NewsCategory;
+  summary: string;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  cover?: (number | null) | Media;
+  featured?: boolean | null;
+  sortOrder?: number | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+  };
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "leads".
+ */
+export interface Lead {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  name: string;
+  company?: string | null;
+  email: string;
+  phone?: string | null;
+  country?: string | null;
+  product?: (number | null) | Product;
+  capacity?: string | null;
+  message: string;
+  sourcePage?: string | null;
+  utmSource?: string | null;
+  utmCampaign?: string | null;
+  status: 'new' | 'contacted' | 'quoted' | 'won' | 'invalid';
+  internalNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deployments".
+ */
+export interface Deployment {
+  id: number;
+  tenant?: (number | null) | Tenant;
+  releaseName: string;
+  environment?: ('preview' | 'production') | null;
+  status?: ('queued' | 'building' | 'success' | 'failed' | 'rolled-back') | null;
+  url?: string | null;
+  commitSha?: string | null;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  log?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-logs".
+ */
+export interface AuditLog {
+  id: number;
+  action: 'create' | 'update' | 'delete' | 'publish' | 'rollback' | 'login';
+  collection: string;
+  documentId?: string | null;
+  actorEmail?: string | null;
+  summary?: string | null;
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
     | null;
   updatedAt: string;
   createdAt: string;
@@ -786,7 +1225,7 @@ export interface Form {
  * via the `definition` "redirects".
  */
 export interface Redirect {
-  id: string;
+  id: number;
   /**
    * You will need to rebuild the website when changing this field.
    */
@@ -796,31 +1235,14 @@ export interface Redirect {
     reference?:
       | ({
           relationTo: 'pages';
-          value: string | Page;
+          value: number | Page;
         } | null)
       | ({
           relationTo: 'posts';
-          value: string | Post;
+          value: number | Post;
         } | null);
     url?: string | null;
   };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "form-submissions".
- */
-export interface FormSubmission {
-  id: string;
-  form: string | Form;
-  submissionData?:
-    | {
-        field: string;
-        value: string;
-        id?: string | null;
-      }[]
-    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -831,18 +1253,18 @@ export interface FormSubmission {
  * via the `definition` "search".
  */
 export interface Search {
-  id: string;
+  id: number;
   title?: string | null;
   priority?: number | null;
   doc: {
     relationTo: 'posts';
-    value: string | Post;
+    value: number | Post;
   };
   slug?: string | null;
   meta?: {
     title?: string | null;
     description?: string | null;
-    image?: (string | null) | Media;
+    image?: (number | null) | Media;
   };
   categories?:
     | {
@@ -860,7 +1282,7 @@ export interface Search {
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: string;
+  id: number;
   key: string;
   data:
     | {
@@ -877,7 +1299,7 @@ export interface PayloadKv {
  * via the `definition` "payload-jobs".
  */
 export interface PayloadJob {
-  id: string;
+  id: number;
   /**
    * Input data provided to the job
    */
@@ -969,52 +1391,104 @@ export interface PayloadJob {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
+        relationTo: 'tenants';
+        value: number | Tenant;
+      } | null)
+    | ({
+        relationTo: 'site-navigation';
+        value: number | SiteNavigation;
+      } | null)
+    | ({
+        relationTo: 'site-template-changes';
+        value: number | SiteTemplateChange;
+      } | null)
+    | ({
         relationTo: 'pages';
-        value: string | Page;
+        value: number | Page;
+      } | null)
+    | ({
+        relationTo: 'cases';
+        value: number | Case;
+      } | null)
+    | ({
+        relationTo: 'case-categories';
+        value: number | CaseCategory;
+      } | null)
+    | ({
+        relationTo: 'faqs';
+        value: number | Faq;
+      } | null)
+    | ({
+        relationTo: 'products';
+        value: number | Product;
+      } | null)
+    | ({
+        relationTo: 'product-specifications';
+        value: number | ProductSpecification;
+      } | null)
+    | ({
+        relationTo: 'product-categories';
+        value: number | ProductCategory;
       } | null)
     | ({
         relationTo: 'posts';
-        value: string | Post;
+        value: number | Post;
       } | null)
     | ({
-        relationTo: 'media';
-        value: string | Media;
+        relationTo: 'news';
+        value: number | News;
+      } | null)
+    | ({
+        relationTo: 'news-categories';
+        value: number | NewsCategory;
       } | null)
     | ({
         relationTo: 'categories';
-        value: string | Category;
+        value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'leads';
+        value: number | Lead;
+      } | null)
+    | ({
+        relationTo: 'templates';
+        value: number | Template;
+      } | null)
+    | ({
+        relationTo: 'deployments';
+        value: number | Deployment;
+      } | null)
+    | ({
+        relationTo: 'audit-logs';
+        value: number | AuditLog;
       } | null)
     | ({
         relationTo: 'users';
-        value: string | User;
+        value: number | User;
       } | null)
     | ({
         relationTo: 'redirects';
-        value: string | Redirect;
-      } | null)
-    | ({
-        relationTo: 'forms';
-        value: string | Form;
-      } | null)
-    | ({
-        relationTo: 'form-submissions';
-        value: string | FormSubmission;
+        value: number | Redirect;
       } | null)
     | ({
         relationTo: 'search';
-        value: string | Search;
+        value: number | Search;
       } | null)
     | ({
         relationTo: 'payload-folders';
-        value: string | FolderInterface;
+        value: number | FolderInterface;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -1024,10 +1498,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -1047,7 +1521,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -1055,9 +1529,212 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tenants_select".
+ */
+export interface TenantsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  status?: T;
+  primaryDomain?: T;
+  previewDomain?: T;
+  defaultLocale?: T;
+  selectedTemplate?: T;
+  templateVersion?: T;
+  templateAppliedAt?: T;
+  templateRevision?: T;
+  templateSettings?: T;
+  enabledLocales?: T;
+  branding?:
+    | T
+    | {
+        companyName?: T;
+        tagline?: T;
+        logo?: T;
+        favicon?: T;
+        primaryColor?: T;
+        accentColor?: T;
+        heroImageURL?: T;
+        mobileHeroImageURL?: T;
+        navigationBannerURL?: T;
+      };
+  contact?:
+    | T
+    | {
+        email?: T;
+        phone?: T;
+        whatsapp?: T;
+        wechatInternationalQRCode?: T;
+        wechatQRCode?: T;
+        whatsappQRCode?: T;
+        address?: T;
+        linkedin?: T;
+      };
+  seo?:
+    | T
+    | {
+        titleSuffix?: T;
+        defaultDescription?: T;
+        googleSiteVerification?: T;
+        googleAnalyticsId?: T;
+        indexingEnabled?: T;
+      };
+  siteNavigation?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        children?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  fixedPages?:
+    | T
+    | {
+        homepage?:
+          | T
+          | {
+              heroEyebrow?: T;
+              heroTitle?: T;
+              heroDescription?: T;
+              banners?: T;
+              showCompanyIntro?: T;
+              companyIntroTitle?: T;
+              companyIntro?: T;
+              showStrength?: T;
+              showFeaturedProducts?: T;
+              showVideo?: T;
+              videoTitle?: T;
+              videoDescription?: T;
+              videoURL?: T;
+              videoSource?: T;
+              videoMedia?: T;
+              featuredNewsCategory?: T;
+              introImage?: T;
+              strengthItems?:
+                | T
+                | {
+                    image?: T;
+                    value?: T;
+                    unit?: T;
+                    label?: T;
+                    sortOrder?: T;
+                    id?: T;
+                  };
+              showInquiryForm?: T;
+              inquiryTitle?: T;
+              inquiryDescription?: T;
+              inquiryRequiredFields?: T;
+              showNews?: T;
+              showCases?: T;
+            };
+        about?:
+          | T
+          | {
+              title?: T;
+              intro?: T;
+              certificates?: T;
+              modules?:
+                | T
+                | {
+                    image?: T;
+                    title?: T;
+                    description?: T;
+                    sortOrder?: T;
+                    id?: T;
+                  };
+              showStrength?: T;
+            };
+        contactPage?:
+          | T
+          | {
+              title?: T;
+              intro?: T;
+              showInquiryForm?: T;
+            };
+        footer?:
+          | T
+          | {
+              intro?: T;
+              socialLinks?: T;
+              quickLinks?:
+                | T
+                | {
+                    label?: T;
+                    href?: T;
+                    id?: T;
+                  };
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-navigation_select".
+ */
+export interface SiteNavigationSelect<T extends boolean = true> {
+  tenant?: T;
+  title?: T;
+  localeCode?: T;
+  footerIntro?: T;
+  items?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        children?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  quickLinks?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-template-changes_select".
+ */
+export interface SiteTemplateChangesSelect<T extends boolean = true> {
+  tenant?: T;
+  operation?: T;
+  fromTemplate?: T;
+  toTemplate?: T;
+  fromVersion?: T;
+  toVersion?: T;
+  fromRevision?: T;
+  toRevision?: T;
+  beforeSettings?: T;
+  afterSettings?: T;
+  revertsChange?: T;
+  actor?: T;
+  actorEmail?: T;
+  idempotencyKey?: T;
+  requestHash?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages_select".
  */
 export interface PagesSelect<T extends boolean = true> {
+  tenant?: T;
   title?: T;
   hero?:
     | T
@@ -1088,7 +1765,6 @@ export interface PagesSelect<T extends boolean = true> {
         content?: T | ContentBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
-        formBlock?: T | FormBlockSelect<T>;
       };
   meta?:
     | T
@@ -1179,20 +1855,139 @@ export interface ArchiveBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FormBlock_select".
+ * via the `definition` "cases_select".
  */
-export interface FormBlockSelect<T extends boolean = true> {
-  form?: T;
-  enableIntro?: T;
-  introContent?: T;
-  id?: T;
-  blockName?: T;
+export interface CasesSelect<T extends boolean = true> {
+  tenant?: T;
+  title?: T;
+  slug?: T;
+  category?: T;
+  summary?: T;
+  content?: T;
+  country?: T;
+  industry?: T;
+  products?: T;
+  cover?: T;
+  featured?: T;
+  sortOrder?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "case-categories_select".
+ */
+export interface CaseCategoriesSelect<T extends boolean = true> {
+  tenant?: T;
+  name?: T;
+  slug?: T;
+  description?: T;
+  parent?: T;
+  sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs_select".
+ */
+export interface FaqsSelect<T extends boolean = true> {
+  tenant?: T;
+  question?: T;
+  answer?: T;
+  category?: T;
+  sortOrder?: T;
+  enabled?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products_select".
+ */
+export interface ProductsSelect<T extends boolean = true> {
+  tenant?: T;
+  title?: T;
+  model?: T;
+  slug?: T;
+  category?: T;
+  summary?: T;
+  description?: T;
+  detailHTML?: T;
+  keywords?: T;
+  tags?:
+    | T
+    | {
+        label?: T;
+        id?: T;
+      };
+  sortOrder?: T;
+  gallery?: T;
+  externalImages?:
+    | T
+    | {
+        url?: T;
+        alt?: T;
+        id?: T;
+      };
+  specifications?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        group?: T;
+        id?: T;
+      };
+  datasheet?: T;
+  featured?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-specifications_select".
+ */
+export interface ProductSpecificationsSelect<T extends boolean = true> {
+  tenant?: T;
+  title?: T;
+  product?: T;
+  localeCode?: T;
+  items?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        group?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-categories_select".
+ */
+export interface ProductCategoriesSelect<T extends boolean = true> {
+  tenant?: T;
+  name?: T;
+  slug?: T;
+  description?: T;
+  parent?: T;
+  cover?: T;
+  sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
+  tenant?: T;
   title?: T;
   heroImage?: T;
   content?: T;
@@ -1221,11 +2016,74 @@ export interface PostsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "news_select".
+ */
+export interface NewsSelect<T extends boolean = true> {
+  tenant?: T;
+  title?: T;
+  slug?: T;
+  category?: T;
+  summary?: T;
+  content?: T;
+  cover?: T;
+  featured?: T;
+  sortOrder?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "news-categories_select".
+ */
+export interface NewsCategoriesSelect<T extends boolean = true> {
+  tenant?: T;
+  name?: T;
+  slug?: T;
+  description?: T;
+  parent?: T;
+  sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  tenant?: T;
+  title?: T;
+  sortOrder?: T;
+  generateSlug?: T;
+  slug?: T;
+  parent?: T;
+  breadcrumbs?:
+    | T
+    | {
+        doc?: T;
+        url?: T;
+        label?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
+  tenant?: T;
   alt?: T;
   caption?: T;
+  prefix?: T;
   folder?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1315,21 +2173,80 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "categories_select".
+ * via the `definition` "leads_select".
  */
-export interface CategoriesSelect<T extends boolean = true> {
-  title?: T;
-  generateSlug?: T;
-  slug?: T;
-  parent?: T;
-  breadcrumbs?:
+export interface LeadsSelect<T extends boolean = true> {
+  tenant?: T;
+  name?: T;
+  company?: T;
+  email?: T;
+  phone?: T;
+  country?: T;
+  product?: T;
+  capacity?: T;
+  message?: T;
+  sourcePage?: T;
+  utmSource?: T;
+  utmCampaign?: T;
+  status?: T;
+  internalNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "templates_select".
+ */
+export interface TemplatesSelect<T extends boolean = true> {
+  name?: T;
+  key?: T;
+  version?: T;
+  schemaVersion?: T;
+  referenceCode?: T;
+  referenceURL?: T;
+  industry?: T;
+  thumbnail?: T;
+  description?: T;
+  visual?:
     | T
     | {
-        doc?: T;
-        url?: T;
-        label?: T;
-        id?: T;
+        heroStyle?: T;
+        cardStyle?: T;
+        navigationStyle?: T;
       };
+  status?: T;
+  capabilities?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deployments_select".
+ */
+export interface DeploymentsSelect<T extends boolean = true> {
+  tenant?: T;
+  releaseName?: T;
+  environment?: T;
+  status?: T;
+  url?: T;
+  commitSha?: T;
+  startedAt?: T;
+  finishedAt?: T;
+  log?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-logs_select".
+ */
+export interface AuditLogsSelect<T extends boolean = true> {
+  action?: T;
+  collection?: T;
+  documentId?: T;
+  actorEmail?: T;
+  summary?: T;
+  metadata?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1339,6 +2256,14 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  roles?: T;
+  expiresAt?: T;
+  tenants?:
+    | T
+    | {
+        tenant?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1368,155 +2293,6 @@ export interface RedirectsSelect<T extends boolean = true> {
         type?: T;
         reference?: T;
         url?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "forms_select".
- */
-export interface FormsSelect<T extends boolean = true> {
-  title?: T;
-  fields?:
-    | T
-    | {
-        checkbox?:
-          | T
-          | {
-              name?: T;
-              label?: T;
-              width?: T;
-              required?: T;
-              defaultValue?: T;
-              id?: T;
-              blockName?: T;
-            };
-        country?:
-          | T
-          | {
-              name?: T;
-              label?: T;
-              width?: T;
-              required?: T;
-              id?: T;
-              blockName?: T;
-            };
-        email?:
-          | T
-          | {
-              name?: T;
-              label?: T;
-              width?: T;
-              required?: T;
-              id?: T;
-              blockName?: T;
-            };
-        message?:
-          | T
-          | {
-              message?: T;
-              id?: T;
-              blockName?: T;
-            };
-        number?:
-          | T
-          | {
-              name?: T;
-              label?: T;
-              width?: T;
-              defaultValue?: T;
-              required?: T;
-              id?: T;
-              blockName?: T;
-            };
-        select?:
-          | T
-          | {
-              name?: T;
-              label?: T;
-              width?: T;
-              defaultValue?: T;
-              placeholder?: T;
-              options?:
-                | T
-                | {
-                    label?: T;
-                    value?: T;
-                    id?: T;
-                  };
-              required?: T;
-              id?: T;
-              blockName?: T;
-            };
-        state?:
-          | T
-          | {
-              name?: T;
-              label?: T;
-              width?: T;
-              required?: T;
-              id?: T;
-              blockName?: T;
-            };
-        text?:
-          | T
-          | {
-              name?: T;
-              label?: T;
-              width?: T;
-              defaultValue?: T;
-              required?: T;
-              id?: T;
-              blockName?: T;
-            };
-        textarea?:
-          | T
-          | {
-              name?: T;
-              label?: T;
-              width?: T;
-              defaultValue?: T;
-              required?: T;
-              id?: T;
-              blockName?: T;
-            };
-      };
-  submitButtonLabel?: T;
-  confirmationType?: T;
-  confirmationMessage?: T;
-  redirect?:
-    | T
-    | {
-        url?: T;
-      };
-  emails?:
-    | T
-    | {
-        emailTo?: T;
-        cc?: T;
-        bcc?: T;
-        replyTo?: T;
-        emailFrom?: T;
-        subject?: T;
-        message?: T;
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "form-submissions_select".
- */
-export interface FormSubmissionsSelect<T extends boolean = true> {
-  form?: T;
-  submissionData?:
-    | T
-    | {
-        field?: T;
-        value?: T;
-        id?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -1632,11 +2408,13 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * 旧版全局导航，历史数据保留；多站点导航请使用“网站导航”。
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header".
  */
 export interface Header {
-  id: string;
+  id: number;
   navItems?:
     | {
         link: {
@@ -1645,11 +2423,11 @@ export interface Header {
           reference?:
             | ({
                 relationTo: 'pages';
-                value: string | Page;
+                value: number | Page;
               } | null)
             | ({
                 relationTo: 'posts';
-                value: string | Post;
+                value: number | Post;
               } | null);
           url?: string | null;
           label: string;
@@ -1661,11 +2439,13 @@ export interface Header {
   createdAt?: string | null;
 }
 /**
+ * 旧版全局页脚，历史数据保留；多站点页脚请使用“网站导航”。
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "footer".
  */
 export interface Footer {
-  id: string;
+  id: number;
   navItems?:
     | {
         link: {
@@ -1674,11 +2454,11 @@ export interface Footer {
           reference?:
             | ({
                 relationTo: 'pages';
-                value: string | Page;
+                value: number | Page;
               } | null)
             | ({
                 relationTo: 'posts';
-                value: string | Post;
+                value: number | Post;
               } | null);
           url?: string | null;
           label: string;
@@ -1756,14 +2536,26 @@ export interface TaskSchedulePublish {
     doc?:
       | ({
           relationTo: 'pages';
-          value: string | Page;
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'cases';
+          value: number | Case;
+        } | null)
+      | ({
+          relationTo: 'products';
+          value: number | Product;
         } | null)
       | ({
           relationTo: 'posts';
-          value: string | Post;
+          value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'news';
+          value: number | News;
         } | null);
     global?: string | null;
-    user?: (string | null) | User;
+    user?: (number | null) | User;
   };
   output?: unknown;
 }

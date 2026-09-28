@@ -9,8 +9,8 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 
-import { authenticated } from '../../access/authenticated'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
+import { contentEditors, siteAdmins } from '../../access/roles'
 import { Banner } from '../../blocks/Banner/config'
 import { Code } from '../../blocks/Code/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
@@ -29,11 +29,12 @@ import { slugField } from 'payload'
 
 export const Posts: CollectionConfig<'posts'> = {
   slug: 'posts',
+  labels: { singular: '博客文章', plural: '博客' },
   access: {
-    create: authenticated,
-    delete: authenticated,
+    create: contentEditors,
+    delete: siteAdmins,
     read: authenticatedOrPublished,
-    update: authenticated,
+    update: contentEditors,
   },
   // This config controls what's populated by default when a post is referenced
   // https://payloadcms.com/docs/queries/select#defaultpopulate-collection-config-property
@@ -48,7 +49,9 @@ export const Posts: CollectionConfig<'posts'> = {
     },
   },
   admin: {
+    group: '内容运营',
     defaultColumns: ['title', 'slug', 'updatedAt'],
+    listSearchableFields: ['title', 'slug'],
     livePreview: {
       url: ({ data, req }) =>
         generatePreviewPath({
@@ -68,7 +71,9 @@ export const Posts: CollectionConfig<'posts'> = {
   fields: [
     {
       name: 'title',
+      label: '文章标题',
       type: 'text',
+      localized: true,
       required: true,
     },
     {
@@ -78,12 +83,14 @@ export const Posts: CollectionConfig<'posts'> = {
           fields: [
             {
               name: 'heroImage',
+              label: '文章封面图',
               type: 'upload',
               relationTo: 'media',
             },
             {
               name: 'content',
               type: 'richText',
+              localized: true,
               editor: lexicalEditor({
                 features: ({ rootFeatures }) => {
                   return [
@@ -100,12 +107,13 @@ export const Posts: CollectionConfig<'posts'> = {
               required: true,
             },
           ],
-          label: 'Content',
+          label: '文章内容',
         },
         {
           fields: [
             {
               name: 'relatedPosts',
+              label: '相关文章',
               type: 'relationship',
               admin: {
                 position: 'sidebar',
@@ -122,6 +130,7 @@ export const Posts: CollectionConfig<'posts'> = {
             },
             {
               name: 'categories',
+              label: '文章分类',
               type: 'relationship',
               admin: {
                 position: 'sidebar',
@@ -130,11 +139,11 @@ export const Posts: CollectionConfig<'posts'> = {
               relationTo: 'categories',
             },
           ],
-          label: 'Meta',
+          label: '文章关联',
         },
         {
           name: 'meta',
-          label: 'SEO',
+          label: '搜索引擎优化',
           fields: [
             OverviewField({
               titlePath: 'meta.title',
@@ -163,6 +172,7 @@ export const Posts: CollectionConfig<'posts'> = {
     },
     {
       name: 'publishedAt',
+      label: '发布时间',
       type: 'date',
       admin: {
         date: {
@@ -183,6 +193,7 @@ export const Posts: CollectionConfig<'posts'> = {
     },
     {
       name: 'authors',
+      label: '作者',
       type: 'relationship',
       admin: {
         position: 'sidebar',
@@ -214,7 +225,13 @@ export const Posts: CollectionConfig<'posts'> = {
         },
       ],
     },
-    slugField(),
+    slugField({
+      overrides: (field) => {
+        const slugInput = field.fields[1]
+        if ('label' in slugInput) slugInput.label = '文章地址标识'
+        return field
+      },
+    }),
   ],
   hooks: {
     afterChange: [revalidatePost],
