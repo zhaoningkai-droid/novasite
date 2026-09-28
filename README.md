@@ -1,5 +1,7 @@
 # NovaSite V1 — Google 外贸独立站平台
 
+开源仓库：<https://github.com/zhaoningkai-droid/novasite>。源码采用 [MIT License](./LICENSE)，上游归属和参考素材范围见 [第三方声明](./THIRD_PARTY_NOTICES.md)。
+
 这是与旧版 VoltTrans 隔离的新生产基座。它使用 Next.js App Router、Payload CMS、PostgreSQL 和官方 Multi-Tenant 插件，面向“一个后台代运营多个 Google 独立站”，不是单站 JSON 后台。
 
 ## 当前可用入口
