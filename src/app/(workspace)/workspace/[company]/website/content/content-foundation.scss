@@ -90,6 +90,60 @@
   gap: 12px;
   padding: 20px 24px;
 }
+.workspace-content-foundation__filters--table {
+  align-items: flex-end;
+  background: transparent;
+  border: 0;
+  display: flex;
+  flex: 1 1 auto;
+  gap: 12px;
+  min-width: min(100%, 560px);
+  padding: 0;
+}
+.workspace-content-foundation__search-field {
+  position: relative;
+}
+.workspace-content-foundation__search-field input {
+  padding-right: 42px !important;
+}
+.workspace-content-foundation__search-field button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  color: var(--ws-muted, #637089);
+  display: inline-flex;
+  height: 34px;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0;
+  position: absolute;
+  right: 4px;
+  top: 3px;
+  width: 34px;
+}
+.workspace-content-foundation__search-field button:hover {
+  background: #eef2ff;
+  color: var(--ws-primary, #315be8);
+}
+.workspace-content-foundation__search-field button:focus-visible {
+  outline: 3px solid #b9c8ff;
+  outline-offset: 1px;
+}
+.workspace-content-foundation__translation-state {
+  background: #fff5e5;
+  border-radius: 999px;
+  color: #935f00;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 600;
+  justify-content: center;
+  padding: 5px 10px;
+}
+.workspace-content-foundation__translation-state.is-complete {
+  background: #e8f7ef;
+  color: #16734d;
+}
 .workspace-content-foundation__filters label {
   color: var(--ws-muted, #637089);
   display: grid;
@@ -167,6 +221,18 @@
 }
 .workspace-content-foundation__filters button:hover {
   background: #e2e9ff;
+}
+.workspace-content-foundation__filters--table .workspace-content-foundation__search-field button {
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0;
+  width: 34px;
+}
+.workspace-content-foundation__filters--table .workspace-content-foundation__search-field button:hover {
+  background: #eef2ff;
 }
 .workspace-content-foundation__filters a {
   color: var(--ws-muted, #637089);

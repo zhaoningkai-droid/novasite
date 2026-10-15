@@ -6,9 +6,11 @@ import { ChangeEvent, useEffect, useState } from 'react'
 
 import { useWorkspaceUnsaved } from '../WorkspaceEditor/useWorkspaceUnsaved'
 import { useWorkspacePermissions } from '../WorkspaceShell/WorkspacePermissions'
+import { ExecutiveHomePanel, type ExecutiveEditorSettings } from './ExecutiveHomePanel'
+import { ContentTranslationAction } from '../WorkspaceTranslations/ContentTranslationAction'
 import './homepage-banner-editor.scss'
 
-type ModuleName = 'banner' | 'video' | 'products' | 'cases' | 'news' | 'intro' | 'strength' | 'inquiry' | 'footer'
+type ModuleName = 'banner' | 'video' | 'products' | 'cases' | 'news' | 'intro' | 'strength' | 'inquiry' | 'footer' | 'executive'
 type BannerTab = 'desktop' | 'mobile' | 'navigation'
 type BannerItem = { desktopImage?: string; desktopMediaID?: number; description?: string; linkType?: 'external' | 'internal' | 'none'; linkURL?: string; mobileImage?: string; mobileMediaID?: number; navigationImage?: string; navigationMediaID?: number; sortOrder: number; title?: string }
 
@@ -45,6 +47,10 @@ type Values = {
   inquiryRequiredFields?: Record<string, boolean>
   socialLinks?: Record<string, string>
   banners?: BannerItem[]
+  executiveHome?: ExecutiveEditorSettings
+  footerBackgroundMediaID?: number
+  footerBackgroundURL?: string
+  footerBackgroundOverlay?: number
 }
 
 type Recommendation = { id: number; imageURL?: string | null; subtitle?: string | null; title: string }
@@ -59,6 +65,7 @@ const modules: Array<{ id: ModuleName; label: string }> = [
   { id: 'strength', label: '企业实力' },
   { id: 'inquiry', label: '询盘表单' },
   { id: 'footer', label: '页脚' },
+  { id: 'executive', label: '商务工业首页' },
 ]
 
 const moduleKeys: Record<ModuleName, Array<keyof Values>> = {
@@ -68,6 +75,7 @@ const moduleKeys: Record<ModuleName, Array<keyof Values>> = {
   intro: ['showCompanyIntro'], strength: ['showStrength', 'strengthItems'],
   inquiry: ['showInquiryForm', 'inquiryTitle', 'inquiryDescription', 'inquiryRequiredFields'],
   footer: ['footerIntro', 'footerLogoMediaID', 'footerLogoURL', 'socialLinks'],
+  executive: ['executiveHome', 'footerBackgroundMediaID', 'footerBackgroundURL', 'footerBackgroundOverlay'],
 }
 const moduleValue = (values: Values, module: ModuleName) => JSON.stringify(moduleKeys[module].map((key) => values[key]))
 
@@ -80,6 +88,7 @@ const panelCopy: Record<Exclude<ModuleName, 'banner'>, { description: string; ti
   strength: { title: '企业实力', description: '用数字、单位和说明展示企业能力，可添加图片与调整顺序。' },
   inquiry: { title: '询盘表单', description: '固定显示姓名、公司、邮箱、联系方式和备注，只控制每项是否必填。' },
   footer: { title: '页脚', description: '维护页脚 Logo、公司简介及社媒平台链接。' },
+  executive: { title: '商务工业 · 专业首页', description: '维护本模板的资质、图片、模块标题和显示状态。产品、案例、新闻与常见问题始终读取当前公司的内容。' },
 }
 
 const parseUploadResponse = async (response: Response) => {
@@ -119,7 +128,7 @@ function UploadPlaceholder({ hint, icon = 'image', onUpload }: { hint: string; i
 
 type AboutPreview = { description: string; imageURL?: string | null; title: string }
 
-export function HomepageBannerEditor({ aboutPreview = [], companySlug, initial, recommendedCases = [], recommendedProducts = [] }: { aboutPreview?: AboutPreview[]; companySlug: string; initial: Values; recommendedCases?: Recommendation[]; recommendedProducts?: Recommendation[] }) {
+export function HomepageBannerEditor({ aboutPreview = [], companyID, companySlug, initial, isExecutive = false, recommendedCases = [], recommendedProducts = [] }: { aboutPreview?: AboutPreview[]; companyID: number; companySlug: string; initial: Values; isExecutive?: boolean; recommendedCases?: Recommendation[]; recommendedProducts?: Recommendation[] }) {
   const { canManageSite } = useWorkspacePermissions()
   const [activeModule, setActiveModule] = useState<ModuleName>('banner')
   const [bannerTab, setBannerTab] = useState<BannerTab>('desktop')
@@ -128,9 +137,11 @@ export function HomepageBannerEditor({ aboutPreview = [], companySlug, initial, 
   const [saved, setSaved] = useState<Values>(initial)
   const [message, setMessage] = useState('')
   const [saving, setSaving] = useState(false)
+  const [translationLocked, setTranslationLocked] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   const [newsCategories, setNewsCategories] = useState<Array<{ id: number; name: string }>>([])
-  const dirtyModules = modules.filter((module) => moduleValue(values, module.id) !== moduleValue(saved, module.id))
+  const visibleModules = isExecutive ? modules : modules.filter((module) => module.id !== 'executive')
+  const dirtyModules = visibleModules.filter((module) => moduleValue(values, module.id) !== moduleValue(saved, module.id))
   useWorkspaceUnsaved(dirtyModules.length > 0, saving)
   const banners = values.banners?.length ? values.banners : [{ desktopImage: values.desktopImage, description: values.heroDescription, mobileImage: values.mobileImage, navigationImage: values.navigationImage, sortOrder: 1, title: values.heroTitle }]
   const bannerHint = bannerTab === 'desktop' ? '推荐 1920 × 800，单张最大500KB' : bannerTab === 'mobile' ? '推荐 750 × 400，单张最大500KB' : '导航横幅用于内页顶部，单张最大500KB'
@@ -144,19 +155,24 @@ export function HomepageBannerEditor({ aboutPreview = [], companySlug, initial, 
     return () => controller.abort()
   }, [companySlug])
   const save = async () => {
-    if (saving || !canManageSite) return
+    if (saving || translationLocked || !canManageSite) return
     if (activeModule === 'banner' && banners.some((banner) => {
       if (banner.linkType === 'internal') return !banner.linkURL?.startsWith('/') || banner.linkURL.startsWith('//') || banner.linkURL.includes('\\')
       if (banner.linkType === 'external') { try { return new URL(banner.linkURL || '').protocol !== 'https:' } catch { return true } }
       return false
     })) { setMessage('请检查轮播图跳转：站内地址以 / 开头，站外地址使用完整 HTTPS 链接。'); return }
-    const mode = activeModule === 'banner' ? 'banner' : activeModule === 'video' ? 'video' : activeModule === 'intro' ? 'intro' : activeModule === 'strength' ? 'strength' : activeModule === 'inquiry' ? 'inquiry' : activeModule === 'news' || activeModule === 'footer' ? 'homepage-config' : 'recommendations'
+    const mode = activeModule === 'banner' ? 'banner' : activeModule === 'video' ? 'video' : activeModule === 'intro' ? 'intro' : activeModule === 'strength' ? 'strength' : activeModule === 'inquiry' ? 'inquiry' : activeModule === 'executive' ? 'executive' : activeModule === 'news' || activeModule === 'footer' ? 'homepage-config' : 'recommendations'
     setSaving(true); setMessage('')
     try {
-      const response = await fetch(`/api/workspace/${companySlug}/homepage/banner`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify(activeModule === 'intro' ? { mode: 'intro', showCompanyIntro: values.showCompanyIntro } : { ...values, banners, config: { featuredNewsCategoryID: values.featuredNewsCategoryID, inquiryRequiredFields: values.inquiryRequiredFields, socialLinks: values.socialLinks, footerIntro: values.footerIntro, footerLogoMediaID: values.footerLogoMediaID }, mode }) })
+      const body = mode === 'executive'
+        ? { mode, executiveHome: values.executiveHome || {}, footerBackgroundMediaID: values.footerBackgroundMediaID ?? null, footerBackgroundOverlay: values.footerBackgroundOverlay }
+        : activeModule === 'intro'
+          ? { mode: 'intro', showCompanyIntro: values.showCompanyIntro }
+          : { ...values, banners, config: { featuredNewsCategoryID: values.featuredNewsCategoryID, inquiryRequiredFields: values.inquiryRequiredFields, socialLinks: values.socialLinks, footerIntro: values.footerIntro, footerLogoMediaID: values.footerLogoMediaID }, mode }
+      const response = await fetch(`/api/workspace/${companySlug}/homepage/banner`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
       const result = await response.json().catch(() => ({})) as { message?: string }
       if (!response.ok) throw new Error(result.message || '当前模块没有保存，请重试。')
-      const savedKeys = mode === 'homepage-config'
+      const savedKeys = mode === 'executive' ? moduleKeys.executive : mode === 'homepage-config'
         ? [...moduleKeys.news, ...moduleKeys.footer, 'inquiryRequiredFields' as const]
         : mode === 'recommendations' ? [...moduleKeys.products, ...moduleKeys.cases, 'showNews' as const]
           : moduleKeys[activeModule]
@@ -196,7 +212,7 @@ export function HomepageBannerEditor({ aboutPreview = [], companySlug, initial, 
     setActiveBannerIndex(target)
   }
   const uploadBanner = async (index: number, file: File) => {
-    if (saving || !canManageSite) return
+    if (saving || translationLocked || !canManageSite) return
     const imageKey = bannerTab === 'desktop' ? 'desktopImage' : bannerTab === 'mobile' ? 'mobileImage' : 'navigationImage'
     const mediaKey = bannerTab === 'desktop' ? 'desktopMediaID' : bannerTab === 'mobile' ? 'mobileMediaID' : 'navigationMediaID'
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || !file.size || file.size > 500 * 1024) { setMessage('轮播图支持 JPG、PNG、WebP，单张须大于0且不超过500KB。'); return }
@@ -211,7 +227,7 @@ export function HomepageBannerEditor({ aboutPreview = [], companySlug, initial, 
     } catch (error) { setMessage(error instanceof Error ? error.message : '图片上传失败。') } finally { setSaving(false) }
   }
   const uploadVideo = async (file: File) => {
-    if (saving || !canManageSite) return
+    if (saving || translationLocked || !canManageSite) return
     const extension = file.name.split('.').pop()?.toLowerCase() || ''
     if (!file.type.startsWith('video/') && !videoExtensions.has(extension)) { setMessage('请选择视频文件。推荐 MP4 或 WebM，其他常见视频格式也可上传。'); return }
     if (file.size === 0 || file.size > 512 * 1024 * 1024) { setMessage('本地视频大小须大于 0 且不超过 512MB。'); return }
@@ -226,7 +242,7 @@ export function HomepageBannerEditor({ aboutPreview = [], companySlug, initial, 
     } catch (error) { setMessage(error instanceof Error ? error.message : '视频上传失败。') } finally { setSaving(false) }
   }
   const uploadFooterLogo = async (file: File) => {
-    if (saving || !canManageSite) return
+    if (saving || translationLocked || !canManageSite) return
     const form = new FormData(); form.set('file', file); form.set('alt', '网站页脚 Logo')
     setSaving(true); setMessage('')
     try {
@@ -238,7 +254,7 @@ export function HomepageBannerEditor({ aboutPreview = [], companySlug, initial, 
     } catch (error) { setMessage(error instanceof Error ? error.message : 'Logo 上传失败。') } finally { setSaving(false) }
   }
   const uploadStrengthImage = async (file: File, index: number) => {
-    if (saving || !canManageSite) return
+    if (saving || translationLocked || !canManageSite) return
     const form = new FormData(); form.set('file', file); form.set('alt', '企业实力展示图片')
     setSaving(true); setMessage('')
     try {
@@ -250,22 +266,43 @@ export function HomepageBannerEditor({ aboutPreview = [], companySlug, initial, 
       setMessage('图片已上传，请点击保存使首页生效。')
     } catch (error) { setMessage(error instanceof Error ? error.message : '图片上传失败。') } finally { setSaving(false) }
   }
+  const updateExecutiveHome = (patch: Partial<ExecutiveEditorSettings>) => setValues((current) => ({ ...current, executiveHome: { ...current.executiveHome, ...patch } }))
+  const uploadExecutiveImage = async (file: File, target: 'introBackground' | 'videoPoster' | 'footerBackground' | 'marks' | 'certificates' | 'strengthGallery', index?: number) => {
+    if (saving || translationLocked || !canManageSite) return
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || !file.size || file.size > 10 * 1024 * 1024) { setMessage('首页图片支持 JPG、PNG、WebP，单张不超过10MB。'); return }
+    const form = new FormData(); form.set('file', file); form.set('alt', target === 'introBackground' ? '公司简介背景' : target === 'videoPoster' ? '视频封面' : target === 'footerBackground' ? '网站页脚背景' : target === 'marks' ? '企业资质标志' : target === 'certificates' ? '企业证书' : '公司实力展示')
+    setSaving(true); setMessage('')
+    try {
+      const response = await fetch(`/api/workspace/${companySlug}/media`, { body: form, method: 'POST' })
+      const result = await parseUploadResponse(response)
+      if (!response.ok || !result.media?.id || !result.media.url) throw new Error(result.message || '图片上传失败。')
+      if (target === 'footerBackground') update({ footerBackgroundMediaID: result.media.id, footerBackgroundURL: result.media.url })
+      else if (target === 'introBackground') updateExecutiveHome({ introBackgroundMediaID: result.media.id, introBackgroundURL: result.media.url })
+      else if (target === 'videoPoster') updateExecutiveHome({ videoPosterMediaID: result.media.id, videoPosterURL: result.media.url })
+      else if (typeof index === 'number') {
+        const key = target as 'marks' | 'certificates' | 'strengthGallery'
+        const items = values.executiveHome?.[key] || []
+        updateExecutiveHome({ [key]: items.map((item, itemIndex) => itemIndex === index ? { ...item, imageID: result.media?.id, imageURL: result.media?.url || '' } : item) })
+      }
+      setMessage('图片上传成功，请点击“保存当前模块”后在客户网站生效。')
+    } catch (error) { setMessage(error instanceof Error ? error.message : '图片上传失败。') } finally { setSaving(false) }
+  }
 
   return <section className="homepage-banner-editor">
     <header className="homepage-banner-editor__page-header">
-      <div><p>网站配置 / 首页管理</p><h1>首页管理</h1><span>按模块维护首页内容、显示状态与图片，保存当前模块后生效。</span></div>
-      <button className="homepage-banner-editor__save" disabled={saving || !canManageSite} onClick={() => void save()} type="button"><Save aria-hidden="true" size={17} />{saving ? '处理中…' : '保存当前模块'}</button>
+      <div><h1>首页管理</h1></div>
+      <div className="content-translation-header-actions"><ContentTranslationAction companySlug={companySlug} resource="homepage" id={companyID} disabled={dirtyModules.length > 0 || saving || uploadProgress !== null || !canManageSite} refreshKey={JSON.stringify(saved)} onLockedChange={setTranslationLocked} /><button className="homepage-banner-editor__save" disabled={saving || translationLocked || !canManageSite} onClick={() => void save()} type="button"><Save aria-hidden="true" size={17} />{saving ? '处理中…' : '保存当前模块'}</button></div>
     </header>
     <div className="homepage-banner-editor__workspace">
       <aside aria-label="首页模块列表" className="homepage-banner-editor__module-list">
-        <div className="homepage-banner-editor__module-heading"><strong>页面模块</strong><small>9 个模块</small></div>
-        {modules.map((module, index) => <button aria-pressed={activeModule === module.id} disabled={saving} className={activeModule === module.id ? 'active' : ''} key={module.id} onClick={() => { setActiveModule(module.id); setMessage('') }} type="button"><b>{String(index + 1).padStart(2, '0')}</b>{module.label}{dirtyModules.some((dirty) => dirty.id === module.id) && <i aria-label="有未保存修改" />}</button>)}
+        <div className="homepage-banner-editor__module-heading"><strong>页面模块</strong><small>{visibleModules.length} 个模块</small></div>
+        {visibleModules.map((module, index) => <button aria-pressed={activeModule === module.id} disabled={saving} className={activeModule === module.id ? 'active' : ''} key={module.id} onClick={() => { setActiveModule(module.id); setMessage('') }} type="button"><b>{String(index + 1).padStart(2, '0')}</b>{module.label}{dirtyModules.some((dirty) => dirty.id === module.id) && <i aria-label="有未保存修改" />}</button>)}
         <a href={`/s/${companySlug}/zh`} rel="noopener noreferrer" target="_blank">预览网站<ExternalLink size={14} /></a>
       </aside>
       <div className="homepage-banner-editor__panel">
         {message && <div className="homepage-banner-editor__notice" role="status"><span>{message}</span><button aria-label="关闭提示" onClick={() => setMessage('')} type="button"><X size={16} /></button></div>}
-        <fieldset className="homepage-banner-editor__controls" disabled={saving || !canManageSite}>
-        {activeModule === 'banner' ? <BannerPanel activeIndex={activeBannerIndex} bannerHint={bannerHint} bannerTab={bannerTab} banners={banners} onAdd={addBanner} onChangeBanner={setActiveBannerIndex} onChangeTab={setBannerTab} onMove={moveBanner} onRemove={removeBanner} onUpload={uploadBanner} onUpdateBanner={updateBanner} /> : <GenericPanel aboutPreview={aboutPreview} categories={newsCategories} companySlug={companySlug} module={activeModule} onFooterLogoUpload={uploadFooterLogo} onStrengthImageUpload={uploadStrengthImage} onVideoUpload={uploadVideo} recommendedCases={recommendedCases} recommendedProducts={recommendedProducts} update={update} uploadProgress={uploadProgress} values={values} />}
+        <fieldset className="homepage-banner-editor__controls" disabled={saving || translationLocked || !canManageSite}>
+        {activeModule === 'banner' ? <BannerPanel activeIndex={activeBannerIndex} bannerHint={bannerHint} bannerTab={bannerTab} banners={banners} onAdd={addBanner} onChangeBanner={setActiveBannerIndex} onChangeTab={setBannerTab} onMove={moveBanner} onRemove={removeBanner} onUpload={uploadBanner} onUpdateBanner={updateBanner} /> : activeModule === 'executive' ? <ExecutiveHomePanel footerBackgroundURL={values.footerBackgroundURL || ''} footerOverlay={values.footerBackgroundOverlay ?? 0.65} onChange={updateExecutiveHome} onFooterOverlayChange={(footerBackgroundOverlay) => update({ footerBackgroundOverlay })} onUpload={uploadExecutiveImage} settings={values.executiveHome || {}} /> : <GenericPanel aboutPreview={aboutPreview} categories={newsCategories} companySlug={companySlug} module={activeModule} onFooterLogoUpload={uploadFooterLogo} onStrengthImageUpload={uploadStrengthImage} onVideoUpload={uploadVideo} recommendedCases={recommendedCases} recommendedProducts={recommendedProducts} update={update} uploadProgress={uploadProgress} values={values} />}
         </fieldset>
       </div>
     </div>

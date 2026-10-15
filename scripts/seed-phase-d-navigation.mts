@@ -1,7 +1,11 @@
 import { getPayload } from 'payload'
 import config from '../src/payload.config'
+import { assertSeedEnvironmentAllowsExecution } from '../src/platform/seed-security'
+import { authorizeSeedScript } from './seed-script-authorization'
 
+assertSeedEnvironmentAllowsExecution()
 const payload = await getPayload({ config })
+await authorizeSeedScript(payload)
 const data = {
   en: { items: [['Home', '/'], ['Products', '/products', [['Standard Fasteners', '/products'], ['Custom Fasteners', '/products']]], ['News', '/news', [['Company News', '/news'], ['Quality & Delivery', '/news']]], ['Cases', '/cases'], ['Blog', '/blog'], ['About', '/about'], ['Contact', '/contact']], footer: 'Industrial fastener manufacturing, customization and export supply.', quick: [['Products', '/products'], ['News', '/news'], ['Contact', '/contact']] },
   zh: { items: [['首页', '/'], ['产品中心', '/products', [['标准紧固件', '/products'], ['非标定制', '/products']]], ['新闻资讯', '/news', [['企业动态', '/news'], ['质量与交付', '/news']]], ['案例中心', '/cases'], ['技术博客', '/blog'], ['关于我们', '/about'], ['联系我们', '/contact']], footer: '专注工业紧固件制造、定制与出口供货。', quick: [['产品中心', '/products'], ['新闻资讯', '/news'], ['联系我们', '/contact']] },

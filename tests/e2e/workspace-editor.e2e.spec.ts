@@ -4,7 +4,7 @@ import { requiredUnlessLegacyBaseEdit } from '../../src/collections/Products'
 import { login } from '../helpers/login'
 
 const adminUser = {
-  email: process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local',
+  email: process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid',
   password: process.env.SEED_ADMIN_PASSWORD || '',
 }
 

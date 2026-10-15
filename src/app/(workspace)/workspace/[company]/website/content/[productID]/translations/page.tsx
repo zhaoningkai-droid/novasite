@@ -3,11 +3,12 @@ import { getPayload } from 'payload'
 
 import config from '@payload-config'
 import { WorkspaceTranslations, type TranslationLocale } from '@/platform/components/WorkspaceTranslations/WorkspaceTranslations'
+import { localeOptions } from '@/platform/site-locales'
 import { getAccessibleWorkspaceCompanyBySlug } from '@/platform/workspace'
 import { getMeUser } from '@/utilities/getMeUser'
 
 type Props = { params: Promise<{ company: string; productID: string }> }
-const localeDefinitions: Array<Pick<TranslationLocale, 'code' | 'label'>> = [{ code: 'zh', label: '简体中文' }, { code: 'en', label: '英语' }, { code: 'ru', label: '俄语' }, { code: 'id', label: '印尼语' }]
+const localeDefinitions: Array<Pick<TranslationLocale, 'code' | 'label'>> = localeOptions.map(({ code, label }) => ({ code, label }))
 
 export default async function ProductTranslationsPage({ params }: Props) {
   const { company: slug, productID: rawProductID } = await params
@@ -25,5 +26,5 @@ export default async function ProductTranslationsPage({ params }: Props) {
     const summary = typeof product?.summary === 'string' ? product.summary : ''
     return { ...localeDefinitions[index], complete: Boolean(title.trim() && summary.trim()), summary, title }
   })
-  return <WorkspaceTranslations locales={locales} returnHref={`/workspace/${slug}/website/content`} saveURL={`/api/workspace/${slug}/products/${productID}/translations`} />
+  return <WorkspaceTranslations locales={locales} returnHref={`/workspace/${slug}/website/content`} saveURL={`/api/workspace/${slug}/products/${productID}/translations`} sourceLocale={company.defaultLocale} />
 }

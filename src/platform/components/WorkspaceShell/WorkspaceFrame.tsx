@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowUpRight, ChevronRight, Globe2, Menu, X } from 'lucide-react'
+import { ArrowUpRight, Globe2, Menu, X } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { WorkspaceCompany } from '@/platform/workspace'
@@ -10,10 +10,18 @@ import { WorkspaceCompanySwitcher } from './WorkspaceCompanySwitcher'
 import { WorkspaceSideNavigation } from './WorkspaceSideNavigation'
 import { WorkspaceTopNavigation } from './WorkspaceTopNavigation'
 
-const pageNames: Record<string, string> = {
-  analytics: '网站数据', homepage: '首页管理', categories: '分类管理',
-  content: '内容管理', about: '关于我们', faqs: '常见问题',
-  contact: '联系我们', navigation: '网站导航', sites: '站点管理',
+const pageName = (pathname: string) => {
+  const route = pathname.split('/website/')[1] || 'analytics'
+  const base = route.startsWith('content/news') ? '新闻文章'
+    : route.startsWith('content/cases') ? '案例'
+      : route.startsWith('content/blog') ? '博客'
+        : route.startsWith('content/') ? '产品'
+          : route === 'content' ? '产品'
+            : ({ analytics: '网站数据', inquiries: '询盘收件箱', homepage: '首页', categories: '分类管理', about: '关于我们', faqs: '常见问题', contact: '联系我们', navigation: '网站导航', sites: '站点与模板' } as Record<string, string>)[route] || '独立站工作台'
+  if (route.endsWith('/edit')) return `编辑${base}`
+  if (route.endsWith('/new')) return `新增${base}`
+  if (route.endsWith('/translations')) return `${base}语言管理`
+  return base
 }
 
 type Props = {
@@ -22,15 +30,20 @@ type Props = {
   currentCompany: WorkspaceCompany
   canEditContent: boolean
   canManageSite: boolean
+  canManageInquiries?: boolean
 }
 
-export function WorkspaceFrame({ children, companies, currentCompany, canEditContent, canManageSite }: Props) {
+export function WorkspaceFrame({ children, companies, currentCompany, canEditContent, canManageSite, canManageInquiries = false }: Props) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const menuRef = useRef<HTMLButtonElement>(null)
   const sidebarRef = useRef<HTMLDivElement>(null)
-  const section = pathname.split('/website/')[1]?.split('/')[0] || 'analytics'
+  const currentPageName = pageName(pathname)
   const closeSidebar = () => { setMobileOpen(false); menuRef.current?.focus() }
+
+  useEffect(() => {
+    document.title = `${currentPageName} · ${currentCompany.name} | NovaSite 独立站管理`
+  }, [currentCompany.name, currentPageName])
 
   useEffect(() => {
     if (!mobileOpen) return
@@ -67,9 +80,9 @@ export function WorkspaceFrame({ children, companies, currentCompany, canEditCon
         <Link aria-label="NovaSite 公司列表" className="workspace-shell__brand"
           href="/workspace/companies">
           <span className="workspace-shell__brand-mark"><Globe2 size={21} aria-hidden="true" /></span>
-          <span><strong>NovaSite</strong><small>客户网站工作台</small></span>
+          <span><strong>NovaSite</strong></span>
         </Link>
-        <WorkspaceTopNavigation />
+        <WorkspaceTopNavigation companySlug={currentCompany.slug} />
         <div className="workspace-shell__company">
           <WorkspaceCompanySwitcher companies={companies} currentCompany={currentCompany} />
         </div>
@@ -83,21 +96,16 @@ export function WorkspaceFrame({ children, companies, currentCompany, canEditCon
           aria-label={mobileOpen ? '独立站功能导航' : undefined}>
           <button className="workspace-shell__mobile-close" onClick={closeSidebar}
             aria-label="关闭功能导航" type="button"><X size={20} /></button>
-          <WorkspaceSideNavigation companySlug={currentCompany.slug}
-            companyName={currentCompany.name} onNavigate={() => setMobileOpen(false)} />
+          <WorkspaceSideNavigation canEditContent={canEditContent} canManageSite={canManageSite}
+            canManageInquiries={canManageInquiries}
+            companySlug={currentCompany.slug} companyName={currentCompany.name}
+            onNavigate={() => setMobileOpen(false)} />
         </div>
         <div className="workspace-shell__workarea">
           <div className="workspace-shell__context">
             <button aria-controls="workspace-navigation" aria-expanded={mobileOpen}
               aria-label="打开功能导航" className="workspace-shell__mobile-menu"
               onClick={() => setMobileOpen(true)} ref={menuRef} type="button"><Menu size={20} /></button>
-            <nav aria-label="当前位置" className="workspace-shell__breadcrumb">
-              <Link href={`/workspace/${currentCompany.slug}/website/analytics`}>独立站</Link>
-              <ChevronRight size={14} aria-hidden="true" />
-              <span>{pageNames[section] || '内容管理'}</span>
-              {pathname.includes('/edit') && <><ChevronRight size={14} /><span>编辑</span></>}
-              {pathname.endsWith('/new') && <><ChevronRight size={14} /><span>新增</span></>}
-            </nav>
             <a className="workspace-shell__preview" href={`/s/${currentCompany.slug}/zh`}
               target="_blank" rel="noopener noreferrer">
               <Globe2 size={15} aria-hidden="true" />预览网站<ArrowUpRight size={14} aria-hidden="true" />

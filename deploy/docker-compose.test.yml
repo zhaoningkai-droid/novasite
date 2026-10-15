@@ -1,3 +1,6 @@
+# Historical single-tenant test deployment only. This is not the current production
+# Compose file and must not be used with production credentials or customer data.
+# See docs/SELF_HOSTING.md and docs/DEPLOYMENT_AND_ROLLBACK.md before reuse.
 name: novasite-test
 
 services:

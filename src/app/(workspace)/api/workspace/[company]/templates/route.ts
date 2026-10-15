@@ -1,5 +1,4 @@
 import { cookies } from 'next/headers'
-import { revalidatePath } from 'next/cache'
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 
@@ -7,9 +6,9 @@ import config from '@payload-config'
 import { applyTemplateChange, TemplateChangeError } from '@/platform/new-templates/change-service'
 import { getAccessibleWorkspaceCompanyBySlug } from '@/platform/workspace'
 import { getMeUser } from '@/utilities/getMeUser'
+import { revalidateWorkspaceSettings } from '@/platform/workspace-settings-api'
 
 type Context = { params: Promise<{ company: string }> }
-const locales = ['zh', 'en', 'ru', 'id'] as const
 
 async function resolveActor(slug: string) {
   const { user } = await getMeUser()
@@ -84,10 +83,7 @@ export async function POST(request: Request, { params }: Context) {
         changeId: Number(body.changeId),
       },
     })
-    locales.forEach((locale) => {
-      revalidatePath(`/s/${slug}/${locale}`)
-      revalidatePath(`/s/${slug}/${locale}/sitemap.xml`)
-    })
+    revalidateWorkspaceSettings(slug, 'sites')
     return NextResponse.json({
       message: result.idempotent ? '这次模板操作已保存。' : '模板已应用，原有产品和客户内容保持不变。',
       revision: result.tenantRevision,

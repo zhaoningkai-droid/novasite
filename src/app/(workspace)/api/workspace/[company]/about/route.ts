@@ -15,7 +15,7 @@ export async function PATCH(request: Request, { params }: Context) {
     const { payload, company, user } = scoped
     const tenant = await payload.findByID({
       collection: 'tenants', id: company.id, depth: 0,
-      locale: 'zh', fallbackLocale: false, overrideAccess: false, user,
+      locale: company.defaultLocale, fallbackLocale: false, overrideAccess: false, user,
     })
     const existingIDs = new Set((tenant.fixedPages?.about?.modules || [])
       .map((module) => module.id).filter((id): id is string => Boolean(id)))
@@ -29,7 +29,7 @@ export async function PATCH(request: Request, { params }: Context) {
       return NextResponse.json({ message: '只能选择当前公司的媒体库图片。' }, { status: 422 })
     }
     const saved = await payload.update({
-      collection: 'tenants', id: company.id, depth: 1, locale: 'zh', overrideAccess: false, user,
+      collection: 'tenants', id: company.id, depth: 1, locale: company.defaultLocale, overrideAccess: false, user,
       data: { fixedPages: { ...tenant.fixedPages, about: {
         ...tenant.fixedPages?.about,
         title: body.title === undefined ? tenant.fixedPages?.about?.title : settingsText(body.title),

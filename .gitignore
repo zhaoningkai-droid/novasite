@@ -5,6 +5,8 @@ node_modules
 .env
 deploy/.env.production
 .next
+.next-dev/
+.next-v1-review/
 next-env.d.ts
 .vercel
 
@@ -20,13 +22,38 @@ next-env.d.ts
 *.sql
 *.dump
 *.backup
+*.bak
+*.pgdump
+*.dump.gz
+*.sql.gz
+*.sqlite
+*.sqlite3
+*.db
+*.tar
+*.tar.gz
 *.har
+*.pem
+*.key
+*.p12
+*.pfx
+*.ppk
+test.env
+
+# Private release snapshots and deployment/customer runtime data
+.private/
+private/
+deploy/.env.*
+deploy/**/secrets/
+deploy/**/runtime/
 
 # Historical screenshots and checks can contain customer/account data
 docs/evidence/
 
 # Local recovery archives may contain customer content and must not enter source control.
 backups/
+customer-data/
+runtime-data/
+logs/
 
 # Payload default media upload directory
 public/media/

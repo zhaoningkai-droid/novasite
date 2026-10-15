@@ -1,4 +1,7 @@
 .workspace-translations {
+  &__ai-field { position: relative; margin-bottom: 16px; }
+  &__ai-field .ws-entry-editor__field { margin-bottom: 0; }
+  &__ai-field .ai-translate-field { margin-bottom: 4px; }
   &__summary {
     align-items: center;
     color: #637089;

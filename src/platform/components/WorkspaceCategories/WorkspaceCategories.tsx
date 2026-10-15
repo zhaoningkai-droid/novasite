@@ -4,11 +4,16 @@ import { FolderTree, Languages, Plus, Search, X } from 'lucide-react'
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { useWorkspaceUnsaved } from '../WorkspaceEditor/useWorkspaceUnsaved'
 import { useWorkspacePermissions } from '../WorkspaceShell/WorkspacePermissions'
+import { useContentTranslation } from '../WorkspaceTranslations/useContentTranslation'
+import { translationViewLabel } from '../../product-translation/job-view'
+import { localeOptions } from '../../site-locales'
+import type { TranslationResource } from '../../content-translation/resources'
+import '../WorkspaceTranslations/content-translation.scss'
 import './workspace-categories.scss'
 
 export type CategoryKind = 'cases' | 'news' | 'posts' | 'products'
 export type WorkspaceCategory = { childCount: number; contentCount: number; id: number; level: number; name: string; parentID: number | null; slug: string; sortOrder: number; translationComplete: boolean; updatedAt: string }
-type Props = { categories: Record<CategoryKind, WorkspaceCategory[]>; companyName: string; endpoint: string }
+type Props = { categories: Record<CategoryKind, WorkspaceCategory[]>; companyName: string; companySlug: string; endpoint: string }
 const definitions = {
   products: { empty: '还没有产品分类。', label: '产品分类', plural: '产品数量' },
   news: { empty: '还没有文章分类。', label: '文章分类', plural: '文章数量' },
@@ -16,7 +21,8 @@ const definitions = {
   posts: { empty: '还没有博客分类。', label: '博客分类', plural: '博客数量' },
 }
 const tabs: CategoryKind[] = ['products', 'news', 'cases', 'posts']
-const locales = [{ code: 'zh', label: '简体中文' }, { code: 'en', label: '英语' }, { code: 'ru', label: '俄语' }, { code: 'id', label: '印尼语' }] as const
+const locales = localeOptions
+const translationKinds: Record<CategoryKind, TranslationResource> = { products: 'product-categories', news: 'news-categories', cases: 'case-categories', posts: 'categories' }
 const blank = { id: 0, name: '', parentID: null as number | null, slug: '', sortOrder: 0 }
 function formatTime(value: string) {
   const date = new Date(value)
@@ -26,7 +32,7 @@ const recountChildren = (rows: WorkspaceCategory[]) => rows.map((row) => ({
   ...row, childCount: rows.filter((child) => child.parentID === row.id).length,
 })).sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name, 'zh-CN'))
 
-export function WorkspaceCategories({ categories, companyName, endpoint }: Props) {
+export function WorkspaceCategories({ categories, companyName, companySlug, endpoint }: Props) {
   const { canEditContent, canManageSite } = useWorkspacePermissions()
   const [data, setData] = useState(categories)
   const [kind, setKind] = useState<CategoryKind>('products')
@@ -50,6 +56,8 @@ export function WorkspaceCategories({ categories, companyName, endpoint }: Props
   useEffect(() => { if ((editing || translating) && !dialog.current?.open) dialog.current?.showModal() }, [editing, translating])
   useEffect(() => () => translationRequest.current?.abort(), [])
   const allRows = data[kind]
+  const [selectedIDs, setSelectedIDs] = useState<number[]>([])
+  const translation = useContentTranslation(companySlug, translationKinds[kind], allRows.map((row) => row.id), JSON.stringify(allRows))
   const rows = useMemo(() => allRows.filter((row) => !query.trim()
     || `${row.name} ${row.slug}`.toLowerCase().includes(query.trim().toLowerCase())), [allRows, query])
   const parents = allRows.filter((item) => item.level === 1 && item.id !== editing?.id)
@@ -61,7 +69,7 @@ export function WorkspaceCategories({ categories, companyName, endpoint }: Props
     if (dirty && !window.confirm('放弃分类的未保存修改？')) return
     setEditing(null); setTranslating(null); setFeedback('')
   }
-  const open = (draft: typeof blank) => { setEditBaseline({ ...draft }); setEditing({ ...draft }); setFeedback('') }
+  const open = (draft: typeof blank) => { if (draft.id && translation.locked(draft.id)) return; setEditBaseline({ ...draft }); setEditing({ ...draft }); setFeedback('') }
   const request = async (url: string, method: 'DELETE' | 'PATCH' | 'POST', body?: unknown) => {
     const response = await fetch(url, { body: body ? JSON.stringify(body) : undefined,
       headers: body ? { 'Content-Type': 'application/json' } : undefined, method })
@@ -75,7 +83,7 @@ export function WorkspaceCategories({ categories, companyName, endpoint }: Props
   }))
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!editing || busy || !canEditContent) return
+    if (!editing || busy || !canEditContent || (editing.id && translation.locked(editing.id))) return
     if (!editing.name.trim() || !editing.slug.trim()) { notify('请填写分类名称和地址标识。', true); return }
     setSaving(true); setFeedback('')
     try {
@@ -87,7 +95,7 @@ export function WorkspaceCategories({ categories, companyName, endpoint }: Props
     finally { setSaving(false) }
   }
   const remove = async (row: WorkspaceCategory) => {
-    if (busy || !canManageSite || !window.confirm(`删除“${row.name}”？有关联内容或二级分类时会被拦截，不会连带删除内容。`)) return
+    if (busy || translation.locked(row.id) || !canManageSite || !window.confirm(`删除“${row.name}”？有关联内容或二级分类时会被拦截，不会连带删除内容。`)) return
     setRemoving(row.id); setFeedback('')
     try {
       const result = await request(`${endpoint}/${kind}/${row.id}`, 'DELETE')
@@ -97,7 +105,7 @@ export function WorkspaceCategories({ categories, companyName, endpoint }: Props
     finally { setRemoving(null) }
   }
   const openTranslations = async (row: WorkspaceCategory) => {
-    if (busy || loadingTranslations) return
+    if (busy || loadingTranslations || translation.locked(row.id)) return
     translationRequest.current?.abort()
     const controller = new AbortController()
     translationRequest.current = controller
@@ -105,17 +113,17 @@ export function WorkspaceCategories({ categories, companyName, endpoint }: Props
     try {
       const response = await fetch(`${endpoint}/${kind}/${row.id}`, { signal: controller.signal })
       const result = await response.json() as { translations?: Record<string, string>; message?: string }
-      if (!response.ok) throw new Error(result.message || '无法读取四语内容。')
+      if (!response.ok) throw new Error(result.message || '无法读取语言内容。')
       if (controller.signal.aborted) return
       setTranslations(result.translations || {}); setTranslationBaseline(result.translations || {})
       setTranslating(row)
     } catch (reason) {
-      if (!controller.signal.aborted) notify(reason instanceof Error ? reason.message : '无法读取四语内容。', true)
+      if (!controller.signal.aborted) notify(reason instanceof Error ? reason.message : '无法读取语言内容。', true)
     } finally { if (!controller.signal.aborted) setLoadingTranslations(false) }
   }
   const saveTranslations = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!translating || busy || !canEditContent) return
+    if (!translating || busy || !canEditContent || translation.locked(translating.id)) return
     const changed = locales.filter((locale) => (translations[locale.code] || '') !== (translationBaseline[locale.code] || ''))
     if (changed.some((locale) => !translations[locale.code]?.trim())) {
       notify('已维护的语言名称不能清空；暂未维护的语言可以保持空白。', true); return
@@ -140,33 +148,32 @@ export function WorkspaceCategories({ categories, companyName, endpoint }: Props
   const feedbackNode = feedback && <p className={error ? 'workspace-categories__feedback is-error' : 'workspace-categories__feedback'}
     role={error ? 'alert' : 'status'}>{feedback}</p>
   return <section className="workspace-categories" aria-label="分类管理">
-    <header><div><p>网站配置 / 分类管理</p><h1>分类管理</h1>
-      <span>为 {companyName} 整理内容分类；支持两级，分类删除不会连带删除内容。</span></div>
+    <header><div><h1>分类管理</h1></div>
       <button className="workspace-categories__primary" disabled={busy || loadingTranslations || !canEditContent}
         onClick={() => open({ ...blank })} type="button"><Plus size={17} />新增分类</button></header>
     <nav aria-label="分类类型">{tabs.map((item) => <button aria-pressed={kind === item}
       className={kind === item ? 'workspace-categories__tab is-active' : 'workspace-categories__tab'}
       disabled={busy} key={item} onClick={() => {
-        translationRequest.current?.abort(); setLoadingTranslations(false); setKind(item); setQuery(''); setFeedback('')
+        translationRequest.current?.abort(); setLoadingTranslations(false); setKind(item); setSelectedIDs([]); setQuery(''); setFeedback('')
       }} type="button">{definitions[item].label}<small>{data[item].length}</small></button>)}</nav>
     {!editing && !translating && feedbackNode}
     <section className="workspace-categories__panel"><div className="workspace-categories__toolbar">
       <label><Search size={17} aria-hidden="true" /><input aria-label="搜索分类" onChange={(event) => setQuery(event.target.value)}
         placeholder="搜索分类名称或地址标识" type="search" value={query} /></label>
-      <span>共 {allRows.length} 个分类 · 当前 {rows.length} 个</span></div>
+      <div className="content-translation-header-actions"><button className="content-translation-batch" type="button" disabled={busy || !canEditContent || !translation.ready || translation.submitting || !selectedIDs.some((id) => translation.views[id]?.canTranslate)} onClick={() => { void translation.translate(selectedIDs); setSelectedIDs([]) }}><Languages size={16} />翻译</button><span>共 {allRows.length} 个分类 · 当前 {rows.length} 个</span></div></div>
+      {translation.error && <p className="workspace-categories__feedback is-error" role="alert">{translation.error}</p>}
       <div className="workspace-categories__table-wrap">{rows.length ? <table><thead><tr>
-        <th scope="col">分类名称</th><th scope="col">级别</th><th scope="col">{definition.plural}</th>
-        <th scope="col">排序</th><th scope="col">更新时间</th><th scope="col">语言维护</th><th scope="col">操作</th>
-      </tr></thead><tbody>{rows.map((row) => <tr key={row.id}><td><strong className={row.level === 2 ? 'is-child' : ''}>
-        {row.level === 2 && <FolderTree size={14} />}{row.name}</strong><small>{row.slug}</small></td>
+        <th scope="col"><input type="checkbox" aria-label="选择当前筛选的全部分类" disabled={busy || !canEditContent} checked={rows.some((row) => !translation.locked(row.id)) && rows.filter((row) => !translation.locked(row.id)).every((row) => selectedIDs.includes(row.id))} onChange={(event) => setSelectedIDs(event.target.checked ? rows.filter((row) => !translation.locked(row.id)).map((row) => row.id) : [])} /></th><th scope="col">分类名称</th><th scope="col">级别</th><th scope="col">{definition.plural}</th>
+        <th scope="col">排序</th><th scope="col">更新时间</th><th scope="col">翻译状态</th><th scope="col">操作</th>
+      </tr></thead><tbody>{rows.map((row) => <tr key={row.id}><td><input aria-label={'选择 ' + row.name} type="checkbox" disabled={busy || !canEditContent || translation.locked(row.id)} checked={selectedIDs.includes(row.id)} onChange={(event) => setSelectedIDs((current) => event.target.checked ? [...current, row.id] : current.filter((id) => id !== row.id))} /></td><td><strong className={row.level === 2 ? 'is-child' : ''}>
+        {row.level === 2 && <FolderTree size={14} />}{row.name}</strong></td>
         <td>{row.level === 2 ? '二级' : '一级'}</td><td>{row.contentCount}</td><td>{row.sortOrder}</td><td>{formatTime(row.updatedAt)}</td>
-        <td><span className={row.translationComplete ? 'workspace-categories__state is-complete' : 'workspace-categories__state'}>
-          {row.translationComplete ? '四语完整' : '待补全'}</span></td><td><div className="workspace-categories__actions">
-          {row.level === 1 && <button disabled={busy || loadingTranslations || !canEditContent} onClick={() => open({ ...blank, parentID: row.id })}
-            type="button">添加二级</button>}<button disabled={busy || loadingTranslations || !canEditContent} onClick={() => void openTranslations(row)}
-              type="button"><Languages size={13} />语言</button><button disabled={busy || loadingTranslations || !canEditContent}
+        <td><span>{translationViewLabel(translation.views[row.id])}</span></td><td><div className="workspace-categories__actions">
+          {row.level === 1 && <button disabled={busy || loadingTranslations || !canEditContent || translation.locked(row.id)} onClick={() => open({ ...blank, parentID: row.id })}
+            type="button">添加二级</button>}<button disabled={busy || loadingTranslations || !canEditContent || translation.locked(row.id)} onClick={() => void openTranslations(row)}
+              type="button"><Languages size={13} />语言</button><button disabled={busy || loadingTranslations || !canEditContent || translation.locked(row.id)}
                 onClick={() => open({ id: row.id, name: row.name, parentID: row.parentID, slug: row.slug, sortOrder: row.sortOrder })}
-                type="button">编辑</button><button className="is-danger" disabled={busy || loadingTranslations || !canManageSite}
+                type="button">编辑</button><button className="is-danger" disabled={busy || loadingTranslations || !canManageSite || translation.locked(row.id)}
                   onClick={() => void remove(row)} type="button">{removing === row.id ? '删除中…' : '删除'}</button>
         </div></td></tr>)}</tbody></table> : <div className="workspace-categories__empty"><FolderTree size={32} />
           <h2>{query ? '没有找到匹配分类' : '还没有分类'}</h2><p>{query ? '换个关键词试试。' : definition.empty}</p></div>}</div>
@@ -176,12 +183,11 @@ export function WorkspaceCategories({ categories, companyName, endpoint }: Props
       <form onSubmit={(event) => void (editing ? submit(event) : saveTranslations(event))}>
         <header><h2 id="category-dialog-title">{editing ? editing.id ? '编辑分类' : editing.parentID ? '新增二级分类' : '新增分类' : '维护分类语言'}</h2>
           <button aria-label="关闭编辑" disabled={busy} onClick={close} type="button"><X size={20} /></button></header>
-        <fieldset disabled={busy}>{editing ? <>
+        <fieldset disabled={busy || Boolean(editing?.id && translation.locked(editing.id)) || Boolean(translating && translation.locked(translating.id))}>{editing ? <>
           <label>分类名称 <b>*</b><input autoFocus maxLength={80} required value={editing.name}
             onChange={(event) => setEditing({ ...editing, name: event.target.value })} /></label>
-          <label>分类地址标识 <b>*</b><input maxLength={100} required spellCheck={false} value={editing.slug}
-            onChange={(event) => setEditing({ ...editing, slug: event.target.value })} placeholder="例如 fastener-guides" />
-            <small>用于网站链接，建议使用英文、数字与连字符</small></label>
+          <details><summary>更多设置</summary><label>分类地址标识（选填）<input maxLength={100} spellCheck={false} value={editing.slug}
+            onChange={(event) => setEditing({ ...editing, slug: event.target.value })} placeholder="自动生成" /></label></details>
           <label>上级分类<select disabled={hasChildren} value={editing.parentID || ''}
             onChange={(event) => setEditing({ ...editing, parentID: event.target.value ? Number(event.target.value) : null })}>
             <option value="">无上级（一级分类）</option>{parents.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
@@ -194,7 +200,7 @@ export function WorkspaceCategories({ categories, companyName, endpoint }: Props
               onChange={(event) => setTranslations((current) => ({ ...current, [locale.code]: event.target.value }))}
               required={locale.code === 'zh'} value={translations[locale.code] || ''} /></label>)}</>}{feedbackNode}</fieldset>
         <footer><button disabled={busy} onClick={close} type="button">取消</button>
-          <button className="workspace-categories__primary" disabled={busy} type="submit">{saving ? '保存中…' : '保存'}</button></footer>
+          <button className="workspace-categories__primary" disabled={busy || Boolean(editing?.id && translation.locked(editing.id)) || Boolean(translating && translation.locked(translating.id))} type="submit">{saving ? '保存中…' : '保存'}</button></footer>
       </form>
     </dialog>}
   </section>

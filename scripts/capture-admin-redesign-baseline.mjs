@@ -58,7 +58,7 @@ const capture = async (context, route, file, expected) => {
 }
 try {
   await capture(publicContext, '/admin/login', '01-login.png', '登录')
-  const login = await admin.request.post(`${base}/api/users/login`, { data: { email: process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local', password: process.env.SEED_ADMIN_PASSWORD || '' } })
+  const login = await admin.request.post(`${base}/api/users/login`, { data: { email: process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid', password: process.env.SEED_ADMIN_PASSWORD || '' } })
   if (!login.ok()) throw new Error(`登录失败 ${login.status()}`)
   await capture(admin, '/admin/collections/tenants?locale=zh', '02-company-list.png', '进入工作台')
   const sampleRecords = []

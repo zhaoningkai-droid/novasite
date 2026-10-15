@@ -10,7 +10,7 @@ import {
   Save,
   TriangleAlert,
 } from 'lucide-react'
-import { FormEvent, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { ContentCover, ContentCoverUploader } from '../ContentCoverUploader/ContentCoverUploader'
 import { useWorkspaceUnsaved } from './useWorkspaceUnsaved'
@@ -19,6 +19,7 @@ import {
   readWorkspaceResponse,
   workspaceErrorMessage,
 } from './workspaceResponse'
+import { ContentTranslationAction } from '../WorkspaceTranslations/ContentTranslationAction'
 import './content-entry-editor.scss'
 
 type Kind = 'news' | 'cases' | 'blog'
@@ -33,6 +34,7 @@ export type ContentEntryInitial = {
   industry?: string
   sortOrder?: number
   summary?: string
+  status?: 'draft' | 'published'
   title?: string
 }
 type Props = {
@@ -55,11 +57,13 @@ export function ContentEntryEditor({ categories, companySlug, initial = {}, kind
   const [cover, setCover] = useState<ContentCover | undefined>(initial.cover)
   const [sortOrder, setSortOrder] = useState(String(initial.sortOrder ?? 0))
   const [featured, setFeatured] = useState(Boolean(initial.featured))
+  const [published, setPublished] = useState(initial.status === 'published')
   const [savedID, setSavedID] = useState(initial.id)
   const savedIDRef = useRef(initial.id)
   const savedContentRef = useRef(initial.content || '')
   const [editingBody, setEditingBody] = useState(!initial.id)
   const [saving, setSaving] = useState(false)
+  const [translationLocked, setTranslationLocked] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState(false)
@@ -80,7 +84,7 @@ export function ContentEntryEditor({ categories, companySlug, initial = {}, kind
   }
   const [savedSignature, setSavedSignature] = useState(() => signature(values))
   const dirty = signature(values) !== savedSignature
-  const busy = saving || uploading
+  const busy = saving || uploading || translationLocked
   useWorkspaceUnsaved(dirty, busy)
 
   const invalid = (field: string) => ({
@@ -93,9 +97,8 @@ export function ContentEntryEditor({ categories, companySlug, initial = {}, kind
         {errors[field]}
       </small>
     )
-  const save = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (savingRef.current || uploading) return
+  const save = async (publish = false) => {
+    if (savingRef.current || uploading || translationLocked) return
     const nextErrors: Record<string, string> = {}
     if (!category) nextErrors.category = `请选择${name}分类`
     if (!title.trim()) nextErrors.title = `请输入${name}${kind === 'cases' ? '名称' : '标题'}`
@@ -125,6 +128,7 @@ export function ContentEntryEditor({ categories, companySlug, initial = {}, kind
         ? { featured, sortOrder: Number(sortOrder), summary }
         : { description: summary }),
       ...(!id ? { idempotencyKey: draftKey.current } : {}),
+      publish,
       title,
     }
     savingRef.current = true
@@ -139,7 +143,7 @@ export function ContentEntryEditor({ categories, companySlug, initial = {}, kind
           method: id ? 'PATCH' : 'POST',
         },
       )
-      const result = await readWorkspaceResponse<{ id?: number; message?: string }>(response)
+      const result = await readWorkspaceResponse<{ id?: number; message?: string; published?: boolean }>(response)
       if (!response.ok) throw new Error(result.message || '保存未完成，请检查后重试。')
       if (!id && (!Number.isInteger(result.id) || Number(result.id) < 1))
         throw new Error('保存响应缺少内容编号，请稍后重试。已填写的内容已保留。')
@@ -147,6 +151,7 @@ export function ContentEntryEditor({ categories, companySlug, initial = {}, kind
         savedIDRef.current = result.id
         setSavedID(result.id)
       }
+      setPublished(result.published === true)
       savedContentRef.current = content
       setSavedSignature(signature(values))
       setErrorMessage(false)
@@ -190,19 +195,30 @@ export function ContentEntryEditor({ categories, companySlug, initial = {}, kind
           </Link>
           <h1>{savedID ? `编辑${name}` : `新增${name}`}</h1>
           <p>
-            将内容、图片和展示设置分开维护，带 <em>*</em> 的内容为必填。
+            保存草稿不会更新客户网站；发布后立即生效。带 <em>*</em> 的内容为必填。
           </p>
         </div>
         <div className="ws-entry-editor__actions">
+          <ContentTranslationAction companySlug={companySlug} resource={kind === 'blog' ? 'posts' : kind} id={savedID} disabled={dirty || saving || uploading} refreshKey={savedSignature} onLockedChange={setTranslationLocked} />
           <span className={`ws-entry-editor__save-state${dirty ? ' is-dirty' : ''}`}>
             {busy
-              ? '处理中…'
+                ? '处理中…'
               : dirty
                 ? '有未保存修改'
-                : savedID
-                  ? '当前内容已保存'
-                  : '开始编辑内容'}
+                : published
+                  ? '已发布到客户网站'
+                  : savedID
+                    ? '草稿已保存，客户网站未更新'
+                    : '新内容将保存为草稿'}
           </span>
+          <button
+            className="ws-entry-editor__secondary"
+            disabled={busy}
+            onClick={() => void save(true)}
+            type="button"
+          >
+            {published ? '发布更新' : '发布到网站'}
+          </button>
           <button
             className="ws-entry-editor__primary"
             disabled={busy}
@@ -210,7 +226,7 @@ export function ContentEntryEditor({ categories, companySlug, initial = {}, kind
             type="submit"
           >
             {busy ? <Loader2 size={16} className="ws-entry-editor__spinner" /> : <Save size={16} />}
-            {saving ? '保存中…' : uploading ? '图片上传中…' : '保存'}
+            {saving ? '保存中…' : uploading ? '图片上传中…' : '保存草稿'}
           </button>
         </div>
       </header>
@@ -223,8 +239,16 @@ export function ContentEntryEditor({ categories, companySlug, initial = {}, kind
           <span>{message}</span>
         </div>
       )}
-      <form id={`${kind}-editor-form`} noValidate onSubmit={save} ref={formRef}>
-        <fieldset className="ws-entry-editor__layout" disabled={saving}>
+      <form
+        id={`${kind}-editor-form`}
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault()
+          void save()
+        }}
+        ref={formRef}
+      >
+        <fieldset className="ws-entry-editor__layout" disabled={saving || translationLocked}>
           <div className="ws-entry-editor__main">
             <section className="ws-entry-editor__card" aria-labelledby={`${kind}-basic-heading`}>
               <div className="ws-entry-editor__card-heading">
@@ -369,7 +393,7 @@ export function ContentEntryEditor({ categories, companySlug, initial = {}, kind
               </label>
               <ContentCoverUploader
                 companySlug={companySlug}
-                disabled={saving}
+                disabled={saving || translationLocked}
                 label={`${name}封面图`}
                 onBusyChange={setUploading}
                 onChange={setCover}

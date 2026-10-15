@@ -98,7 +98,7 @@ export function ContactEditor({ companySlug, initial }: {
   }
   return <section className="workspace-fixed-editor contact-editor">
     <header>
-      <div><p>网站配置 / 联系我们</p><h1>联系我们</h1><span>{canManageSite ? '统一管理网站联系信息和二维码；地址、邮箱、电话必填。' : '当前账号可查看联系信息，站点管理员可以修改。'}</span></div>
+      <div><h1>联系我们</h1></div>
       <button disabled={busy || !canManageSite} form="contact-settings" type="submit">
         <Save size={17} aria-hidden="true" />{saving ? '保存中…' : uploading ? '上传中…' : '保存联系信息'}
       </button>

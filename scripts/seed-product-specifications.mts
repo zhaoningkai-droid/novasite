@@ -1,8 +1,12 @@
 import { getPayload } from 'payload'
 
 import config from '../src/payload.config'
+import { assertSeedEnvironmentAllowsExecution } from '../src/platform/seed-security'
+import { authorizeSeedScript } from './seed-script-authorization'
 
+assertSeedEnvironmentAllowsExecution()
 const payload = await getPayload({ config })
+await authorizeSeedScript(payload)
 const locales = ['en', 'zh', 'ru', 'id'] as const
 
 const labels = {

@@ -69,6 +69,8 @@ export const safeNavigationHref = (value: unknown): string => {
 }
 
 export type NavigationInput = {
+  id?: string
+  sortOrder?: number
   label: string
   href: string
   children?: Array<{ label: string; href: string }>
@@ -80,13 +82,14 @@ export const parseNavigationRows = (value: unknown, label: string, children = fa
     const item = settingsObject(input)
     const name = settingsText(item.label)
     const href = safeNavigationHref(item.href)
-    if (!name || !href) {
-      throw new SettingsInputError(label + '第 ' + (index + 1) + ' 项请填写名称及有效链接。')
-    }
+    if (!name) throw new SettingsInputError(label + '第 ' + (index + 1) + ' 项请填写名称。')
+    if (settingsText(item.href) && !href) throw new SettingsInputError('请填写有效的站内或网站链接。')
     if (!children && item.children !== undefined) {
       throw new SettingsInputError('导航最多支持两级，页脚链接不支持子项。')
     }
     return {
+      ...(typeof item.id === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(item.id) ? { id: item.id } : {}),
+      ...(children ? { sortOrder: settingsOrder(item.sortOrder) } : {}),
       label: name,
       href,
       ...(children ? {

@@ -10,7 +10,7 @@ const context = await browser.newContext({ viewport: { width: 1512, height: 920 
 const page = await context.newPage()
 const login = await page.request.post(`${baseURL}/api/users/login`, {
   data: {
-    email: process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local',
+    email: process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid',
     password: process.env.SEED_ADMIN_PASSWORD || '',
   },
 })

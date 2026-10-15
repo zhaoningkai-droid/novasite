@@ -26,7 +26,7 @@ const page = await context.newPage()
 try {
   const login = await context.request.post('http://localhost:3100/api/users/login', {
     data: {
-      email: process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local',
+      email: process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid',
       password: process.env.SEED_ADMIN_PASSWORD || '',
     },
   })

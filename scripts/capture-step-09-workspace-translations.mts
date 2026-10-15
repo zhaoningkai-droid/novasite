@@ -12,7 +12,7 @@ try {
   const page = await context.newPage()
   page.setDefaultTimeout(8000)
   page.setDefaultNavigationTimeout(8000)
-  const login = await context.request.post(`${baseURL}/api/users/login`, { data: { email: process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local', password: process.env.SEED_ADMIN_PASSWORD || '' } })
+  const login = await context.request.post(`${baseURL}/api/users/login`, { data: { email: process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid', password: process.env.SEED_ADMIN_PASSWORD || '' } })
   const { token } = await login.json() as { token: string }
   await context.addCookies([{ domain: 'localhost', name: 'payload-token', path: '/', value: token }])
   await page.goto(`${baseURL}/workspace/companies`, { waitUntil: 'domcontentloaded' })

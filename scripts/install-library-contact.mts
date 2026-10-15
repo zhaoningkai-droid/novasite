@@ -3,6 +3,8 @@ import { createWriteStream } from 'node:fs'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { createHash, randomUUID } from 'node:crypto'
 import { pipeline } from 'node:stream/promises'
+import { dirname, isAbsolute, join, resolve, sep } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import assert from 'node:assert/strict'
 import { Pool } from 'pg'
 import { PgDialect } from 'drizzle-orm/pg-core'
@@ -11,11 +13,18 @@ import config from '../src/payload.config'
 import { migrations } from '../src/migrations'
 import { legacyTemplates } from '../src/platform/legacy-template-catalog'
 if (process.env.NODE_ENV !== 'production') throw new Error('NODE_ENV=production required')
-const backupPath = `/private/tmp/novasite-library-contact-${new Date().toISOString().replace(/\D/g, '').slice(0, 14)}-${randomUUID().slice(0, 8)}.dump`
+const backupDirectory = process.env.NOVASITE_BACKUP_DIR
+if (!backupDirectory || !isAbsolute(backupDirectory)) throw new Error('Set NOVASITE_BACKUP_DIR to an absolute private backup directory outside the repository.')
+const resolvedBackupDirectory = resolve(backupDirectory)
+const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+if (resolvedBackupDirectory === repositoryRoot || resolvedBackupDirectory.startsWith(`${repositoryRoot}${sep}`))
+  throw new Error('Database backups must be stored outside the repository.')
+const backupPath = join(resolvedBackupDirectory, `contact-third-qr-${new Date().toISOString().replace(/\D/g, '').slice(0, 14)}-${randomUUID().slice(0, 8)}.dump`)
 const databaseURL = process.env.DATABASE_URL
 if (!databaseURL) throw new Error('DATABASE_URL is required.')
 
 const makeBackup = async () => {
+  await mkdir(resolvedBackupDirectory, { recursive: true, mode: 0o700 })
   const file = createWriteStream(backupPath, { flags: 'wx', mode: 0o600 })
   const dump = spawn('docker', [
     'compose', 'exec', '-T', 'postgres', 'pg_dump', '-U', 'novasite', '-d', 'novasite', '--format=custom',

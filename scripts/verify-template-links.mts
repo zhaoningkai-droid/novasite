@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
-import { templateHref } from '../src/platform/new-templates/links'
+import { templateHref, templateLocaleHref } from '../src/platform/new-templates/links'
+import { locales } from '../src/platform/site-locales'
 import { newTemplates, getNewTemplate } from '../src/platform/new-templates/registry'
 // Scenarios: each template is independently selectable; public/preview navigation stays in company;
 // reference template footer failures and unsafe external schemes must not be reproduced.
@@ -13,8 +14,26 @@ for (const base of ['/s/qa/zh', '/template-preview/qa/interior-575-v1/zh']) {
   assert.equal(templateHref(base, '#product-inquiry'), '#product-inquiry')
   assert.equal(templateHref(base, 'https://example.com/support'), 'https://example.com/support')
   assert.equal(templateHref(base, 'mailto:info@example.com'), 'mailto:info@example.com')
-  for (const invalid of ['javascript:alert(1)', 'data:text/html,test', '//example.com', '/\\example.com']) {
+  for (const source of locales) {
+    const localizedBase = templateLocaleHref(base, source)
+    for (const target of locales) {
+      assert.equal(templateLocaleHref(localizedBase, target), base.replace(/zh$/, target))
+    }
+    assert.equal(
+      templateHref(base, `/s/qa/${source}/products?category=a`),
+      `${base}/products?category=a`,
+    )
+    assert.equal(templateHref(base, `/s/other/${source}/products`), null)
+  }
+  for (const invalid of [
+    'javascript:alert(1)',
+    'data:text/html,test',
+    '//example.com',
+    '/\\example.com',
+  ]) {
     assert.equal(templateHref(base, invalid), null)
   }
 }
-console.log('Independent keys, legacy fallback, company paths, FAQ normalization and URL safety passed.')
+console.log(
+  'Independent keys, legacy fallback, company paths, FAQ normalization and URL safety passed.',
+)

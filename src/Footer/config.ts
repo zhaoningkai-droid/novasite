@@ -2,7 +2,7 @@ import type { GlobalConfig } from 'payload'
 
 import { link } from '@/fields/link'
 import { revalidateFooter } from './hooks/revalidateFooter'
-import { contentEditors } from '@/access/roles'
+import { superAdmins } from '@/access/roles'
 
 export const Footer: GlobalConfig = {
   slug: 'footer',
@@ -13,8 +13,8 @@ export const Footer: GlobalConfig = {
     description: '旧版全局页脚，历史数据保留；多站点页脚请使用“网站导航”。',
   },
   access: {
-    read: () => true,
-    update: contentEditors,
+    read: superAdmins,
+    update: superAdmins,
   },
   fields: [
     {

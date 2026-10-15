@@ -1,6 +1,21 @@
+if (process.env.NODE_ENV === 'production') {
+  throw new Error('The V1 demo seed script is disabled in production.')
+}
+if (!process.env.NODE_ENV || process.env.NOVASITE_ENABLE_SEED !== 'true') {
+  throw new Error('Use a non-production NODE_ENV and explicitly set NOVASITE_ENABLE_SEED=true.')
+}
+
 const baseURL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3100'
-const email = process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local'
-const password = process.env.SEED_ADMIN_PASSWORD || ''
+const target = new URL(baseURL)
+if (!['localhost', '127.0.0.1', '[::1]'].includes(target.hostname)) {
+  throw new Error('The V1 demo seed script only accepts a loopback server URL.')
+}
+
+const email = process.env.SEED_ADMIN_EMAIL
+const password = process.env.SEED_ADMIN_PASSWORD
+if (!email || !password) {
+  throw new Error('Set SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD for the local seed operator.')
+}
 
 const request = async (path, options = {}) => {
   const response = await fetch(`${baseURL}${path}`, {
@@ -16,6 +31,9 @@ const login = await request('/api/users/login', {
   method: 'POST',
   body: JSON.stringify({ email, password }),
 })
+if (!login.user?.roles?.includes('super-admin')) {
+  throw new Error('The local seed operator must have the platform administrator role.')
+}
 const auth = { Authorization: `JWT ${login.token}` }
 
 const findOne = async (collection, field, value) => {
@@ -53,12 +71,12 @@ const richTextWithHeading = (heading, paragraphs) => ({
   },
 })
 
-const tenant = await createIfMissing('tenants', 'slug', 'volttrans', {
-  name: 'VoltTrans Power Equipment', slug: 'volttrans', status: 'building', previewDomain: 'volttrans.localhost:3100',
+const tenant = await createIfMissing('tenants', 'slug', 'novasite-power-demo', {
+  name: 'NovaSite Power Demo', slug: 'novasite-power-demo', status: 'building', previewDomain: 'novasite-power-demo.localhost:3100',
   defaultLocale: 'en', enabledLocales: ['en', 'zh', 'ru', 'id'],
-  branding: { companyName: 'VoltTrans Power Equipment', tagline: 'Engineered Power. Delivered Worldwide.', primaryColor: '#0B3B60', accentColor: '#F97316', heroImageURL: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=2000&q=85' },
-  contact: { email: 'sales@volttrans.com' },
-  seo: { titleSuffix: 'VoltTrans Power Equipment', defaultDescription: 'Industrial transformers engineered to IEC and IEEE standards for global power projects.', indexingEnabled: false },
+  branding: { companyName: 'NovaSite Power Demo', tagline: 'Power equipment template demonstration.', primaryColor: '#0B3B60', accentColor: '#F97316', heroImageURL: '/template-demos/industry/assets/power-hero.webp' },
+  contact: { email: 'demo@example.invalid' },
+  seo: { titleSuffix: 'NovaSite Power Demo', defaultDescription: 'Demonstration content for previewing an electrical equipment website template.', indexingEnabled: false },
 })
 
 await request(`/api/tenants/${tenant.id}`, {
@@ -66,12 +84,12 @@ await request(`/api/tenants/${tenant.id}`, {
   headers: auth,
   body: JSON.stringify({
     status: 'building',
-    previewDomain: 'volttrans.localhost:3100',
+    previewDomain: 'novasite-power-demo.localhost:3100',
     defaultLocale: 'en',
     enabledLocales: ['en', 'zh', 'ru', 'id'],
-    branding: { companyName: 'VoltTrans Power Equipment', tagline: 'Engineered Power. Delivered Worldwide.', primaryColor: '#0B3B60', accentColor: '#F97316', heroImageURL: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=2000&q=85' },
-    contact: { email: 'sales@volttrans.com', whatsapp: '+1 307 555 0186', address: 'Global export sales and project engineering office' },
-    seo: { titleSuffix: 'VoltTrans Power Equipment', defaultDescription: 'Industrial transformers engineered to IEC and IEEE standards for global power projects.', indexingEnabled: false },
+    branding: { companyName: 'NovaSite Power Demo', tagline: 'Power equipment template demonstration.', primaryColor: '#0B3B60', accentColor: '#F97316', heroImageURL: '/template-demos/industry/assets/power-hero.webp' },
+    contact: { email: 'demo@example.invalid', whatsapp: '+86 0000-0000-0000', address: '演示地址（虚构）' },
+    seo: { titleSuffix: 'NovaSite Power Demo', defaultDescription: 'Demonstration content for previewing an electrical equipment website template.', indexingEnabled: false },
   }),
 })
 
@@ -81,11 +99,11 @@ for (const locale of ['en', 'zh', 'ru', 'id']) {
     headers: auth,
     body: JSON.stringify({
       branding: {
-        companyName: 'VoltTrans Power Equipment',
-        tagline: 'Engineered Power. Delivered Worldwide.',
+        companyName: 'NovaSite Power Demo',
+        tagline: 'Power equipment template demonstration.',
         primaryColor: '#0B3B60',
         accentColor: '#F97316',
-        heroImageURL: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=2000&q=85',
+        heroImageURL: '/template-demos/industry/assets/power-hero.webp',
       },
     }),
   })
@@ -106,8 +124,8 @@ await createIfMissing('templates', 'key', 'precision-light-v1', {
 })
 
 await createIfMissing('templates', 'key', 'executive-industrial-pro-v1', {
-  name: 'Executive Industrial Pro', key: 'executive-industrial-pro-v1', version: '1.0.0', industry: 'general-b2b', status: 'published',
-  description: 'Premium B2B industrial template with stronger hero, tighter trust signals, product taxonomy and RFQ conversion rhythm.',
+  name: '商务工业 · 专业', key: 'executive-industrial-pro-v1', version: '1.0.0', industry: 'general-b2b', status: 'published',
+  description: '古建场景演示与多页面工业网站展示。演示资料与客户站点数据相互隔离。',
   capabilities: ['products', 'blog', 'news', 'cases', 'rfq', 'seo', 'multilingual'],
   visual: { heroStyle: 'industrial', cardStyle: 'elevated', navigationStyle: 'dark' },
 })
@@ -116,7 +134,7 @@ await request('/api/apply-template', { method: 'POST', headers: auth, body: JSON
 
 await createIfMissing('pages', 'slug', 'home', {
   tenant: tenant.id,
-  title: 'VoltTrans Homepage',
+  title: 'NovaSite Power Demo Homepage',
   slug: 'home',
   hero: {
     type: 'lowImpact',
@@ -124,7 +142,7 @@ await createIfMissing('pages', 'slug', 'home', {
       'IEC and IEEE compliant transformers with responsive engineering, documented quality and worldwide delivery.',
     ]),
     links: [
-      { link: { type: 'custom', label: 'Explore Products', url: '/s/volttrans/en/products', appearance: 'default' } },
+      { link: { type: 'custom', label: 'Explore Products', url: '/s/novasite-power-demo/en/products', appearance: 'default' } },
       { link: { type: 'custom', label: 'Get a Quote', url: '#contact', appearance: 'outline' } },
     ],
   },
@@ -144,7 +162,7 @@ await createIfMissing('pages', 'slug', 'home', {
     },
     { blockType: 'archive', introContent: richText(['Technical insights', 'Latest transformer specification guidance and project documentation notes.']), populateBy: 'collection', relationTo: 'posts', limit: 3 },
   ],
-  meta: { title: 'VoltTrans Power Equipment', description: 'Industrial transformers engineered to IEC and IEEE standards for global power projects.' },
+  meta: { title: 'NovaSite Power Demo', description: 'Demonstration content for previewing an electrical equipment website template.' },
   _status: 'published',
   publishedAt: new Date().toISOString(),
 })
@@ -154,9 +172,9 @@ const dry = await createIfMissing('product-categories', 'slug', 'dry-type-transf
 const compact = await createIfMissing('product-categories', 'slug', 'compact-substations', { tenant: tenant.id, name: 'Compact Substations', slug: 'compact-substations', description: 'Factory-assembled MV/LV substations for rapid site installation.', sortOrder: 30 })
 
 const products = [
-  { title: 'S13 1000 kVA Oil-Immersed Distribution Transformer', model: 'S13-M-1000/10', slug: 's13-1000-kva-oil-immersed-transformer', category: oil.id, summary: 'Three-phase hermetically sealed distribution transformer for 10 kV networks, designed to IEC 60076.', description: ['A low-loss oil-immersed distribution transformer for utility, industrial and renewable-energy projects.', 'Final ratings, tolerances and accessories are confirmed against the approved project datasheet.'], image: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=1400&q=85', specs: [['Rated power', '1000 kVA'], ['HV / LV', '10 kV / 0.4 kV'], ['Impedance', '4.5%'], ['Cooling', 'ONAN'], ['Vector group', 'Dyn11'], ['Reference standard', 'IEC 60076']] },
-  { title: 'SCB14 1250 kVA Cast-Resin Dry-Type Transformer', model: 'SCB14-1250/10', slug: 'scb14-1250-kva-cast-resin-transformer', category: dry.id, summary: 'Indoor cast-resin transformer for commercial buildings, data infrastructure and industrial plants.', description: ['Cast-resin windings provide a low-maintenance solution for indoor applications where fire performance and cleanliness are important.', 'Enclosure, temperature monitoring and forced-air cooling options are configured to the installation environment.'], image: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&w=1400&q=85', specs: [['Rated power', '1250 kVA'], ['HV / LV', '10 kV / 0.4 kV'], ['Impedance', '6%'], ['Cooling', 'AN / AF'], ['Vector group', 'Dyn11'], ['Reference standard', 'IEC 60076-11']] },
-  { title: '1600 kVA Prefabricated Compact Substation', model: 'YB-12/0.4-1600', slug: 'yb-1600-kva-compact-substation', category: compact.id, summary: 'Integrated medium-voltage, transformer and low-voltage package for industrial and renewable projects.', description: ['A factory-assembled compact substation that reduces civil work and shortens commissioning time.', 'MV switchgear, transformer, LV distribution, metering and protection are engineered as one coordinated package.'], image: 'https://images.unsplash.com/photo-1497440001374-f26997328c1b?auto=format&fit=crop&w=1400&q=85', specs: [['Transformer rating', '1600 kVA'], ['System voltage', '12 kV / 0.4 kV'], ['Frequency', '50 / 60 Hz'], ['Configuration', 'MV + Transformer + LV'], ['Enclosure', 'Outdoor prefabricated'], ['Reference standards', 'IEC 62271 / IEC 60076']] },
+  { title: 'S13 1000 kVA Oil-Immersed Distribution Transformer', model: 'S13-M-1000/10', slug: 's13-1000-kva-oil-immersed-transformer', category: oil.id, summary: 'Three-phase hermetically sealed distribution transformer for 10 kV networks, designed to IEC 60076.', description: ['A low-loss oil-immersed distribution transformer for utility, industrial and renewable-energy projects.', 'Final ratings, tolerances and accessories are confirmed against the approved project datasheet.'], image: '/template-demos/industry/assets/power-cabinet.webp', specs: [['Rated power', '1000 kVA'], ['HV / LV', '10 kV / 0.4 kV'], ['Impedance', '4.5%'], ['Cooling', 'ONAN'], ['Vector group', 'Dyn11'], ['Reference standard', 'IEC 60076']] },
+  { title: 'SCB14 1250 kVA Cast-Resin Dry-Type Transformer', model: 'SCB14-1250/10', slug: 'scb14-1250-kva-cast-resin-transformer', category: dry.id, summary: 'Indoor cast-resin transformer for commercial buildings, data infrastructure and industrial plants.', description: ['Cast-resin windings provide a low-maintenance solution for indoor applications where fire performance and cleanliness are important.', 'Enclosure, temperature monitoring and forced-air cooling options are configured to the installation environment.'], image: '/template-demos/industry/assets/power-panel.webp', specs: [['Rated power', '1250 kVA'], ['HV / LV', '10 kV / 0.4 kV'], ['Impedance', '6%'], ['Cooling', 'AN / AF'], ['Vector group', 'Dyn11'], ['Reference standard', 'IEC 60076-11']] },
+  { title: '1600 kVA Prefabricated Compact Substation', model: 'YB-12/0.4-1600', slug: 'yb-1600-kva-compact-substation', category: compact.id, summary: 'Integrated medium-voltage, transformer and low-voltage package for industrial and renewable projects.', description: ['A factory-assembled compact substation that reduces civil work and shortens commissioning time.', 'MV switchgear, transformer, LV distribution, metering and protection are engineered as one coordinated package.'], image: '/template-demos/industry/assets/power-wiring.webp', specs: [['Transformer rating', '1600 kVA'], ['System voltage', '12 kV / 0.4 kV'], ['Frequency', '50 / 60 Hz'], ['Configuration', 'MV + Transformer + LV'], ['Enclosure', 'Outdoor prefabricated'], ['Reference standards', 'IEC 62271 / IEC 60076']] },
 ]
 
 for (const product of products) {

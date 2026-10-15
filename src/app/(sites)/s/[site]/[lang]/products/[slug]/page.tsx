@@ -6,35 +6,88 @@ import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 
 import RichText from '@/components/RichText'
-import { getBaseURL, getSite, isSiteLocale, jsonLD, siteHref } from '@/platform/site'
+import {
+  getBaseURL,
+  getSite,
+  isSiteLocale,
+  jsonLD,
+  siteHref,
+  type SiteLocale,
+} from '@/platform/site'
 import { productCoverURL, productImageURLs } from '@/platform/productImages'
+import { ExecutiveTenantProductDetail } from '@/platform/legacy-templates/ExecutiveTenantPages'
 
 type Props = { params: Promise<{ lang: string; site: string; slug: string }> }
 
 const productCopy = {
-  en: { portfolio: 'Product portfolio', request: 'Request this product', specifications: 'Technical specifications' },
+  en: {
+    portfolio: 'Product portfolio',
+    request: 'Request this product',
+    specifications: 'Technical specifications',
+  },
   zh: { portfolio: '产品中心', request: '询价此产品', specifications: '技术参数' },
-  ru: { portfolio: 'Продукция', request: 'Запросить этот товар', specifications: 'Технические параметры' },
-  id: { portfolio: 'Produk', request: 'Minta penawaran produk ini', specifications: 'Spesifikasi teknis' },
+  ru: {
+    portfolio: 'Продукция',
+    request: 'Запросить этот товар',
+    specifications: 'Технические параметры',
+  },
+  id: {
+    portfolio: 'Produk',
+    request: 'Minta penawaran produk ini',
+    specifications: 'Spesifikasi teknis',
+  },
+  es: {
+    portfolio: 'Productos',
+    request: 'Solicitar este producto',
+    specifications: 'Especificaciones técnicas',
+  },
+  ar: { portfolio: 'المنتجات', request: 'اطلب هذا المنتج', specifications: 'المواصفات الفنية' },
+  de: {
+    portfolio: 'Produkte',
+    request: 'Dieses Produkt anfragen',
+    specifications: 'Technische Daten',
+  },
 } as const
 
 const productTags = (product: { tags?: unknown }) =>
   Array.isArray(product.tags)
-    ? product.tags.map((item) => typeof item === 'object' && item ? String((item as { label?: unknown }).label || '').trim() : '').filter(Boolean)
+    ? product.tags
+        .map((item) =>
+          typeof item === 'object' && item
+            ? String((item as { label?: unknown }).label || '').trim()
+            : '',
+        )
+        .filter(Boolean)
     : []
 
 const productKeywords = (product: { keywords?: unknown }) =>
   typeof product.keywords === 'string'
-    ? product.keywords.split(/[，,]/).map((item) => item.trim()).filter(Boolean)
+    ? product.keywords
+        .split(/[，,]/)
+        .map((item) => item.trim())
+        .filter(Boolean)
     : []
 
-const getProduct = async (siteID: number, slug: string, lang: 'en' | 'zh' | 'ru' | 'id') => {
+const getProduct = async (siteID: number, slug: string, lang: SiteLocale) => {
   const payload = await getPayload({ config: configPromise })
-  const result = await payload.find({ collection: 'products', locale: lang, depth: 2, limit: 1, overrideAccess: true, where: { and: [{ tenant: { equals: siteID } }, { slug: { equals: slug } }, { _status: { equals: 'published' } }] } })
+  const result = await payload.find({
+    collection: 'products',
+    locale: lang,
+    depth: 2,
+    limit: 1,
+    overrideAccess: true,
+    where: {
+      and: [
+        { tenant: { equals: siteID } },
+        { slug: { equals: slug } },
+        { _status: { equals: 'published' } },
+      ],
+    },
+  })
   return result.docs[0] ?? null
 }
 
-const getSpecifications = async (siteID: number, productID: number, lang: 'en' | 'zh' | 'ru' | 'id') => {
+const getSpecifications = async (siteID: number, productID: number, lang: SiteLocale) => {
   const payload = await getPayload({ config: configPromise })
   const result = await payload.find({
     collection: 'product-specifications',
@@ -60,7 +113,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = await getProduct(site.id, slug, lang)
   if (!product) return {}
   const url = `${getBaseURL(site, siteSlug)}/${lang}/products/${slug}`
-  return { title: product.title, description: product.summary || undefined, alternates: { canonical: url }, openGraph: { title: product.title, description: product.summary || undefined, url } }
+  return {
+    title: product.title,
+    description: product.summary || undefined,
+    alternates: { canonical: url },
+    openGraph: { title: product.title, description: product.summary || undefined, url },
+  }
 }
 
 export default async function ProductPage({ params }: Props) {
@@ -74,11 +132,183 @@ export default async function ProductPage({ params }: Props) {
   const product = await getProduct(site.id, slug, lang)
   if (!product) notFound()
   const specifications = await getSpecifications(site.id, product.id, lang)
+  const selectedTemplateKey =
+    site.selectedTemplate && typeof site.selectedTemplate === 'object'
+      ? site.selectedTemplate.key
+      : ''
+  if (selectedTemplateKey === 'executive-industrial-pro-v1') {
+    const payload = await getPayload({ config: configPromise })
+    const categoryID =
+      typeof product.category === 'object' && product.category
+        ? product.category.id
+        : product.category
+    const [categoryResult, relatedResult] = await Promise.all([
+      payload.find({
+        collection: 'product-categories',
+        locale: lang,
+        depth: 1,
+        limit: 100,
+        sort: 'sortOrder',
+        overrideAccess: true,
+        where: { tenant: { equals: site.id } },
+      }),
+      payload.find({
+        collection: 'products',
+        locale: lang,
+        depth: 1,
+        limit: 5,
+        sort: 'sortOrder,-publishedAt',
+        overrideAccess: true,
+        where: {
+          and: [
+            { tenant: { equals: site.id } },
+            { _status: { equals: 'published' } },
+            { category: { equals: categoryID } },
+            { id: { not_equals: product.id } },
+          ],
+        },
+      }),
+    ])
+    const categories = categoryResult.docs
+      .filter((item) => item.slug && item.name)
+      .map((item) => ({
+        id: item.id,
+        name: item.name,
+        slug: item.slug,
+        description: item.description,
+        image: typeof item.cover === 'object' && item.cover?.url ? item.cover.url : null,
+      }))
+    const categoryName =
+      typeof product.category === 'object' && product.category ? product.category.name : ''
+    const gallery = Array.isArray(product.gallery)
+      ? product.gallery.flatMap((image) =>
+          typeof image === 'object' && image?.url
+            ? [{ url: image.url, alt: image.alt || product.title }]
+            : [],
+        )
+      : []
+    const tags = productTags(product).map((item) => String(item))
+    const related = relatedResult.docs.map((item) => ({
+      id: item.id,
+      title: item.title,
+      slug: item.slug,
+      summary: item.summary,
+      image: productCoverURL(item, ''),
+      label: typeof item.category === 'object' && item.category ? item.category.name : categoryName,
+    }))
+    const datasheet =
+      typeof product.datasheet === 'object' && product.datasheet?.url ? product.datasheet.url : null
+    const description = product.detailHTML ? (
+      <div dangerouslySetInnerHTML={{ __html: product.detailHTML }} />
+    ) : (
+      <RichText data={product.description} enableGutter={false} />
+    )
+    return (
+      <ExecutiveTenantProductDetail
+        categories={categories}
+        datasheet={datasheet}
+        description={description}
+        gallery={gallery}
+        item={{
+          categoryId: Number(categoryID),
+          categorySlug: categories.find((item) => item.id === Number(categoryID))?.slug,
+          id: product.id,
+          productId: product.id,
+          slug: product.slug,
+          summary: product.summary,
+          tags,
+          title: product.title,
+        }}
+        locale={lang}
+        phone={site.contact?.phone}
+        email={site.contact?.email}
+        related={related}
+        siteSlug={siteSlug}
+        specs={specifications.map((item) => ({
+          id: item.id || undefined,
+          label: item.label,
+          value: item.value,
+        }))}
+      />
+    )
+  }
   const t = productCopy[lang]
-  const image = productCoverURL(product, 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=1400&q=85')
+  const image = productCoverURL(
+    product,
+    'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=1400&q=85',
+  )
   const tags = productTags(product)
   const keywords = productKeywords(product)
-  const productSchema = { '@context': 'https://schema.org', '@type': 'Product', name: product.title, description: product.summary, image: productImageURLs(product), brand: { '@type': 'Brand', name: site.branding.companyName }, manufacturer: { '@type': 'Organization', name: site.branding.companyName } }
+  const productSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    description: product.summary,
+    image: productImageURLs(product),
+    brand: { '@type': 'Brand', name: site.branding.companyName },
+    manufacturer: { '@type': 'Organization', name: site.branding.companyName },
+  }
 
-  return <main><section className="site-page-hero"><div className="site-wrap"><Link className="site-eyebrow" href={siteHref(siteSlug, lang, '/products')}>← {t.portfolio}</Link><h1>{product.title}</h1><p>{product.summary}</p>{tags.length ? <div className="site-product-tags site-product-tags--hero">{tags.map((tag) => <span key={tag}>{tag}</span>)}</div> : null}{keywords.length ? <div className="site-product-keywords site-product-keywords--hero">{keywords.map((keyword) => <em key={keyword}>{keyword}</em>)}</div> : null}</div></section><section className="site-section site-section--white"><div className="site-wrap site-product"><div className="site-product__image" style={{ backgroundImage: `url(${image})` }} /><div>{product.detailHTML ? <div className="rich-text" dangerouslySetInnerHTML={{ __html: product.detailHTML }} /> : <RichText data={product.description} enableGutter={false} />}<div className="site-actions"><a className="site-button" href={`mailto:${site.contact?.email || ''}?subject=${encodeURIComponent(`RFQ: ${product.title}`)}`}>{t.request}</a></div></div></div>{specifications.length ? <div className="site-specs"><h2>{t.specifications}</h2>{specifications.map((spec) => <div key={spec.id}><span>{spec.label}</span><strong>{spec.value}</strong></div>)}</div> : null}</section><script dangerouslySetInnerHTML={{ __html: jsonLD(productSchema) }} type="application/ld+json" /></main>
+  return (
+    <main>
+      <section className="site-page-hero">
+        <div className="site-wrap">
+          <Link className="site-eyebrow" href={siteHref(siteSlug, lang, '/products')}>
+            ← {t.portfolio}
+          </Link>
+          <h1>{product.title}</h1>
+          <p>{product.summary}</p>
+          {tags.length ? (
+            <div className="site-product-tags site-product-tags--hero">
+              {tags.map((tag) => (
+                <span key={tag}>{tag}</span>
+              ))}
+            </div>
+          ) : null}
+          {keywords.length ? (
+            <div className="site-product-keywords site-product-keywords--hero">
+              {keywords.map((keyword) => (
+                <em key={keyword}>{keyword}</em>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </section>
+      <section className="site-section site-section--white">
+        <div className="site-wrap site-product">
+          <div className="site-product__image" style={{ backgroundImage: `url(${image})` }} />
+          <div>
+            {product.detailHTML ? (
+              <div className="rich-text" dangerouslySetInnerHTML={{ __html: product.detailHTML }} />
+            ) : (
+              <RichText data={product.description} enableGutter={false} />
+            )}
+            <div className="site-actions">
+              <a
+                className="site-button"
+                href={`mailto:${site.contact?.email || ''}?subject=${encodeURIComponent(`RFQ: ${product.title}`)}`}
+              >
+                {t.request}
+              </a>
+            </div>
+          </div>
+        </div>
+        {specifications.length ? (
+          <div className="site-specs">
+            <h2>{t.specifications}</h2>
+            {specifications.map((spec) => (
+              <div key={spec.id}>
+                <span>{spec.label}</span>
+                <strong>{spec.value}</strong>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </section>
+      <script
+        dangerouslySetInnerHTML={{ __html: jsonLD(productSchema) }}
+        type="application/ld+json"
+      />
+    </main>
+  )
 }

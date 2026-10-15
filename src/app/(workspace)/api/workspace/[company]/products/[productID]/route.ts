@@ -1,7 +1,7 @@
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { getPayload } from 'payload'
+import { APIError, getPayload } from 'payload'
 
 import config from '@payload-config'
 import { getAccessibleWorkspaceCompanyBySlug } from '@/platform/workspace'
@@ -49,7 +49,8 @@ export async function PATCH(request: Request, { params }: Context) {
     revalidatePath(`/workspace/${slug}/website/content`)
     revalidatePath(`/workspace/${slug}/website/content/${product.id}/edit`)
     return NextResponse.json({ message: '保存成功。' })
-  } catch {
+  } catch (error) {
+    if (error instanceof APIError && error.status === 409) return NextResponse.json({message:error.message},{status:409})
     return NextResponse.json({ message: '保存未完成，请稍后重试。已填写的内容已保留。' }, { status: 500 })
   }
 }

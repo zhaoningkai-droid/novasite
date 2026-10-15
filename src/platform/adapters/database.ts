@@ -1,8 +1,10 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { createDatabasePoolOptions } from './database-pool'
 
 export function createDatabaseAdapter() {
-  const connectionString = process.env.DATABASE_URL
-  if (!connectionString) throw new Error('DATABASE_URL is required.')
-
-  return postgresAdapter({ pool: { connectionString } })
+  return postgresAdapter({
+    pool: createDatabasePoolOptions(),
+    // Formal runtime schema changes belong to the separately approved migrator.
+    ...(process.env.NODE_ENV === 'production' ? { push: false } : {}),
+  })
 }

@@ -1,9 +1,12 @@
 import { type CollectionConfig, type CollectionBeforeChangeHook } from 'payload'
 
 import { assignedTenants, siteAdmins, superAdmins } from '../access/roles'
+import { localeOptions } from '../platform/site-locales'
 
-const guardTemplateSelection: CollectionBeforeChangeHook = ({ data, originalDoc, req }) => {
-  if (req.context?.templateChangeService || !originalDoc || !Object.hasOwn(data, 'selectedTemplate')) {
+const guardTemplateSelection: CollectionBeforeChangeHook = ({ data, operation, originalDoc, req }) => {
+  // Payload may supply an empty originalDoc during create. Initial selection
+  // is valid; only existing sites must use the recorded template-change flow.
+  if (operation === 'create' || req.context?.templateChangeService || !originalDoc || !Object.hasOwn(data, 'selectedTemplate')) {
     return data
   }
   const oldTemplate = typeof originalDoc.selectedTemplate === 'number'
@@ -63,7 +66,7 @@ export const Tenants: CollectionConfig = {
       name: 'primaryDomain',
       label: '主域名',
       type: 'text',
-      admin: { description: '不含协议，例如 www.volttrans.com。未绑定域名时可留空。' },
+      admin: { description: '选填，可填写域名或完整网址。' },
     },
     {
       name: 'previewDomain',
@@ -77,12 +80,7 @@ export const Tenants: CollectionConfig = {
       type: 'select',
       defaultValue: 'en',
       required: true,
-      options: [
-        { label: '英语', value: 'en' },
-        { label: '简体中文', value: 'zh' },
-        { label: '俄语', value: 'ru' },
-        { label: '印尼语', value: 'id' },
-      ],
+      options: localeOptions.map(({ code, label }) => ({ label, value: code })),
     },
     {
       name: 'selectedTemplate',
@@ -129,12 +127,7 @@ export const Tenants: CollectionConfig = {
       hasMany: true,
       defaultValue: ['en', 'zh', 'ru', 'id'],
       required: true,
-      options: [
-        { label: '英语', value: 'en' },
-        { label: '简体中文', value: 'zh' },
-        { label: '俄语', value: 'ru' },
-        { label: '印尼语', value: 'id' },
-      ],
+      options: localeOptions.map(({ code, label }) => ({ label, value: code })),
     },
     {
       name: 'branding',
@@ -142,6 +135,7 @@ export const Tenants: CollectionConfig = {
       type: 'group',
       fields: [
         { name: 'companyName', label: '公司名称', type: 'text', localized: true, required: true },
+        { name: 'headerText', label: 'Logo 旁展示文字', type: 'text', localized: true },
         { name: 'tagline', label: '品牌标语', type: 'text', localized: true },
         { name: 'logo', label: '网站 Logo', type: 'upload', relationTo: 'media' },
         {
@@ -248,6 +242,56 @@ export const Tenants: CollectionConfig = {
             { name: 'inquiryRequiredFields', label: '首页询盘必填项', type: 'json', admin: { hidden: true } },
             { name: 'showNews', label: '显示推荐新闻', type: 'checkbox', defaultValue: true },
             { name: 'showCases', label: '显示推荐案例', type: 'checkbox', defaultValue: true },
+            {
+              name: 'executiveHome', label: '商务工业 · 专业首页', type: 'group', fields: [
+                { name: 'advantagesEnabled', label: '显示服务优势', type: 'checkbox' },
+                { name: 'advantagesTitle', label: '服务优势标题', type: 'text', localized: true },
+                { name: 'advantages', label: '服务优势项目', type: 'array', maxRows: 8, fields: [
+                  { name: 'icon', label: '图标标识', type: 'text', admin: { description: '可选 drawing、material、measure、support、custom。' } },
+                  { name: 'title', label: '标题', type: 'text', localized: true },
+                  { name: 'description', label: '说明', type: 'textarea', localized: true },
+                  { name: 'sortOrder', label: '排序', type: 'number', defaultValue: 0 },
+                ] },
+                { name: 'marksEnabled', label: '显示资质标志', type: 'checkbox' },
+                { name: 'marks', label: '资质标志', type: 'array', maxRows: 8, fields: [
+                  { name: 'image', label: '标志图片', type: 'upload', relationTo: 'media' },
+                  { name: 'label', label: '说明', type: 'text', localized: true },
+                  { name: 'sortOrder', label: '排序', type: 'number', defaultValue: 0 },
+                ] },
+                { name: 'certificatesEnabled', label: '显示证书资质', type: 'checkbox' },
+                { name: 'certificatesTitle', label: '证书区标题', type: 'text', localized: true },
+                { name: 'certificates', dbName: 'tenants_exec_certs', label: '证书图片', type: 'array', maxRows: 12, fields: [
+                  { name: 'image', label: '证书图片', type: 'upload', relationTo: 'media', required: true },
+                  { name: 'name', label: '证书名称', type: 'text', localized: true },
+                  { name: 'alt', label: '图片说明', type: 'text', localized: true },
+                  { name: 'sortOrder', label: '排序', type: 'number', defaultValue: 0 },
+                ] },
+                { name: 'introBackground', label: '简介区背景图', type: 'upload', relationTo: 'media' },
+                { name: 'introOverlay', label: '简介背景压暗程度', type: 'number', min: 0, max: 0.85, defaultValue: 0.6, admin: { step: 0.05, description: '范围0—0.85，只影响背景图，不影响文字和视频。' } },
+                { name: 'introButtonLabel', label: '简介按钮文字', type: 'text', localized: true },
+                { name: 'videoPoster', label: '视频封面图', type: 'upload', relationTo: 'media' },
+                { name: 'strengthTitle', label: '实力区标题', type: 'text', localized: true },
+                { name: 'strengthGallery', dbName: 'tenants_exec_strength_gallery', label: '实力展示图片', type: 'array', maxRows: 12, fields: [
+                  { name: 'image', label: '展示图片', type: 'upload', relationTo: 'media', required: true },
+                  { name: 'caption', label: '图片说明', type: 'text', localized: true },
+                  { name: 'alt', label: '替代文字', type: 'text', localized: true },
+                  { name: 'sortOrder', label: '排序', type: 'number', defaultValue: 0 },
+                ] },
+                { name: 'casesTitle', label: '案例区标题', type: 'text', localized: true },
+                { name: 'categoriesTitle', label: '产品分类区标题', type: 'text', localized: true },
+                { name: 'productsTitle', label: '产品区标题', type: 'text', localized: true },
+                { name: 'newsTitle', label: '新闻区标题', type: 'text', localized: true },
+                { name: 'faqEnabled', label: '显示常见问题', type: 'checkbox' },
+                { name: 'faqTitle', label: '常见问题区标题', type: 'text', localized: true },
+                { name: 'faqLimit', label: '首页问题数量', type: 'number', min: 1, max: 12, defaultValue: 6 },
+                { name: 'caseCTATitle', label: '案例咨询横条标题', type: 'text', localized: true },
+                { name: 'caseCTADescription', label: '案例咨询横条说明', type: 'textarea', localized: true },
+                { name: 'caseCTAButton', label: '案例咨询按钮文字', type: 'text', localized: true },
+                { name: 'productCTATitle', label: '产品咨询横条标题', type: 'text', localized: true },
+                { name: 'productCTADescription', label: '产品咨询横条说明', type: 'textarea', localized: true },
+                { name: 'productCTAButton', label: '产品咨询按钮文字', type: 'text', localized: true },
+              ],
+            },
           ],
         },
         {
@@ -276,6 +320,8 @@ export const Tenants: CollectionConfig = {
         {
           name: 'footer', label: '网站页脚', type: 'group', admin: { hidden: true }, fields: [
             { name: 'intro', label: '公司简介', type: 'textarea', localized: true },
+            { name: 'backgroundImage', label: '页脚背景图片', type: 'upload', relationTo: 'media' },
+            { name: 'backgroundOverlay', label: '页脚背景压暗程度', type: 'number', min: 0, max: 0.85, defaultValue: 0.65, admin: { step: 0.05, description: '范围0—0.85，只影响背景图片。' } },
             { name: 'socialLinks', label: '社媒链接', type: 'json', admin: { hidden: true } },
             {
               name: 'quickLinks', label: '快速导航', type: 'array', fields: [

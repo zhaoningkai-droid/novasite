@@ -24,16 +24,33 @@ function loginPath(error: 'invalid' | 'missing', redirectTo: string): string {
 
 export async function POST(request: Request) {
   const form = await request.formData()
-  const email = String(form.get('email') || '').trim()
+  const account = String(form.get('email') || '').trim()
   const password = String(form.get('password') || '')
   const redirectTo = safeRedirect(form.get('redirect'))
 
-  if (!email || !password) {
+  if (!account || !password) {
     return redirect(loginPath('missing', redirectTo))
   }
 
   try {
     const payload = await getPayload({ config })
+    let email = account
+    if (!account.includes('@')) {
+      // Resolve only the login identity; password verification and account locks
+      // remain in Payload. Never expose the lookup result or accept ambiguous names.
+      const matchingUsers = await payload.find({
+        collection: 'users',
+        depth: 0,
+        limit: 2,
+        overrideAccess: true,
+        select: { email: true },
+        where: { name: { equals: account } },
+      })
+      if (matchingUsers.totalDocs !== 1 || !matchingUsers.docs[0]?.email) {
+        return redirect(loginPath('invalid', redirectTo))
+      }
+      email = matchingUsers.docs[0].email
+    }
     const result = await payload.login({
       collection: 'users',
       data: { email, password },
@@ -54,9 +71,14 @@ export async function POST(request: Request) {
       httpOnly: true,
       path: '/',
       sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
     })
     return response
-  } catch {
+  } catch (error) {
+    const candidate = error instanceof Error ? error as Error & { code?: unknown } : undefined
+    console.error('[login] Authentication operation failed', candidate
+      ? { name: candidate.name, code: candidate.code, message: candidate.message }
+      : { message: String(error) })
     return redirect(loginPath('invalid', redirectTo))
   }
 }

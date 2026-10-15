@@ -6,7 +6,7 @@ const context = await browser.newContext({ viewport: { height: 920, width: 1512 
 const page = await context.newPage()
 const report: Record<string, unknown> = { newsID: 4, title: '紧固件检测能力升级' }
 try {
-  const login = await context.request.post('http://localhost:3100/api/users/login', { data: { email: process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local', password: process.env.SEED_ADMIN_PASSWORD || '' } })
+  const login = await context.request.post('http://localhost:3100/api/users/login', { data: { email: process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid', password: process.env.SEED_ADMIN_PASSWORD || '' } })
   const { token } = (await login.json()) as { token: string }
   await context.addCookies([{ domain: 'localhost', name: 'payload-token', path: '/', value: token }, { domain: 'localhost', name: 'payload-tenant', path: '/', value: '2' }])
   await page.goto('http://localhost:3100/workspace/huadong-fasteners/website/content/news?keyword=%E6%A3%80%E6%B5%8B', { waitUntil: 'networkidle' })

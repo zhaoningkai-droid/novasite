@@ -15,8 +15,8 @@ export default async function NewNewsPage({ params }: { params: Promise<{ compan
   const payload = await getPayload({ config })
   const categories = await payload.find({
     collection: 'news-categories',
-    limit: 100,
-    locale: 'zh',
+    pagination: false,
+    locale: company.defaultLocale,
     overrideAccess: false,
     sort: 'sortOrder',
     user,

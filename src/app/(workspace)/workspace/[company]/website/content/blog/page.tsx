@@ -9,7 +9,6 @@ import { ContentManagementTabs } from '@/platform/components/ContentManagementTa
 
 import {
   ContentListItem,
-  ContentStatus,
   ContentUpdatedAt,
   contentListHref,
   contentListPageSize,
@@ -68,9 +67,10 @@ export default async function BlogManagementPage({
     payload.find({
       collection: 'posts',
       depth: 1,
-      fallbackLocale: 'en',
+      draft: true,
+      fallbackLocale: false,
       limit: contentListPageSize,
-      locale: 'zh',
+      locale: company.defaultLocale,
       overrideAccess: false,
       page,
       sort: '-updatedAt',
@@ -80,9 +80,9 @@ export default async function BlogManagementPage({
     payload.find({
       collection: 'categories',
       depth: 0,
-      fallbackLocale: 'en',
+      fallbackLocale: false,
       limit: 0,
-      locale: 'zh',
+      locale: company.defaultLocale,
       overrideAccess: false,
       pagination: false,
       select: { title: true },
@@ -98,16 +98,14 @@ export default async function BlogManagementPage({
     <section className="workspace-content-foundation">
       <header className="workspace-content-foundation__header">
         <div>
-          <p>网站配置 / 内容管理</p>
+
           <h1>
             博客管理
             <small className="workspace-content-foundation__count">
               {records.totalDocs} 项结果
             </small>
           </h1>
-          <span className="workspace-content-foundation__description">
-            维护技术文章与知识内容，查看全部关联分类和发布状态。
-          </span>
+
         </div>
         <div className="workspace-content-foundation__header-actions">
           {canEdit ? (
@@ -144,6 +142,8 @@ export default async function BlogManagementPage({
         </div>
       </form>
       <WorkspaceTable
+        asyncTranslation
+        bulkTranslateURL={canEdit ? `/api/workspace/${slug}/translations/posts` : undefined}
         bulkDeleteURL={canDelete ? `/api/workspace/${slug}/blog/bulk` : undefined}
         ariaLabel="博客列表"
 
@@ -151,7 +151,7 @@ export default async function BlogManagementPage({
           { key: 'title', label: '博客标题', width: '340px' },
           { key: 'category', label: '分类', width: '200px' },
 
-          { key: 'status', label: '发布状态', width: '90px' },
+          { key: 'translation', label: '翻译状态', width: '100px' },
           { key: 'updated', label: '更新时间', width: '132px' },
         ]}
         editBaseHref={canEdit ? base : undefined}
@@ -182,6 +182,7 @@ export default async function BlogManagementPage({
               )
               .join('、') || '未分类'
           return {
+            canTranslate: canEdit,
             id: item.id,
             label: title,
             cells: [
@@ -193,7 +194,7 @@ export default async function BlogManagementPage({
               />,
               categoryName,
 
-              <ContentStatus key="status" published={item._status === 'published'} />,
+              '未翻译',
               <ContentUpdatedAt key="updated" value={item.updatedAt} />,
             ],
             details: [

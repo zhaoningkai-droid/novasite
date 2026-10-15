@@ -234,7 +234,7 @@ describe('产品图库和富文本', () => {
         initial: product,
       }),
     )
-    fireEvent.click(screen.getByRole('button', { name: '保存并继续添加' }))
+    fireEvent.click(screen.getByRole('button', { name: '保存草稿并继续添加' }))
     await screen.findByText('上一件产品已保存，可以继续添加。')
     expect((screen.getByLabelText('产品名称') as HTMLInputElement).value).toBe('')
     expect(screen.getByLabelText('产品详情').textContent).toBe('')
@@ -273,7 +273,7 @@ describe('产品图库和富文本', () => {
     expect(fetchMock).not.toHaveBeenCalled()
     expect(document.documentElement.dataset.workspaceBusy).toBe('false')
   })
-  test('文案起稿使用安全文本且没有假称机器AI服务', () => {
+  test('不展示虚假的AI文案生成入口', () => {
     render(
       h(ProductWorkspaceEditor, {
         categories: [],
@@ -281,10 +281,7 @@ describe('产品图库和富文本', () => {
         initial: { title: '<img src=x onerror=alert(1)>' },
       }),
     )
-    fireEvent.click(screen.getByRole('button', { name: '生成文案草稿' }))
-    const detail = screen.getByLabelText('产品详情')
-    expect(detail.querySelector('img')).toBeNull()
-    expect(detail.textContent).toContain('<img src=x onerror=alert(1)>')
+    expect(screen.queryByRole('button', { name: '生成文案草稿' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'AI生成' })).toBeNull()
   })
 })

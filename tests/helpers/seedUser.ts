@@ -1,9 +1,10 @@
+import { randomBytes } from 'node:crypto'
 import { getPayload } from 'payload'
 import config from '../../src/payload.config.js'
 
 export const testUser = {
-  email: 'dev@payloadcms.com',
-  password: 'test',
+  email: 'test-user@example.invalid',
+  password: randomBytes(24).toString('base64url'),
 }
 
 /**

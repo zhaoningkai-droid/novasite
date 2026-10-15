@@ -5,14 +5,15 @@ import {
   InlineToolbarFeature,
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import { anyone } from '../access/anyone'
 import { contentEditors, siteAdmins } from '../access/roles'
+import { mediaAccessControlEnabled, privateMediaHeaders } from '../platform/storage/access-mode'
+import { localMediaDirectory } from '../platform/storage/local-directory'
 
-const filename = fileURLToPath(import.meta.url)
-const dirname = path.dirname(filename)
+const dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -48,9 +49,11 @@ export const Media: CollectionConfig = {
     },
   ],
   upload: {
-    // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload
-    staticDir: path.resolve(dirname, '../../public/media'),
-    mimeTypes: ['image/jpeg', 'image/png', 'image/svg+xml', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska', 'video/mpeg', 'video/ogg', 'video/3gpp'],
+    // The controlled mode needs a separately prepared private directory. This
+    // selector never moves files or falls back to public after enabling it.
+    staticDir: mediaAccessControlEnabled() ? localMediaDirectory() : path.resolve(dirname, '../../public/media'),
+    modifyResponseHeaders: ({ headers }) => mediaAccessControlEnabled() ? privateMediaHeaders(headers) : headers,
+    mimeTypes: ['application/pdf', 'image/jpeg', 'image/png', 'image/svg+xml', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska', 'video/mpeg', 'video/ogg', 'video/3gpp'],
     adminThumbnail: 'thumbnail',
     focalPoint: true,
     imageSizes: [

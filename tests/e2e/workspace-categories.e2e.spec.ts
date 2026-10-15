@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 
 import { login } from '../helpers/login'
 
-const adminUser = { email: process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local', password: process.env.SEED_ADMIN_PASSWORD || '' }
+const adminUser = { email: process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid', password: process.env.SEED_ADMIN_PASSWORD || '' }
 const testSlug = 'step11-temporary-category'
 
 async function enterVoltTrans(page: Parameters<typeof login>[0]['page']) {

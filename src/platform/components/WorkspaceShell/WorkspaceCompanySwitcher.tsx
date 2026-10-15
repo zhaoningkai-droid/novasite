@@ -8,7 +8,7 @@ import type { WorkspaceCompany } from '@/platform/workspace'
 
 type Props = { companies: WorkspaceCompany[]; currentCompany: WorkspaceCompany }
 const setSelectedCompanyCookie = (companyID: number) => {
-  document.cookie = `payload-tenant=${companyID}; Max-Age=31536000; Path=/; SameSite=Lax`
+  document.cookie = `payload-tenant=${companyID}; Max-Age=31536000; Path=/; SameSite=Lax${window.location.protocol === 'https:' ? '; Secure' : ''}`
 }
 
 export function WorkspaceCompanySwitcher({ companies, currentCompany }: Props) {

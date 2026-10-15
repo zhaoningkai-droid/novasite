@@ -10,6 +10,7 @@ export function WorkspaceRowActions({
   label,
   onDelete,
   onDetails,
+  showDetailsAction = true,
   translationHref,
 }: {
   disabled: boolean
@@ -17,6 +18,7 @@ export function WorkspaceRowActions({
   label: string
   onDelete?: () => void
   onDetails: () => void
+  showDetailsAction?: boolean
   translationHref?: string
 }) {
   const menuID = useId()
@@ -55,7 +57,7 @@ export function WorkspaceRowActions({
     menu.querySelector<HTMLElement>('[role="menuitem"]')?.focus()
   }
 
-  const detailsAction = (
+  const detailsAction = showDetailsAction && (
     <button
       aria-label={'查看 ' + label + ' 完整信息'}
       className="workspace-table__detail"

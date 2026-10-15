@@ -4,6 +4,8 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import type { Tenant } from '@/payload-types'
 import { copy, getBaseURL, jsonLD, locales, siteHref, type SiteLocale } from '@/platform/site'
+import { CustomerBrand } from '@/platform/components/CustomerBrand/CustomerBrand'
+import { sortedNavigation } from '@/platform/navigation-model'
 
 export async function LegacyShell({site, locale: lang, children}: {
   site: Tenant; locale: SiteLocale; children: React.ReactNode
@@ -29,7 +31,7 @@ export async function LegacyShell({site, locale: lang, children}: {
         : 'site-shell--industrial'
   const payload = await getPayload({ config: configPromise })
   const navigationDocument = await payload.find({ collection: 'site-navigation', depth: 0, limit: 1, overrideAccess: true, where: { and: [{ tenant: { equals: site.id } }, { localeCode: { equals: lang } }] } })
-  const storedNavigation = navigationDocument.docs[0]?.items?.length ? navigationDocument.docs[0].items : [
+  const storedNavigation = navigationDocument.docs[0]?.items?.length ? sortedNavigation(navigationDocument.docs[0].items) : [
     { label: t.products, href: '/products' }, { label: t.news, href: '/news' }, { label: t.cases, href: '/cases' }, { label: t.blog, href: '/blog' }, { label: t.about, href: '/about' }, { label: t.contact, href: '/contact' },
   ]
   const faqLabel = lang === 'zh' ? '常见问题' : lang === 'ru' ? 'Частые вопросы' : lang === 'id' ? 'Pertanyaan umum' : 'FAQ'
@@ -60,7 +62,7 @@ export async function LegacyShell({site, locale: lang, children}: {
           style={{ '--site-primary': primary, '--site-accent': accent } as React.CSSProperties}
         >
           <header className="site-header"><div className="site-wrap site-header__inner">
-            <Link className="site-logo" href={siteHref(siteSlug, lang)}>{logo?.url ? <img alt={logo.alt || site.branding.companyName} src={logo.url} /> : null}{site.branding.companyName}<span>.</span></Link>
+            <CustomerBrand className="site-logo" href={siteHref(siteSlug, lang)} companyName={site.branding.companyName} headerText={site.branding.headerText} logo={logo?.url} />
             <nav className="site-nav" aria-label="Primary navigation">
               {navigation.map((item) => item.children?.length ? <details className="site-nav-menu" key={item.id || item.href}><summary>{item.label}</summary><div className="site-nav-menu__panel"><Link href={toSiteHref(item.href)}>{item.label}</Link>{item.children.map((child) => <Link href={toSiteHref(child.href)} key={child.id || child.href}>{child.label}</Link>)}</div></details> : <Link href={toSiteHref(item.href)} key={item.id || item.href}>{item.label}</Link>)}
               <div className="site-languages">{enabledLocales.map((locale) => <Link href={siteHref(siteSlug, locale)} key={locale}>{locale}</Link>)}</div>

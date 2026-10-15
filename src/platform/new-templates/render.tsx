@@ -11,8 +11,11 @@ import { templateCopy } from './copy'
 import { templateHref } from './links'
 import { Carousel, type Banner } from './Carousel'
 import { ProductShowcase } from './ProductShowcase'
+import { ProductGallery } from './ProductGallery'
 import { Inquiry } from './Inquiry'
 import type { NewTemplate } from './registry'
+import { isIndustryKey } from '@/platform/industry-templates/model'
+import { renderIndustryTenantPage } from '@/platform/industry-templates/tenant'
 
 type Options = {
   site: Tenant
@@ -60,6 +63,7 @@ function Cards({ items, kind = 'products' }: { items: Card[]; kind?: string }) {
   )
 }
 export async function renderTemplatePage(options: Options) {
+  if (isIndustryKey(options.template.key)) return renderIndustryTenantPage(options)
   const { site, locale, template, base, preview, user, search = {} } = options
   const path = options.path || []
   const payload = await getPayload({ config })
@@ -89,8 +93,8 @@ export async function renderTemplatePage(options: Options) {
       ) : null}
     </div>
   )
-  const strength = () =>
-    homepage?.showStrength !== false && homepage?.strengthItems?.length ? (
+  const strength = (enabled = homepage?.showStrength !== false) =>
+    enabled && homepage?.strengthItems?.length ? (
       <section className="nt-strength nt-wrap" aria-label={t.strength}>
         {sorted(homepage.strengthItems).map((item, i) => (
           <article key={item.id || i}>
@@ -161,19 +165,31 @@ export async function renderTemplatePage(options: Options) {
           }
         >)
       : []
-    const banners = sorted(rawBanners).map((banner) => ({
-      ...banner,
-      href:
-        banner.linkType === 'none' || !banner.linkType
-          ? null
-          : banner.linkURL
-            ? templateHref(base, banner.linkURL)
-            : null,
-    }))
-    if (!banners.length && (homepage?.heroTitle || homepage?.heroDescription))
+    const banners = sorted(rawBanners)
+      .filter(
+        (banner) => banner.desktopImage || banner.mobileImage || banner.title || banner.description,
+      )
+      .map((banner) => ({
+        ...banner,
+        href:
+          banner.linkType === 'none' || !banner.linkType
+            ? null
+            : banner.linkURL
+              ? templateHref(base, banner.linkURL)
+              : null,
+      }))
+    if (
+      !banners.length &&
+      (homepage?.heroTitle ||
+        homepage?.heroDescription ||
+        site.branding.heroImageURL ||
+        site.branding.mobileHeroImageURL)
+    )
       banners.push({
-        title: homepage.heroTitle || site.branding.companyName,
-        description: homepage.heroDescription || '',
+        desktopImage: site.branding.heroImageURL || undefined,
+        mobileImage: site.branding.mobileHeroImageURL || undefined,
+        title: homepage?.heroTitle || site.branding.companyName,
+        description: homepage?.heroDescription || '',
         href: null,
       })
     const modules = {
@@ -305,7 +321,7 @@ export async function renderTemplatePage(options: Options) {
             </section>
           ) : null}
         </div>
-        {about?.showStrength !== false ? strength() : null}
+        {strength(about?.showStrength !== false)}
       </main>
     )
   }
@@ -415,6 +431,9 @@ export async function renderTemplatePage(options: Options) {
         },
       })
       const images = productImageURLs(product)
+      // An explicitly empty parameter document means the editor removed its rows.
+      // Fall back only for older products without a separate language document.
+      const parameters = specs.docs[0] ? specs.docs[0].items || [] : product.specifications || []
       const datasheet = mediaURL(
         (product as Product & { datasheetPDF?: unknown }).datasheetPDF || product.datasheet,
       )
@@ -424,9 +443,7 @@ export async function renderTemplatePage(options: Options) {
           {template.tone === 'machinery' ? (
             <nav className="nt-wrap nt-detail-tabs" aria-label={t.description}>
               <a href="#product-description">{t.description}</a>
-              {specs.docs[0]?.items?.length ? (
-                <a href="#product-specifications">{t.specs}</a>
-              ) : null}
+              {parameters.length ? <a href="#product-specifications">{t.specs}</a> : null}
               {datasheet ? (
                 <a href={datasheet} target="_blank" rel="noopener noreferrer">
                   {t.download}
@@ -436,22 +453,17 @@ export async function renderTemplatePage(options: Options) {
             </nav>
           ) : null}
           <section className="nt-wrap nt-section nt-product-detail">
-            <div className="nt-gallery">
-              {images.map((image, i) => (
-                <a href={image} key={image} target="_blank" rel="noopener noreferrer">
-                  <img
-                    src={image}
-                    alt={`${product.title} ${i + 1}`}
-                    width="800"
-                    height="800"
-                    loading={i ? 'lazy' : 'eager'}
-                  />
-                </a>
-              ))}
-            </div>
+            <ProductGallery images={images} title={product.title} />
             <div>
               <h2 id="product-description">{t.description}</h2>
               {product.model ? <p>{product.model}</p> : null}
+              {product.tags?.length ? (
+                <ul className="nt-product-tags">
+                  {product.tags.map((tag, index) => (
+                    <li key={tag.id || index}>{tag.label}</li>
+                  ))}
+                </ul>
+              ) : null}
               {product.detailHTML ? (
                 <div
                   className="nt-rich"
@@ -477,12 +489,12 @@ export async function renderTemplatePage(options: Options) {
               ) : null}
             </div>
           </section>
-          {specs.docs[0]?.items?.length ? (
+          {parameters.length ? (
             <section className="nt-wrap nt-section">
               <h2 id="product-specifications">{t.specs}</h2>
               <table className="nt-specs">
                 <tbody>
-                  {specs.docs[0].items.map((spec, i) => (
+                  {parameters.map((spec, i) => (
                     <tr key={spec.id || i}>
                       <th scope="row">{spec.label}</th>
                       <td>{spec.value}</td>

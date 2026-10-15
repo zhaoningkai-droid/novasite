@@ -5,6 +5,8 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { getAccessibleWorkspaceCompanyBySlug } from '@/platform/workspace'
 import { getMeUser } from '@/utilities/getMeUser'
+import { userHasRole } from '@/access/roles'
+import { MAX_PRODUCT_DATASHEET_BYTES, PRODUCT_DATASHEET_MIME } from '@/platform/storage/file-policy'
 
 type Context = { params: Promise<{ company: string }> }
 
@@ -28,46 +30,71 @@ export async function GET(request: Request, { params }: Context) {
   const { company: slug } = await params
   const access = await workspaceRequest(slug)
   if ('error' in access) return access.error
-  const query = new URL(request.url).searchParams.get('query')?.trim() || ''
+  const search = new URL(request.url).searchParams
+  const query = search.get('query')?.trim().slice(0, 200) || ''
+  const kind = search.get('type') || 'image'
+  const rawPage = search.get('page') || '1'
+  const page = Number(rawPage)
+  if (!['image', 'video', 'pdf'].includes(kind) || !/^\d+$/.test(rawPage) ||
+      !Number.isSafeInteger(page) || page < 1 || page > 1_000_000)
+    return NextResponse.json({ message: '文件类型或页码无效。' }, { status: 422 })
   const payload = await getPayload({ config })
   const result = await payload.find({
     collection: 'media',
     depth: 0,
     limit: 48,
+    page,
     locale: 'zh',
     overrideAccess: false,
-    select: { alt: true, filename: true, thumbnailURL: true, url: true, updatedAt: true },
+    select: { alt: true, filename: true, filesize: true, mimeType: true, thumbnailURL: true, url: true, updatedAt: true },
     sort: '-updatedAt',
     user: access.user,
     where: {
       and: [
         { tenant: { equals: access.company.id } },
+        kind === 'pdf' ? { mimeType: { equals: PRODUCT_DATASHEET_MIME } }
+          : { mimeType: { contains: `${kind}/` } },
         ...(query ? [{ or: [{ filename: { contains: query } }, { alt: { contains: query } }] }] : []),
       ],
     },
   })
-  return NextResponse.json({ docs: result.docs, totalDocs: result.totalDocs })
+  return NextResponse.json({
+    docs: result.docs, totalDocs: result.totalDocs, page: result.page,
+    totalPages: result.totalPages, hasNextPage: result.hasNextPage,
+  }, { headers: { 'Cache-Control': 'private, no-store' } })
 }
 
 export async function POST(request: Request, { params }: Context) {
   const { company: slug } = await params
   const access = await workspaceRequest(slug)
   if ('error' in access) return access.error
+  if (!userHasRole(access.user, ['super-admin', 'site-admin', 'editor']))
+    return NextResponse.json({ message: '当前账号只有查看权限，不能上传文件。' }, { status: 403 })
+  if (Number(request.headers.get('content-length') || 0) > 513 * 1024 * 1024)
+    return NextResponse.json({ message: '上传内容过大。' }, { status: 413 })
   const form = await request.formData().catch(() => null)
   const file = form?.get('file')
   const alt = typeof form?.get('alt') === 'string' ? String(form.get('alt')).trim() : ''
   const productImage = form?.get('productImage') === 'true'
   const homepageBanner = form?.get('homepageBanner') === 'true'
   const homepageVideo = form?.get('homepageVideo') === 'true'
+  const productDatasheet = form?.get('productDatasheet') === 'true'
+  if ([productImage, homepageBanner, homepageVideo, productDatasheet].filter(Boolean).length > 1)
+    return NextResponse.json({ message: '一次上传只能用于一种文件类型。' }, { status: 422 })
   const fileExtension = file instanceof File ? file.name.split('.').pop()?.toLowerCase() || '' : ''
   const resolvedMimeType = file instanceof File && file.type ? file.type : videoMimeByExtension[fileExtension] || ''
   const isVideo = Boolean(resolvedMimeType.startsWith('video/') || videoExtensions.has(fileExtension))
   if (!(file instanceof File)) return NextResponse.json({ message: '请选择要上传的文件。' }, { status: 422 })
   if (!alt) return NextResponse.json({ message: '请输入文件说明。' }, { status: 422 })
-  if (homepageVideo ? !isVideo : !imageTypes.has(file.type) || ((productImage || homepageBanner) && file.type === 'image/svg+xml')) return NextResponse.json({ message: homepageVideo ? '请选择视频文件。推荐 MP4 或 WebM，其他常见视频格式也可上传。' : productImage || homepageBanner ? '图片仅支持 JPG、PNG 或 WebP。' : '仅支持 JPG、PNG、WebP 或 SVG 图片。' }, { status: 422 })
-  const limit = homepageVideo ? 512 * 1024 * 1024 : maxImageSize
+  if (productDatasheet && (fileExtension !== 'pdf' ||
+      !['', PRODUCT_DATASHEET_MIME, 'application/octet-stream'].includes(file.type)))
+    return NextResponse.json({ message: '产品资料仅支持 PDF 文件。' }, { status: 422 })
+  if (!productDatasheet && (homepageVideo ? !isVideo : !imageTypes.has(file.type) || ((productImage || homepageBanner) && file.type === 'image/svg+xml'))) return NextResponse.json({ message: homepageVideo ? '请选择视频文件。推荐 MP4 或 WebM，其他常见视频格式也可上传。' : productImage || homepageBanner ? '图片仅支持 JPG、PNG 或 WebP。' : '仅支持 JPG、PNG、WebP 或 SVG 图片。' }, { status: 422 })
+  const limit = productDatasheet ? MAX_PRODUCT_DATASHEET_BYTES : homepageVideo ? 512 * 1024 * 1024 : maxImageSize
   if (file.size === 0 || file.size > limit) return NextResponse.json({
-    message: homepageVideo
+    message: productDatasheet
+      ? 'PDF 文件须大于 0 且不超过 10MB。'
+      : homepageVideo
       ? '本地视频大小须大于 0 且不超过 512MB。'
       : file.size === 0
         ? '图片文件为空，请重新选择。'
@@ -75,21 +102,23 @@ export async function POST(request: Request, { params }: Context) {
   }, { status: 422 })
 
   const buffer = Buffer.from(await file.arrayBuffer())
+  if (productDatasheet && buffer.subarray(0, 5).toString('ascii') !== '%PDF-')
+    return NextResponse.json({ message: '文件内容不是有效的 PDF，请重新选择。' }, { status: 422 })
 
   try {
     const payload = await getPayload({ config })
     const media = await payload.create({
       collection: 'media',
       data: { alt, tenant: access.company.id },
-      file: { data: buffer, mimetype: resolvedMimeType || file.type, name: file.name, size: file.size },
+      file: { data: buffer, mimetype: productDatasheet ? PRODUCT_DATASHEET_MIME : resolvedMimeType || file.type, name: file.name, size: file.size },
       depth: 0,
       locale: 'zh',
       overrideAccess: false,
       user: access.user,
     })
-    return NextResponse.json({ media, message: homepageVideo ? '视频已上传成功。' : '图片已上传成功。' }, { status: 201 })
+    return NextResponse.json({ media, message: productDatasheet ? 'PDF 已上传，保存产品后应用。' : homepageVideo ? '视频已上传成功。' : '图片已上传成功。' }, { status: 201 })
   } catch (error) {
     console.error('[workspace-media-upload]', error)
-    return NextResponse.json({ message: homepageVideo ? '视频上传失败，请确认文件为常见视频格式且不超过 512MB。' : '图片上传失败，请稍后重试。' }, { status: 500 })
+    return NextResponse.json({ message: productDatasheet ? 'PDF 上传失败，请稍后重试。' : homepageVideo ? '视频上传失败，请确认文件为常见视频格式且不超过 512MB。' : '图片上传失败，请稍后重试。' }, { status: 500 })
   }
 }

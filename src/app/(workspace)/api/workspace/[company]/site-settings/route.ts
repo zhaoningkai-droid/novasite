@@ -1,15 +1,16 @@
+import { temporarySiteOrigin } from '@/platform/platform-hosts'
 import { cookies } from 'next/headers'
-import { revalidatePath } from 'next/cache'
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
 import type { Tenant } from '@/payload-types'
 import { getAccessibleWorkspaceCompanyBySlug } from '@/platform/workspace'
+import { locales } from '@/platform/site-locales'
 import { getMeUser } from '@/utilities/getMeUser'
+import { revalidateWorkspaceSettings } from '@/platform/workspace-settings-api'
 
 type Context = { params: Promise<{ company: string }> }
-const locales = ['zh', 'en', 'ru', 'id'] as const
 const text = (value: unknown) => typeof value === 'string' ? value.trim() : ''
 const mediaID = (value: unknown) => Number.isInteger(Number(value)) && Number(value) > 0 ? Number(value) : undefined
 
@@ -41,10 +42,9 @@ export async function PATCH(request: Request, { params }: Context) {
     : []
   if (!enabled.length) return NextResponse.json({ message: '至少保留一种启用语言。' }, { status: 422 })
   const defaultLocale = enabled.includes(body.defaultLocale) ? body.defaultLocale : enabled[0]
-  const primaryDomain = text(body.primaryDomain).replace(/^https?:\/\//, '').replace(/\/$/, '')
-  if (primaryDomain && (/[\s/]/.test(primaryDomain) || !primaryDomain.includes('.'))) {
-    return NextResponse.json({ message: '主域名格式不正确，请填写如 www.example.com。' }, { status: 422 })
-  }
+  // Keep the user's optional domain/address as entered. This field does not
+  // authorize a hostname or publish a site; those controls remain separate.
+  const primaryDomain = text(body.primaryDomain)
 
   const logo = mediaID(body.logo)
   const favicon = mediaID(body.favicon)
@@ -65,24 +65,25 @@ export async function PATCH(request: Request, { params }: Context) {
   }
 
   const tenant = await payload.findByID({
-    collection: 'tenants', id: company.id, depth: 0, locale: 'zh', overrideAccess: false, user,
+    collection: 'tenants', id: company.id, depth: 0, locale: company.defaultLocale, overrideAccess: false, user,
   })
   await payload.update({
     collection: 'tenants',
     id: company.id,
-    locale: 'zh',
+    locale: company.defaultLocale,
     overrideAccess: false,
     user,
     data: {
       name: text(body.name) || tenant.name,
       primaryDomain,
-      previewDomain: text(body.previewDomain) || tenant.previewDomain,
+      previewDomain: temporarySiteOrigin(slug) || tenant.previewDomain,
       defaultLocale,
       enabledLocales: enabled,
       status: ['building', 'published', 'suspended'].includes(body.status) ? body.status : tenant.status,
       branding: {
         ...tenant.branding,
         companyName: text(body.companyName) || tenant.branding.companyName,
+        headerText: body.headerText === undefined ? tenant.branding.headerText : text(body.headerText),
         logo,
         favicon,
       },
@@ -94,11 +95,8 @@ export async function PATCH(request: Request, { params }: Context) {
       },
     } as Partial<Tenant>,
   })
-  locales.forEach((locale) => {
-    revalidatePath(`/s/${slug}/${locale}`)
-    revalidatePath(`/s/${slug}/${locale}/sitemap.xml`)
-  })
+  revalidateWorkspaceSettings(slug, 'sites')
   const response = NextResponse.json({ message: '站点信息、语言和全局设置已保存。' })
-  response.cookies.set('payload-tenant', String(company.id), { maxAge: 31536000, path: '/', sameSite: 'lax' })
+  response.cookies.set('payload-tenant', String(company.id), { maxAge: 31536000, path: '/', sameSite: 'lax', secure: process.env.NODE_ENV === 'production' })
   return response
 }

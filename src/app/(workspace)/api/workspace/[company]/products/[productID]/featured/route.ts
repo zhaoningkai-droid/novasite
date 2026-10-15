@@ -1,11 +1,11 @@
-import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { getPayload } from 'payload'
+import { APIError, getPayload } from 'payload'
 
 import config from '@payload-config'
 import { getAccessibleWorkspaceCompanyBySlug } from '@/platform/workspace'
 import { getMeUser } from '@/utilities/getMeUser'
+import { revalidateWorkspaceSettings } from '@/platform/workspace-settings-api'
 
 type Context = { params: Promise<{ company: string; productID: string }> }
 
@@ -34,6 +34,7 @@ export async function PATCH(request: Request, { params }: Context) {
   })
   if (!found.docs[0])
     return NextResponse.json({ message: '未找到当前公司的产品。' }, { status: 404 })
+  try {
   await payload.update({
     collection: 'products',
     context: { workspaceBaseEdit: true },
@@ -43,8 +44,11 @@ export async function PATCH(request: Request, { params }: Context) {
     overrideAccess: false,
     user,
   })
-  revalidatePath(`/workspace/${slug}/website/content`)
-  revalidatePath(`/s/${slug}/zh`)
+  } catch (error) {
+    if (error instanceof APIError && error.status === 409) return NextResponse.json({message:error.message},{status:409})
+    return NextResponse.json({message:'保存未完成，请稍后重试。'},{status:500})
+  }
+  revalidateWorkspaceSettings(slug, 'content')
   return NextResponse.json({
     featured,
     message: featured ? '已推荐到首页产品模块。' : '已取消首页推荐。',

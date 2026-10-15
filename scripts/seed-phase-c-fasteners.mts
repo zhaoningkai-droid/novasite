@@ -1,8 +1,12 @@
 import { getPayload } from 'payload'
 
 import config from '../src/payload.config'
+import { assertSeedEnvironmentAllowsExecution } from '../src/platform/seed-security'
+import { authorizeSeedScript } from './seed-script-authorization'
 
+assertSeedEnvironmentAllowsExecution()
 const payload = await getPayload({ config })
+await authorizeSeedScript(payload)
 const locales = ['en', 'zh', 'ru', 'id'] as const
 type Locale = (typeof locales)[number]
 type Texts = Record<Locale, string>
@@ -147,19 +151,19 @@ async function seedTenant(tenant: number, prefix: string) {
 
   const legacyCategorySlugs = tenant === 1
     ? ['volt-fastener-category', 'oil-immersed-transformers', 'dry-type-transformers', 'compact-Compact test']
-    : ['huadong-fastener-category']
+    : ['novasite-demo-fastener-category']
   for (const slug of legacyCategorySlugs) {
     const result = await payload.find({ collection: 'product-categories', depth: 0, limit: 1, overrideAccess: true, where: { and: [{ tenant: { equals: tenant } }, { slug: { equals: slug } }] } })
     if (result.docs[0]) await payload.delete({ collection: 'product-categories', id: result.docs[0].id, overrideAccess: true, context: { disableRevalidate: true } })
   }
 }
 
-await seedTenant(1, 'voltfast')
-await seedTenant(2, 'huadong')
+await seedTenant(1, 'novasite-fastener-demo-a')
+await seedTenant(2, 'novasite-fastener-demo-b')
 
 const tenantBranding: Array<{ id: number; company: Texts; tagline: Texts }> = [
-  { id: 1, company: text('VoltTrans Industrial Fasteners', '沃特工业紧固件', 'VoltTrans Промышленный Крепёж', 'VoltTrans Fastener Industri'), tagline: text('Reliable fasteners for global industry', '服务全球工业客户的可靠紧固件', 'Надёжный крепёж для мировой промышленности', 'Fastener andal untuk industri global') },
-  { id: 2, company: text('Huadong Fastener Manufacturing Co., Ltd.', '华东紧固件制造有限公司', 'Huadong Производство Крепежа', 'Huadong Manufaktur Fastener'), tagline: text('Fastening solutions made for your assembly', '为您的装配需求提供紧固件解决方案', 'Крепёжные решения для вашей сборки', 'Solusi fastener untuk perakitan Anda') },
+  { id: 1, company: text('NovaSite Fastener Demo A', 'NovaSite 紧固件演示 A', 'NovaSite Демонстрация крепежа A', 'NovaSite Demo Fastener A'), tagline: text('Demonstration fasteners for template preview', '模板预览用紧固件演示内容', 'Демонстрационные крепежи для шаблона', 'Fastener demo untuk pratinjau template') },
+  { id: 2, company: text('NovaSite Fastener Demo B', 'NovaSite 紧固件演示 B', 'NovaSite Демонстрация крепежа B', 'NovaSite Demo Fastener B'), tagline: text('Demonstration fastening solutions', '紧固件模板演示方案', 'Демонстрационные решения по крепежу', 'Solusi fastener demo') },
 ]
 for (const brand of tenantBranding) await writeLocales('tenants', brand.id, { branding: { heroImageURL: 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=2000&q=85' } }, localized({ branding: (locale) => ({ companyName: brand.company[locale], tagline: brand.tagline[locale] }) }))
 
@@ -167,7 +171,7 @@ const pages = await payload.find({ collection: 'pages', depth: 0, limit: 100, so
 for (const tenant of [1, 2]) {
   const page = pages.docs.find((item) => item.tenant === tenant && (tenant === 1 ? item.slug === 'home' : true))
   if (!page) continue
-  const title = tenant === 1 ? text('VoltTrans Fastener Homepage', '沃特紧固件首页', 'Главная VoltTrans Крепёж', 'Beranda Fastener VoltTrans') : text('Huadong Fastener Homepage', '华东紧固件首页', 'Главная Huadong Крепёж', 'Beranda Fastener Huadong')
+  const title = tenant === 1 ? text('NovaSite Fastener Demo A Homepage', 'NovaSite 紧固件演示 A 首页', 'Главная NovaSite Demo A', 'Beranda NovaSite Demo A') : text('NovaSite Fastener Demo B Homepage', 'NovaSite 紧固件演示 B 首页', 'Главная NovaSite Demo B', 'Beranda NovaSite Demo B')
   await writeLocales('pages', page.id, { tenant, hero: { type: 'lowImpact' }, _status: 'published' }, localized({
     title,
     hero: (locale) => ({ type: 'lowImpact', richText: richText(`${title[locale]}\nReliable fastening products for global industrial assembly.`) }),

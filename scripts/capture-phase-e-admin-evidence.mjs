@@ -7,7 +7,7 @@ await fs.mkdir(output, { recursive: true })
 const browser = await chromium.launch({ headless: true })
 const context = await browser.newContext({ viewport: { width: 1512, height: 920 } })
 const page = await context.newPage()
-const login = await page.request.post(`${baseURL}/api/users/login`, { data: { email: process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local', password: process.env.SEED_ADMIN_PASSWORD || '' } })
+const login = await page.request.post(`${baseURL}/api/users/login`, { data: { email: process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid', password: process.env.SEED_ADMIN_PASSWORD || '' } })
 if (!login.ok()) throw new Error(`后台登录失败：${login.status()}`)
 
 await context.addCookies([{ name: 'payload-tenant', value: '2', url: baseURL }])

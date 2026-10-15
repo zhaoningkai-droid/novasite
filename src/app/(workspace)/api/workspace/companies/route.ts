@@ -1,8 +1,11 @@
+import { temporarySiteOrigin } from '@/platform/platform-hosts'
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
 import { getMeUser } from '@/utilities/getMeUser'
+import { getLegacyTemplate } from '@/platform/legacy-template-catalog'
+import { getNewTemplate } from '@/platform/new-templates/registry'
 
 const locales = ['zh', 'en', 'ru', 'id'] as const
 
@@ -18,15 +21,15 @@ const normalizeSlug = (value: string) => value
 const isSlug = (value: string) => /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)
 
 const templateName = (key?: string) => {
-  if (key === 'executive-industrial-pro-v1') return '高级B2B工业模板'
-  if (key === 'precision-light-v1') return '明亮技术模板'
+  const legacy = key ? getLegacyTemplate(key) : undefined
+  if (legacy) return legacy.name
   return '工业深色模板'
 }
 
 const navigationItems = {
   zh: [
     { label: '首页', href: '/' },
-    { label: '产品中心', href: '/products', children: [{ label: '标准紧固件', href: '/products?category=standard-fasteners' }, { label: '非标定制', href: '/products?category=non-standard-custom' }] },
+    { label: '产品中心', href: '/products' },
     { label: '新闻资讯', href: '/news' },
     { label: '案例中心', href: '/cases' },
     { label: '关于我们', href: '/about' },
@@ -35,7 +38,7 @@ const navigationItems = {
   ],
   en: [
     { label: 'Home', href: '/' },
-    { label: 'Products', href: '/products', children: [{ label: 'Standard Fasteners', href: '/products?category=standard-fasteners' }, { label: 'Custom Fasteners', href: '/products?category=non-standard-custom' }] },
+    { label: 'Products', href: '/products' },
     { label: 'News', href: '/news' },
     { label: 'Cases', href: '/cases' },
     { label: 'About', href: '/about' },
@@ -44,7 +47,7 @@ const navigationItems = {
   ],
   ru: [
     { label: 'Главная', href: '/' },
-    { label: 'Продукция', href: '/products', children: [{ label: 'Стандартный крепеж', href: '/products?category=standard-fasteners' }, { label: 'Нестандартный крепеж', href: '/products?category=non-standard-custom' }] },
+    { label: 'Продукция', href: '/products' },
     { label: 'Новости', href: '/news' },
     { label: 'Кейсы', href: '/cases' },
     { label: 'О нас', href: '/about' },
@@ -53,7 +56,7 @@ const navigationItems = {
   ],
   id: [
     { label: 'Beranda', href: '/' },
-    { label: 'Produk', href: '/products', children: [{ label: 'Fastener Standar', href: '/products?category=standard-fasteners' }, { label: 'Fastener Kustom', href: '/products?category=non-standard-custom' }] },
+    { label: 'Produk', href: '/products' },
     { label: 'Berita', href: '/news' },
     { label: 'Kasus', href: '/cases' },
     { label: 'Tentang Kami', href: '/about' },
@@ -69,23 +72,37 @@ const quickLinks = {
   id: [{ label: 'Produk', href: '/products' }, { label: 'Kasus', href: '/cases' }, { label: 'Berita', href: '/news' }, { label: 'Kontak', href: '/contact' }],
 } as const
 
-const seedBasics = async ({ payload, tenantID, user, companyName }: { payload: Awaited<ReturnType<typeof getPayload>>, tenantID: number, user: NonNullable<Awaited<ReturnType<typeof getMeUser>>['user']>, companyName: string }) => {
-  await Promise.all(locales.map((locale) => payload.create({
+const seedBasics = async ({ payload, tenantID, user }: { payload: Awaited<ReturnType<typeof getPayload>>, tenantID: number, user: NonNullable<Awaited<ReturnType<typeof getMeUser>>['user']> }) => {
+  // Navigation writes share the company's translation lock. Initialise one at
+  // a time and do not populate relations we discard, keeping the small pool free.
+  for (const locale of locales) await payload.create({
     collection: 'site-navigation',
+    depth: 0,
     overrideAccess: false,
     user,
     data: {
       tenant: tenantID,
       title: '主导航',
       localeCode: locale,
-      footerIntro: locale === 'zh' ? `${companyName} 专注紧固件五金产品展示、询盘转化和外贸客户服务。` : `${companyName} focuses on B2B fastener products, inquiries, and global customer service.`,
+      footerIntro: '',
       items: navigationItems[locale],
       quickLinks: quickLinks[locale],
     } as any,
-  })))
+  })
 }
 
 export async function POST(request: Request) {
+  try {
+    return await createCompany(request)
+  } catch (error) {
+    console.error('[workspace/companies] Company creation failed', error instanceof Error
+      ? { name: error.name, message: error.message }
+      : { message: 'Unknown error' })
+    return NextResponse.json({ message: '公司创建失败，已保留填写内容，请稍后重试。' }, { status: 500 })
+  }
+}
+
+async function createCompany(request: Request) {
   const body = await request.json().catch(() => null)
   const { user } = await getMeUser()
   if (!user) return NextResponse.json({ message: '登录已失效，请重新登录。' }, { status: 401 })
@@ -105,6 +122,9 @@ export async function POST(request: Request) {
   if (templateID) {
     const template = await payload.findByID({ collection: 'templates', id: templateID, depth: 0, overrideAccess: false, user })
     if (template.status !== 'published') return NextResponse.json({ message: '只能选择已发布的网站模板。' }, { status: 422 })
+    if (!getLegacyTemplate(template.key) && !getNewTemplate(template.key)) {
+      return NextResponse.json({ message: '该模板尚未接入网站页面，请先选择模板库中的可用模板。' }, { status: 422 })
+    }
     selectedTemplate = template
   } else {
     const templates = await payload.find({ collection: 'templates', depth: 0, limit: 1, overrideAccess: false, user, where: { and: [{ key: { equals: 'power-engineering-v1' } }, { status: { equals: 'published' } }] } })
@@ -123,7 +143,7 @@ export async function POST(request: Request) {
       slug,
       status: 'building',
       primaryDomain: '',
-      previewDomain: `http://localhost:3100/s/${slug}/zh`,
+      previewDomain: temporarySiteOrigin(slug) || new URL(`/s/${slug}/zh`, process.env.NEXT_PUBLIC_SERVER_URL || request.url).href,
       defaultLocale: 'zh',
       enabledLocales: ['zh', 'en', 'ru', 'id'],
       selectedTemplate: templateID,
@@ -131,64 +151,61 @@ export async function POST(request: Request) {
       templateAppliedAt: now,
       branding: {
         companyName: name,
-        tagline: '专业紧固件五金产品与外贸服务',
+        tagline: '',
         primaryColor: '#0B3B60',
         accentColor: '#F97316',
-        heroImageURL: 'https://images.unsplash.com/photo-1581092335397-9fa3411088c6?auto=format&fit=crop&w=2000&q=85',
+        heroImageURL: '',
       },
       contact: {},
       seo: {
-        titleSuffix: `${name} · 紧固件五金独立站`,
-        defaultDescription: `${name} 的产品展示、企业介绍、案例新闻和询盘服务独立站。`,
+        titleSuffix: name,
+        defaultDescription: '',
         indexingEnabled: false,
       },
       fixedPages: {
         homepage: {
-          heroEyebrow: 'FASTENER & HARDWARE SUPPLIER',
-          heroTitle: '专业紧固件五金产品展示站',
-          heroDescription: '用于展示企业实力、产品分类、案例新闻和客户询盘，内容可在后台逐步完善。',
-          showCompanyIntro: true,
-          companyIntroTitle: '关于我们',
-          companyIntro: `${name} 专注紧固件五金产品展示、外贸客户沟通和询盘转化。`,
-          showStrength: true,
-          showFeaturedProducts: true,
+          banners: [],
+          heroEyebrow: '',
+          heroTitle: '',
+          heroDescription: '',
+          showCompanyIntro: false,
+          companyIntroTitle: '',
+          companyIntro: '',
+          showStrength: false,
+          showFeaturedProducts: false,
           showVideo: false,
-          showInquiryForm: true,
-          inquiryTitle: '获取产品报价与资料',
-          inquiryDescription: '请留下需求，我们会尽快联系您。',
+          showInquiryForm: false,
+          inquiryTitle: '',
+          inquiryDescription: '',
           inquiryRequiredFields: { name: true, company: false, email: true, phone: true, message: true },
-          showNews: true,
-          showCases: true,
+          showNews: false,
+          showCases: false,
         },
         about: {
           title: '关于我们',
-          intro: `${name} 的企业介绍可在后台“关于我们”中维护，并同步到独立站。`,
-          modules: [
-            { title: '企业简介', description: '请在后台补充公司发展、主营产品、服务市场和核心优势。', sortOrder: 1 },
-            { title: '核心产品与技术', description: '请在后台补充紧固件五金产品能力、材料工艺和质量体系。', sortOrder: 2 },
-            { title: '企业实力', description: '请在后台补充工厂规模、生产设备、检测能力和交付能力。', sortOrder: 3 },
-          ],
-          showStrength: true,
+          intro: '',
+          modules: [],
+          showStrength: false,
         },
         contactPage: {
           title: '联系我们',
-          intro: '请在后台补充地址、邮箱、电话、WhatsApp 和二维码。',
-          showInquiryForm: true,
+          intro: '',
+          showInquiryForm: false,
         },
         footer: {
-          intro: `${name} 专注紧固件五金产品展示与外贸询盘服务。`,
+          intro: '',
           socialLinks: {},
-          quickLinks: quickLinks.zh,
+          quickLinks: [],
         },
       },
     } as any,
   })
 
   try {
-    await seedBasics({ payload, tenantID: tenant.id, user, companyName: name })
+    await seedBasics({ payload, tenantID: tenant.id, user })
   } catch (error) {
     return NextResponse.json({
-      message: '公司已创建，但默认分类或导航初始化未完全成功，请进入工作台后补充。',
+      message: '公司已创建，但默认导航初始化未完全成功，请进入工作台后补充。',
       company: {
         id: tenant.id,
         name: tenant.name,

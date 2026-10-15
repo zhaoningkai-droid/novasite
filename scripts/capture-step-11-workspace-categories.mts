@@ -17,7 +17,7 @@ async function enterCompany(page: import('@playwright/test').Page, name: string)
 
 try {
   const context = await browser.newContext({ viewport: { width: 1512, height: 920 } })
-  const login = await context.request.post(`${baseURL}/api/users/login`, { data: { email: process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local', password: process.env.SEED_ADMIN_PASSWORD || '' } })
+  const login = await context.request.post(`${baseURL}/api/users/login`, { data: { email: process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid', password: process.env.SEED_ADMIN_PASSWORD || '' } })
   const { token } = await login.json() as { token: string }
   await context.addCookies([{ domain: 'localhost', name: 'payload-token', path: '/', value: token }])
   const page = await context.newPage()

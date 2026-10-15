@@ -1,3 +1,5 @@
+# Historical single-tenant test configuration only; not verified against production.
+# Do not use this file for admin.o669.com or customer data.
 {$SITE_DOMAIN} {
   encode zstd gzip
 

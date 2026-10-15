@@ -1,0 +1,10 @@
+.content-translation-action { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.content-translation-action > span { color: #64748b; font-size: 13px; white-space: nowrap; }
+.content-translation-action button, .content-translation-batch { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 9px 15px; border: 1px solid #2563eb; border-radius: 8px; background: #2563eb; color: white; font-size: 14px; cursor: pointer; }
+.content-translation-action button:disabled, .content-translation-batch:disabled { cursor: not-allowed; opacity: .45; }
+.content-translation-action button:focus-visible, .content-translation-batch:focus-visible { outline: 3px solid #bfdbfe; outline-offset: 2px; }
+.content-translation-action small { color: #b91c1c; max-width: 300px; }
+.content-translation-header-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.content-translation-header-actions > button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 9px 15px; border: 1px solid #2563eb; border-radius: 8px; background: #2563eb; color: white; font-size: 14px; cursor: pointer; }
+.content-translation-header-actions > button:disabled { cursor: not-allowed; opacity: .45; }
+.content-translation-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }

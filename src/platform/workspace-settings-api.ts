@@ -8,6 +8,7 @@ import { userHasRole, type PlatformRole } from '@/access/roles'
 import { getMeUser } from '@/utilities/getMeUser'
 import { getAccessibleWorkspaceCompanyBySlug } from './workspace'
 import { SettingsInputError } from './workspace-settings-validation'
+import { locales } from './site-locales'
 
 export const settingsAdminRoles: PlatformRole[] = ['super-admin', 'site-admin']
 export const settingsEditorRoles: PlatformRole[] = ['super-admin', 'site-admin', 'editor']
@@ -35,6 +36,7 @@ export function settingsAPIError(error: unknown, message: string) {
     return NextResponse.json({ message: error.message }, { status: 422 })
   }
   const status = error && typeof error === 'object' && 'status' in error ? error.status : null
+  if (status === 409) return NextResponse.json({ message: error instanceof Error ? error.message : '内容正在翻译中或已发生变化，请稍后重试。' }, { status: 409 })
   if (status === 403) return NextResponse.json({ message: '当前账号没有执行此操作的权限。' }, { status: 403 })
   if (status === 400 || status === 422) {
     return NextResponse.json({ message: '提交的信息未通过校验，请检查必填内容及地址标识。' }, { status: 422 })
@@ -43,6 +45,9 @@ export function settingsAPIError(error: unknown, message: string) {
 }
 
 export function revalidateWorkspaceSettings(slug: string, page: string) {
-  for (const locale of ['zh', 'en', 'ru', 'id']) revalidatePath('/s/' + slug + '/' + locale, 'layout')
+  for (const locale of locales) revalidatePath('/s/' + slug + '/' + locale, 'layout')
+  // SEO endpoints live at site level, outside the language layout.
+  revalidatePath('/s/' + slug + '/sitemap.xml')
+  revalidatePath('/s/' + slug + '/robots.txt')
   revalidatePath('/workspace/' + slug + '/website/' + page)
 }

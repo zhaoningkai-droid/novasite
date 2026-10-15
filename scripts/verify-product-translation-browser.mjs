@@ -1,0 +1,60 @@
+import {readFile,writeFile} from 'node:fs/promises'
+import {chromium} from 'playwright'
+const fixture=JSON.parse(await readFile('.codex-runtime/product-translation-review-fixtures.json','utf8'))
+const origin='http://localhost:3102', path=`/workspace/${fixture.slug}/website/content`
+const out='docs/evidence/admin-redesign/product-background-translation-20260930'
+const report=[]
+const check=(condition,scenario)=>{if(!condition)throw new Error(`FAILED: ${scenario}`);report.push({scenario,passed:true})}
+const browser=await chromium.launch({headless:true})
+const context=await browser.newContext({viewport:{width:1440,height:1050}})
+const login=await context.request.post(origin+'/api/login',{form:{email:fixture.email,password:fixture.password,redirect:path},maxRedirects:0})
+check(login.status()===303 && (await context.cookies()).some(cookie=>cookie.name==='payload-token'),'隔离测试账号通过真实登录接口认证')
+await context.addCookies([{name:'payload-tenant',value:String(fixture.companyID),url:origin,httpOnly:true,sameSite:'Lax'}])
+let page=await context.newPage()
+const errors=[];page.on('pageerror',error=>errors.push(error.message))
+await page.goto(origin+path,{waitUntil:'networkidle'})
+await page.getByRole('button',{name:'翻译',exact:true}).waitFor()
+await page.screenshot({path:out+'/browser-before-submit-desktop.png',fullPage:true})
+const labels=['故障测试 GGD-380 配电柜',...Array.from({length:4},(_,index)=>`批量测试 ${index+1} 配电柜`)]
+for(const label of labels)await page.getByRole('checkbox',{name:'选择 '+label,exact:true}).check()
+const control=page.locator('tbody tr').filter({hasText:'批量测试 5 配电柜'})
+check(await control.getByRole('link',{name:'编辑 批量测试 5 配电柜',exact:true}).getAttribute('aria-disabled')!=='true','勾选5件产品时其他产品的编辑入口仍可用')
+await page.getByRole('button',{name:'翻译',exact:true}).click()
+await page.getByText('其他产品可正常操作。',{exact:false}).first().waitFor()
+await page.waitForTimeout(150)
+check(await page.getByRole('checkbox',{name:'选择 '+labels[4],exact:true}).isDisabled(),'提交后只禁用排队中产品的选择和操作')
+check(await control.getByRole('link',{name:'编辑 批量测试 5 配电柜',exact:true}).getAttribute('aria-disabled')!=='true','后台翻译运行时其他产品的编辑入口仍可用')
+check(await page.getByRole('checkbox',{name:'选择 批量测试 5 配电柜',exact:true}).isEnabled(),'后台运行期间仍能选择其他产品')
+const locked=await context.request.patch(`${origin}/api/workspace/${fixture.slug}/products/${fixture.products[4]}`,{data:{title:'不应该保存的编辑'}})
+check(locked.status()===409 && (await locked.json()).message.includes('翻译'),'另一页面提交翻译中产品的编辑时返回明确409提示')
+const other=await context.request.patch(`${origin}/api/workspace/${fixture.slug}/products/${fixture.products[5]}`,{data:{title:'批量测试 5 配电柜 继续编辑'}})
+check(other.status()===200,'其他产品在翻译运行期间通过真实保存接口成功保存')
+await page.screenshot({path:out+'/browser-running-desktop.png',fullPage:true})
+await page.close();page=await context.newPage();page.on('pageerror',error=>errors.push(error.message))
+await page.goto(origin+path,{waitUntil:'networkidle'})
+check(await page.getByRole('checkbox',{name:'选择 '+labels[4],exact:true}).isDisabled(),'关闭原页面再打开，仍读取持久任务和产品锁定状态')
+await page.setViewportSize({width:390,height:844})
+await page.screenshot({path:out+'/browser-running-mobile.png',fullPage:true})
+await page.setViewportSize({width:1440,height:1050})
+let result
+for(let attempt=0;attempt<40;attempt++) {
+ const response=await context.request.get(`${origin}/api/workspace/${fixture.slug}/products/bulk-translate?ids=${fixture.products.slice(0,5).join(',')}`)
+ result=await response.json()
+ if(result.views?.length===5 && result.views.every(view=>view.status==='completed'))break
+ await new Promise(resolve=>setTimeout(resolve,1000))
+}
+check(result.views?.every(view=>view.status==='completed' && view.completed===3 && !view.locked),'5件产品最终自动保存到公司启用的3个目标语言站点并解除锁定')
+await page.reload({waitUntil:'networkidle'})
+check(await page.getByRole('checkbox',{name:'选择 '+labels[0],exact:true}).isEnabled(),'完成后恢复产品选择和编辑')
+await page.getByRole('checkbox',{name:'选择 '+labels[0],exact:true}).check()
+check(await page.getByRole('button',{name:'翻译',exact:true}).isDisabled(),'源内容未修改的已完成产品不能重复翻译')
+await page.getByRole('checkbox',{name:'选择 '+labels[0],exact:true}).uncheck()
+await page.locator('tbody tr').first().locator('details summary').click()
+check(await page.locator('tbody tr').first().getByText('英语',{exact:true}).isVisible(),'展开行内状态可查看逐语言保存结果')
+await page.screenshot({path:out+'/browser-completed-desktop.png',fullPage:true})
+await page.setViewportSize({width:390,height:844})
+await page.screenshot({path:out+'/browser-completed-mobile.png',fullPage:true})
+check(errors.length===0,'浏览器运行过程无页面脚本错误')
+await writeFile(out+'/browser-tests.json',JSON.stringify({isolatedDatabase:fixture.database,provider:'流程使用隔离模拟供应商；真实AI译文见live-provider.json',scenarios:report,pageErrors:errors,finalViews:result.views},null,2)+'\n')
+process.stdout.write(JSON.stringify({scenariosPassed:report.length,pageErrors:errors.length})+'\n')
+await browser.close()

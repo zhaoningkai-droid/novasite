@@ -10,7 +10,6 @@ import { FeaturedNewsToggle } from '@/platform/components/FeaturedNewsToggle/Fea
 import {
   ContentFeaturedStatus,
   ContentListItem,
-  ContentStatus,
   ContentUpdatedAt,
   contentListHref,
   contentListPageSize,
@@ -69,9 +68,10 @@ export default async function NewsManagementPage({
     payload.find({
       collection: 'news',
       depth: 1,
-      fallbackLocale: 'en',
+      draft: true,
+      fallbackLocale: false,
       limit: contentListPageSize,
-      locale: 'zh',
+      locale: company.defaultLocale,
       overrideAccess: false,
       page,
       sort: '-updatedAt',
@@ -81,9 +81,9 @@ export default async function NewsManagementPage({
     payload.find({
       collection: 'news-categories',
       depth: 0,
-      fallbackLocale: 'en',
+      fallbackLocale: false,
       limit: 0,
-      locale: 'zh',
+      locale: company.defaultLocale,
       overrideAccess: false,
       pagination: false,
       select: { name: true },
@@ -99,16 +99,14 @@ export default async function NewsManagementPage({
     <section className="workspace-content-foundation">
       <header className="workspace-content-foundation__header">
         <div>
-          <p>网站配置 / 内容管理</p>
+
           <h1>
             新闻文章
             <small className="workspace-content-foundation__count">
               {records.totalDocs} 项结果
             </small>
           </h1>
-          <span className="workspace-content-foundation__description">
-            管理公司新闻与资讯，清楚查看分类、发布状态和首页推荐。
-          </span>
+
         </div>
         <div className="workspace-content-foundation__header-actions">
           {canEdit ? (
@@ -148,6 +146,8 @@ export default async function NewsManagementPage({
         </div>
       </form>
       <WorkspaceTable
+        asyncTranslation
+        bulkTranslateURL={canEdit ? `/api/workspace/${slug}/translations/news` : undefined}
         ariaLabel="新闻列表"
         bulkDeleteURL={canDelete ? '/api/workspace/' + slug + '/news/bulk' : undefined}
         columns={[
@@ -155,7 +155,7 @@ export default async function NewsManagementPage({
           { key: 'category', label: '分类', width: '120px' },
           { key: 'featured', label: '首页推荐', width: '120px' },
           { key: 'sort', label: '排序', width: '64px' },
-          { key: 'status', label: '发布状态', width: '90px' },
+          { key: 'translation', label: '翻译状态', width: '100px' },
           { key: 'updated', label: '更新时间', width: '132px' },
         ]}
         editBaseHref={canEdit ? base : undefined}
@@ -186,6 +186,7 @@ export default async function NewsManagementPage({
               ? item.category.name || '未分类'
               : '未分类'
           return {
+            canTranslate: canEdit,
             id: item.id,
             label: title,
             cells: [
@@ -207,7 +208,7 @@ export default async function NewsManagementPage({
                 <ContentFeaturedStatus featured={Boolean(item.featured)} />
               ),
               String(item.sortOrder ?? 0),
-              <ContentStatus key="status" published={item._status === 'published'} />,
+              '未翻译',
               <ContentUpdatedAt key="updated" value={item.updatedAt} />,
             ],
             details: [

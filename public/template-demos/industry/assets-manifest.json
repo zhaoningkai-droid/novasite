@@ -1,0 +1,125 @@
+{
+  "assets": [
+    {
+      "file": "/template-demos/industry/assets/fastener-bolts.webp",
+      "bytes": 113382,
+      "sha256": "45380fbed94ce157b08bff35f355ab2b140c6c1dce5d839b2c875af862dcbdbc",
+      "source": "Previously generated image; reuse explicitly authorized by user",
+      "retrievedOn": "2026-09-30",
+      "usage": "Isolated demonstration only; never copied into customer media",
+      "processing": "WebP encoding; existing generated images were not newly generated or cropped; Pexels delivery constrained to 1600px"
+    },
+    {
+      "file": "/template-demos/industry/assets/fastener-hardware.webp",
+      "bytes": 381572,
+      "sha256": "c5c8d6837c7e274ff51bfc5b3525bec0f659b7b72624e18a6a50b6a144997f1e",
+      "source": "Pexels",
+      "photoId": "31792023",
+      "author": "Jef KoeleWijn",
+      "sourcePage": "https://www.pexels.com/photo/metal-screws-and-bolts-on-a-white-surface-31792023/",
+      "downloadSource": "https://images.pexels.com/photos/31792023/pexels-photo-31792023.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "license": "https://www.pexels.com/license/",
+      "retrievedOn": "2026-09-30",
+      "usage": "Isolated demonstration only; never copied into customer media",
+      "processing": "WebP encoding; existing generated images were not newly generated or cropped; Pexels delivery constrained to 1600px"
+    },
+    {
+      "file": "/template-demos/industry/assets/fastener-hero.webp",
+      "bytes": 200512,
+      "sha256": "871eb442409a47cedc781cc7e2584cf35811fd3c21936a28ca0fb0fcc83ed53e",
+      "source": "Previously generated image; reuse explicitly authorized by user",
+      "retrievedOn": "2026-09-30",
+      "usage": "Isolated demonstration only; never copied into customer media",
+      "processing": "WebP encoding; existing generated images were not newly generated or cropped; Pexels delivery constrained to 1600px"
+    },
+    {
+      "file": "/template-demos/industry/assets/fastener-nuts.webp",
+      "bytes": 636828,
+      "sha256": "b61fcdb68e07de0b6bb5ba20cf61968e1efe8706e066b27cdb8b608a5a205574",
+      "source": "Pexels",
+      "photoId": "21050460",
+      "author": "Gawtham Vijayan",
+      "sourcePage": "https://www.pexels.com/photo/abundance-of-screws-21050460/",
+      "downloadSource": "https://images.pexels.com/photos/21050460/pexels-photo-21050460.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "license": "https://www.pexels.com/license/",
+      "retrievedOn": "2026-09-30",
+      "usage": "Isolated demonstration only; never copied into customer media",
+      "processing": "WebP encoding; existing generated images were not newly generated or cropped; Pexels delivery constrained to 1600px"
+    },
+    {
+      "file": "/template-demos/industry/assets/fastener-thread.webp",
+      "bytes": 55322,
+      "sha256": "445fa5e0f41d5ea0ea479b1b18de8273ae36ee25324de05800165397b798174b",
+      "source": "Pexels",
+      "photoId": "28119518",
+      "author": "Nic Wood",
+      "sourcePage": "https://www.pexels.com/photo/nuts-and-bolts-28119518/",
+      "downloadSource": "https://images.pexels.com/photos/28119518/pexels-photo-28119518.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "license": "https://www.pexels.com/license/",
+      "retrievedOn": "2026-09-30",
+      "usage": "Isolated demonstration only; never copied into customer media",
+      "processing": "WebP encoding; existing generated images were not newly generated or cropped; Pexels delivery constrained to 1600px"
+    },
+    {
+      "file": "/template-demos/industry/assets/power-cabinet.webp",
+      "bytes": 26696,
+      "sha256": "36deffcd47cdedbd5a9868b1742cf52dace9453b80e2248191678840e2d54089",
+      "source": "Previously generated image; reuse explicitly authorized by user",
+      "retrievedOn": "2026-09-30",
+      "usage": "Isolated demonstration only; never copied into customer media",
+      "processing": "WebP encoding; existing generated images were not newly generated or cropped; Pexels delivery constrained to 1600px"
+    },
+    {
+      "file": "/template-demos/industry/assets/power-hero.webp",
+      "bytes": 167352,
+      "sha256": "4eacda6ef781be71d0c327e95746598e0014df446a961668d76f0bbc2e04027e",
+      "source": "Previously generated image; reuse explicitly authorized by user",
+      "retrievedOn": "2026-09-30",
+      "usage": "Isolated demonstration only; never copied into customer media",
+      "processing": "WebP encoding; existing generated images were not newly generated or cropped; Pexels delivery constrained to 1600px"
+    },
+    {
+      "file": "/template-demos/industry/assets/power-panel.webp",
+      "bytes": 225534,
+      "sha256": "933fc127405501ff47e4751a18eed20f6f7c90b8c04a9a870aac81a1e213eeea",
+      "source": "Pexels",
+      "photoId": "28950842",
+      "author": "ranjeet .",
+      "sourcePage": "https://www.pexels.com/photo/electrical-circuit-breaker-panel-with-color-coded-wiring-28950842/",
+      "downloadSource": "https://images.pexels.com/photos/28950842/pexels-photo-28950842.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "license": "https://www.pexels.com/license/",
+      "retrievedOn": "2026-09-30",
+      "usage": "Isolated demonstration only; never copied into customer media",
+      "processing": "WebP encoding; existing generated images were not newly generated or cropped; Pexels delivery constrained to 1600px"
+    },
+    {
+      "file": "/template-demos/industry/assets/power-technician.webp",
+      "bytes": 118354,
+      "sha256": "f92e547fe1dfe9e997560d6e5e0cddd1bfddf0c77ef76ef6060f3da604d6eaf7",
+      "source": "Pexels",
+      "photoId": "27928761",
+      "author": "ranjeet .",
+      "sourcePage": "https://www.pexels.com/photo/a-man-is-working-on-an-electrical-panel-27928761/",
+      "downloadSource": "https://images.pexels.com/photos/27928761/pexels-photo-27928761.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "license": "https://www.pexels.com/license/",
+      "retrievedOn": "2026-09-30",
+      "usage": "Isolated demonstration only; never copied into customer media",
+      "processing": "WebP encoding; existing generated images were not newly generated or cropped; Pexels delivery constrained to 1600px"
+    },
+    {
+      "file": "/template-demos/industry/assets/power-wiring.webp",
+      "bytes": 236780,
+      "sha256": "416ab7b4d13d0da5fd8dca9ae962f9fac71779477fbdfa7ea95aa6fb54da285d",
+      "source": "Pexels",
+      "photoId": "28942196",
+      "author": "Magda Ehlers",
+      "sourcePage": "https://www.pexels.com/photo/detailed-interior-of-an-electrical-control-panel-28942196/",
+      "downloadSource": "https://images.pexels.com/photos/28942196/pexels-photo-28942196.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      "license": "https://www.pexels.com/license/",
+      "retrievedOn": "2026-09-30",
+      "usage": "Isolated demonstration only; never copied into customer media",
+      "processing": "WebP encoding; existing generated images were not newly generated or cropped; Pexels delivery constrained to 1600px"
+    }
+  ],
+  "policy": "No further image generation. Photos illustrate template design, not customer capabilities, certifications or delivered projects. Source assets are not offered as standalone downloads."
+}

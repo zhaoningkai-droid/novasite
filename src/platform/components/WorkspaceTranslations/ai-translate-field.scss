@@ -1,0 +1,19 @@
+.ai-translate-field { position: relative; display: flex; justify-content: flex-end; margin-top: 5px; }
+.ai-translate-field__trigger { align-items: center; display: inline-flex; gap: 5px; border: 0; padding: 2px 0; background: transparent; color: #335cff; font: inherit; font-size: 12px; cursor: pointer; }
+.ai-translate-field__trigger:disabled { opacity: .55; cursor: wait; }
+.ai-translate-field__panel { position: absolute; top: 100%; right: 0; z-index: 5; display: grid; gap: 10px; width: min(460px, calc(100vw - 56px)); margin-top: 8px; padding: 14px; border: 1px solid #dce3ef; border-radius: 10px; background: #fff; box-shadow: 0 8px 24px rgba(24,35,59,.1); color: #172033; }
+.ai-translate-field__panel header,.ai-translate-field__panel footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ai-translate-field__panel header button { display: grid; place-items: center; border: 0; background: transparent; color: #637089; cursor: pointer; }
+.ai-translate-field__panel label { display: grid; gap: 5px; color: #526078; font-size: 12px; }
+.ai-translate-field__panel select,.ai-translate-field__panel textarea { width: 100%; border: 1px solid #dce3ef; border-radius: 6px; background: white; color: #172033; font: inherit; }
+.ai-translate-field__panel select { height: 36px; padding: 0 9px; }
+.ai-translate-field__panel textarea { min-height: 100px; padding: 9px; resize: vertical; }
+.ai-translate-field__placeholder,.ai-translate-field__warning,.ai-translate-field__error { margin: 0; color: #637089; font-size: 12px; line-height: 1.5; }
+.ai-translate-field__warning { color: #855713; }
+.ai-translate-field__error { color: #b42336; }
+.ai-translate-field__panel footer button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 34px; padding: 0 10px; border: 1px solid #dce3ef; border-radius: 6px; background: #fff; color: #34425b; cursor: pointer; font: inherit; font-size: 12px; }
+.ai-translate-field__panel footer button.is-primary { border-color: #335cff; background: #335cff; color: #fff; }
+.ai-translate-field__panel footer button:disabled { opacity: .5; cursor: not-allowed; }
+.ai-translate-field__spin { animation: ai-translate-spin 1s linear infinite; }
+@keyframes ai-translate-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ai-translate-field__spin { animation-duration: 4s; } }

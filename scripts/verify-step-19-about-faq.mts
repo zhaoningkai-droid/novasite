@@ -19,7 +19,7 @@ try {
   faqID = faq.id
   const writtenTenant = await payload.update({ collection: 'tenants', id: 2, locale: 'zh', overrideAccess: true, data: { fixedPages: { ...tenant.fixedPages, about: { ...originalAbout, modules: [{ title: `第19步企业介绍模块-${stamp}`, description: '此模块由当前客户工作台保存，并在客户站关于我们页面真实显示。', sortOrder: -19 }] } } } as any })
   report.aboutAfterWrite = (writtenTenant.fixedPages?.about as any)?.modules || []
-  const login = await context.request.post('http://localhost:3100/api/users/login', { data: { email: process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local', password: process.env.SEED_ADMIN_PASSWORD || '' } })
+  const login = await context.request.post('http://localhost:3100/api/users/login', { data: { email: process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid', password: process.env.SEED_ADMIN_PASSWORD || '' } })
   const { token } = await login.json() as { token: string }
   await context.addCookies([{ domain: 'localhost', name: 'payload-token', path: '/', value: token }, { domain: 'localhost', name: 'payload-tenant', path: '/', value: '2' }])
   await page.goto('http://localhost:3100/workspace/huadong-fasteners/website/faqs', { waitUntil: 'networkidle' })

@@ -9,12 +9,13 @@ export const Leads: CollectionConfig = {
   admin: {
     group: '客户与询盘',
     useAsTitle: 'email',
-    defaultColumns: ['createdAt', 'name', 'company', 'country', 'status'],
-    listSearchableFields: ['name', 'company', 'email', 'country'],
+    defaultColumns: ['createdAt', 'name', 'company', 'address', 'country', 'status'],
+    listSearchableFields: ['name', 'company', 'email', 'address', 'country'],
   },
   fields: [
     { name: 'name', label: '姓名', type: 'text', required: true },
     { name: 'company', label: '公司', type: 'text' },
+    { name: 'address', label: '访客地址', type: 'text', maxLength: 300 },
     { name: 'email', label: '企业邮箱', type: 'email', required: true },
     { name: 'phone', label: 'WhatsApp / 电话', type: 'text' },
     { name: 'country', label: '国家', type: 'text' },
@@ -25,10 +26,17 @@ export const Leads: CollectionConfig = {
     { name: 'utmSource', label: 'UTM Source', type: 'text' },
     { name: 'utmCampaign', label: 'UTM Campaign', type: 'text' },
     {
-      name: 'status', label: '跟进状态', type: 'select', defaultValue: 'new', required: true,
+      name: 'status',
+      label: '跟进状态',
+      type: 'select',
+      defaultValue: 'new',
+      required: true,
       options: [
-        { label: '新询盘', value: 'new' }, { label: '跟进中', value: 'contacted' },
-        { label: '已报价', value: 'quoted' }, { label: '已成交', value: 'won' }, { label: '无效', value: 'invalid' },
+        { label: '新询盘', value: 'new' },
+        { label: '跟进中', value: 'contacted' },
+        { label: '已报价', value: 'quoted' },
+        { label: '已成交', value: 'won' },
+        { label: '无效', value: 'invalid' },
       ],
     },
     {

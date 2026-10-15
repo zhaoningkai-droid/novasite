@@ -215,10 +215,15 @@ export function SitePageBlocks({ cases, locale, news, page, posts, productCatego
       .filter((module) => module.imageURL)
       .slice(0, 6)
     const videoSource = imageURL(homepage?.videoMedia) || homepage?.videoURL || ''
+    const hasConfiguredHero = Boolean(
+      homepage?.heroTitle?.trim() || homepage?.heroDescription?.trim() ||
+      homepage?.banners?.some((banner) => banner.desktopImage || banner.mobileImage || banner.title || banner.description) ||
+      site.branding?.heroImageURL?.trim(),
+    )
 
     return (
       <main className="executive-home" data-site-page={page.slug}>
-        {page.hero.type !== 'none' && (
+        {page.hero.type !== 'none' && hasConfiguredHero && (
           <HeroCarousel
             banners={homepage?.banners || []}
             eyebrow={homepage?.heroEyebrow ? <span className="site-eyebrow">{homepage.heroEyebrow}</span> : null}

@@ -1,33 +1,40 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowLeft, Check, CheckCircle2, Globe2, Loader2, Save, TriangleAlert } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Globe2, Loader2, Save, TriangleAlert } from 'lucide-react'
 import { FormEvent, KeyboardEvent, useRef, useState } from 'react'
 
 import { useWorkspaceUnsaved } from '../WorkspaceEditor/useWorkspaceUnsaved'
 import { readWorkspaceResponse, workspaceErrorMessage } from '../WorkspaceEditor/workspaceResponse'
 import '../WorkspaceEditor/content-entry-editor.scss'
 import './workspace-translations.scss'
+import { AITranslateField, type TranslationSource } from './AITranslateField'
+import type { SiteLocale } from '@/platform/site-locales'
 
 export type TranslationLocale = {
-  code: 'en' | 'zh' | 'ru' | 'id'
+  code: SiteLocale
   complete: boolean
   label: string
   summary: string
   title: string
 }
-type Props = { locales: TranslationLocale[]; returnHref: string; saveURL: string }
+type Props = {
+  locales: TranslationLocale[]
+  returnHref: string
+  saveURL: string
+  sourceLocale?: SiteLocale
+}
 const changed = (item: TranslationLocale, saved?: TranslationLocale) =>
   !saved || item.title !== saved.title || item.summary !== saved.summary
 
 export function WorkspaceTranslations(props: Props) {
   return <TranslationForm {...props} key={props.saveURL} />
 }
-function TranslationForm({ locales, returnHref, saveURL }: Props) {
+function TranslationForm({ locales, returnHref, saveURL, sourceLocale = 'zh' }: Props) {
   const [items, setItems] = useState(locales)
   const [savedItems, setSavedItems] = useState(locales)
   const [activeCode, setActiveCode] = useState<TranslationLocale['code']>(
-    locales.find((item) => item.code === 'zh')?.code || locales[0]?.code || 'zh',
+    locales.find((item) => item.code === sourceLocale)?.code || locales[0]?.code || 'zh',
   )
   const [feedback, setFeedback] = useState('')
   const [error, setError] = useState(false)
@@ -46,6 +53,16 @@ function TranslationForm({ locales, returnHref, saveURL }: Props) {
     setItems((current) =>
       current.map((item) => (item.code === active.code ? { ...item, [key]: value } : item)),
     )
+  const translationSources: TranslationSource[] = items.map(({ code, label, title }) => ({
+    code,
+    label,
+    value: title,
+  }))
+  const summarySources: TranslationSource[] = items.map(({ code, label, summary }) => ({
+    code,
+    label,
+    value: summary,
+  }))
   const activate = (code: TranslationLocale['code']) => {
     if (saving) return
     setActiveCode(code)
@@ -111,30 +128,21 @@ function TranslationForm({ locales, returnHref, saveURL }: Props) {
   if (!active)
     return (
       <section className="workspace-translations ws-entry-editor">
-        <h1>产品四语维护</h1>
+        <h1>产品多语言维护</h1>
         <p>没有可维护的语言，请返回内容管理检查。</p>
         <Link href={returnHref}>返回内容管理</Link>
       </section>
     )
   return (
-    <section className="workspace-translations ws-entry-editor" aria-label="四语内容维护">
+    <section className="workspace-translations ws-entry-editor" aria-label="多语言内容维护">
       <header className="ws-entry-editor__header">
         <div>
           <Link className="ws-entry-editor__back" href={returnHref}>
             <ArrowLeft size={15} />
             返回产品管理
           </Link>
-          <h1>产品四语维护</h1>
+          <h1>产品多语言维护</h1>
           <p>切换语言会保留本页输入，每种语言分别保存。</p>
-        </div>
-        <div className="workspace-translations__summary">
-          <Globe2 size={18} />
-          <span>
-            <b>
-              {savedItems.filter((item) => item.complete).length} / {items.length}
-            </b>
-            种语言已保存并补全
-          </span>
         </div>
       </header>
       <div aria-label="选择维护语言" className="workspace-translations__progress" role="tablist">
@@ -159,20 +167,7 @@ function TranslationForm({ locales, returnHref, saveURL }: Props) {
                 <strong>{item.label}</strong>
                 <small>{item.code.toUpperCase()}</small>
               </span>
-              <small
-                className={`workspace-translations__state${dirty ? ' is-dirty' : saved?.complete ? ' is-complete' : ''}`}
-              >
-                {dirty ? (
-                  '有未保存修改'
-                ) : saved?.complete ? (
-                  <>
-                    <Check size={12} />
-                    已完成
-                  </>
-                ) : (
-                  '待补全'
-                )}
-              </small>
+              {dirty && <small className="workspace-translations__state is-dirty">有未保存修改</small>}
             </button>
           )
         })}
@@ -204,49 +199,71 @@ function TranslationForm({ locales, returnHref, saveURL }: Props) {
               <p>产品名称和摘要只会保存到当前语言。</p>
             </div>
           </div>
-          <label className="ws-entry-editor__field">
-            <b>
-              产品名称 <em>*</em>
-            </b>
-            <input
-              aria-describedby={errors.title ? 'translation-title-error' : undefined}
-              aria-invalid={Boolean(errors.title)}
-              aria-label={`${active.label}产品名称`}
-              id="translation-title"
-              maxLength={120}
-              onChange={(event) => update('title', event.target.value)}
-              required
-              value={active.title}
+          <div className="workspace-translations__ai-field">
+            <label className="ws-entry-editor__field">
+              <b>
+                产品名称 <em>*</em>
+              </b>
+              <input
+                aria-describedby={errors.title ? 'translation-title-error' : undefined}
+                aria-invalid={Boolean(errors.title)}
+                aria-label={`${active.label}产品名称`}
+                id="translation-title"
+                maxLength={120}
+                onChange={(event) => update('title', event.target.value)}
+                required
+                value={active.title}
+              />
+              <small className="ws-entry-editor__counter">{active.title.length} / 120</small>
+              {errors.title && (
+                <small className="ws-entry-editor__field-error" id="translation-title-error">
+                  {errors.title}
+                </small>
+              )}
+            </label>
+            <AITranslateField
+              key={`${active.code}:title`}
+              companySlug={saveURL.split('/')[3] || ''}
+              defaultSourceLocale={sourceLocale}
+              sources={translationSources}
+              targetLocale={active.code}
+              targetValue={active.title}
+              onApply={(value) => update('title', value)}
             />
-            <small className="ws-entry-editor__counter">{active.title.length} / 120</small>
-            {errors.title && (
-              <small className="ws-entry-editor__field-error" id="translation-title-error">
-                {errors.title}
-              </small>
-            )}
-          </label>
-          <label className="ws-entry-editor__field">
-            <b>
-              列表摘要 <em>*</em>
-            </b>
-            <textarea
-              aria-describedby={errors.summary ? 'translation-summary-error' : undefined}
-              aria-invalid={Boolean(errors.summary)}
-              aria-label={`${active.label}列表摘要`}
-              id="translation-summary"
-              maxLength={360}
-              onChange={(event) => update('summary', event.target.value)}
-              required
-              rows={6}
-              value={active.summary}
+          </div>
+          <div className="workspace-translations__ai-field">
+            <label className="ws-entry-editor__field">
+              <b>
+                列表摘要 <em>*</em>
+              </b>
+              <textarea
+                aria-describedby={errors.summary ? 'translation-summary-error' : undefined}
+                aria-invalid={Boolean(errors.summary)}
+                aria-label={`${active.label}列表摘要`}
+                id="translation-summary"
+                maxLength={360}
+                onChange={(event) => update('summary', event.target.value)}
+                required
+                rows={6}
+                value={active.summary}
+              />
+              <small className="ws-entry-editor__counter">{active.summary.length} / 360</small>
+              {errors.summary && (
+                <small className="ws-entry-editor__field-error" id="translation-summary-error">
+                  {errors.summary}
+                </small>
+              )}
+            </label>
+            <AITranslateField
+              key={`${active.code}:summary`}
+              companySlug={saveURL.split('/')[3] || ''}
+              defaultSourceLocale={sourceLocale}
+              sources={summarySources}
+              targetLocale={active.code}
+              targetValue={active.summary}
+              onApply={(value) => update('summary', value)}
             />
-            <small className="ws-entry-editor__counter">{active.summary.length} / 360</small>
-            {errors.summary && (
-              <small className="ws-entry-editor__field-error" id="translation-summary-error">
-                {errors.summary}
-              </small>
-            )}
-          </label>
+          </div>
         </fieldset>
         <footer>
           <p>这里维护名称与列表摘要；此页不会修改正文、图片或其他语言。</p>

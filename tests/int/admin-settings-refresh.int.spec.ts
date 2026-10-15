@@ -45,12 +45,12 @@ const siteInitial = {
 const templates = ['power-engineering-v1', 'precision-light-v1', 'executive-industrial-pro-v1',
   'atelier-industry-v1', 'interior-575-v1', 'power-705-v1', 'autoparts-571-v1', 'machinery-710-v1',
   'solar-test-655-v1'].map((key, index) => ({ id: index + 1, key, name: `模板 ${index + 1}`, version: '1.0.0' }))
-const site = () => h(SiteManager, { companySlug: 'test', createdAt: '2026-01-01', initial: siteInitial,
+const site = () => h(SiteManager, { companyID: 1, companySlug: 'test', createdAt: '2026-01-01', initial: siteInitial,
   templates, templateHistory: [], templateName: '默认模板' })
 
 describe('配置页客户端交互回归（不写客户记录）', () => {
   test('导航输入不丢焦点；切换语种保留草稿，保存后再切回保留新值', async () => {
-    render(h(NavigationEditor, { companySlug: 'test', initial: nav }))
+    render(h(NavigationEditor, { companyID: 1, companySlug: 'test', initial: nav }))
     const field = screen.getByRole('textbox', { name: /菜单名称/ })
     field.focus(); fireEvent.change(field, { target: { value: '产品中心' } })
     expect(document.activeElement).toBe(field)
@@ -64,8 +64,22 @@ describe('配置页客户端交互回归（不写客户记录）', () => {
     fireEvent.click(screen.getByRole('button', { name: /简体中文/ }))
     expect((screen.getByRole('textbox', { name: /菜单名称/ }) as HTMLInputElement).value).toBe('产品中心')
   })
+  test('导航显示全部已启用语言，德语导航可以保存', async () => {
+    render(h(NavigationEditor, { companyID: 1, companySlug: 'test', initial: nav }))
+    for (const label of ['西班牙语', '阿拉伯语', '德语']) {
+      expect(screen.getByRole('button', { name: label })).toBeTruthy()
+    }
+    fireEvent.click(screen.getByRole('button', { name: '德语' }))
+    fireEvent.submit(document.querySelector('#navigation-settings')!)
+    await screen.findByText('德语导航已保存。')
+    const [url, request] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/workspace/test/navigation')
+    expect(JSON.parse(request.body)).toEqual({
+      footerIntro: '', items: [], localeCode: 'de', quickLinks: [],
+    })
+  })
   test('导航非法外链保留菜单并阻止静默过滤', async () => {
-    render(h(NavigationEditor, { companySlug: 'test', initial: nav }))
+    render(h(NavigationEditor, { companyID: 1, companySlug: 'test', initial: nav }))
     fireEvent.change(screen.getByRole('textbox', { name: /链接地址/ }), { target: { value: 'javascript:alert(1)' } })
     fireEvent.submit(document.querySelector('#navigation-settings')!)
     expect(await screen.findByRole('alert')).toBeTruthy()
@@ -73,7 +87,7 @@ describe('配置页客户端交互回归（不写客户记录）', () => {
     expect((screen.getByRole('textbox', { name: /链接地址/ }) as HTMLInputElement).value).toBe('javascript:alert(1)')
   })
   test('关于我们不自动造3个空模块；取消后重新打开还原已保存标题', () => {
-    render(h(AboutEditor, { companySlug: 'test', initial: { title: '原简介', intro: '原描述', modules: [] } }))
+    render(h(AboutEditor, { companyID: 1, companySlug: 'test', initial: { title: '原简介', intro: '原描述', modules: [] } }))
     expect(screen.getByText('还没有图文模块')).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: '编辑内容' }))
     expect(screen.queryByText('模块 1')).toBeNull()
@@ -97,7 +111,7 @@ describe('配置页客户端交互回归（不写客户记录）', () => {
     expect(screen.getByText('第一问')).toBeTruthy()
   })
   test('联系必填字段和3图位不回退；大于500KB的二维码不发送上传', async () => {
-    render(h(ContactEditor, { companySlug: 'test', initial: { address: '地址', email: 'a@test.com',
+    render(h(ContactEditor, { companySlug: 'test', initial: { address: '地址', email: 'demo@example.invalid',
       phone: '123', whatsapp: '', title: '', intro: '', showInquiryForm: true } }))
     for (const label of ['地址', '邮箱', '电话']) expect((screen.getByLabelText(new RegExp(label)) as HTMLInputElement).required).toBe(true)
     expect((screen.getByLabelText('WhatsApp') as HTMLInputElement).required).toBe(false)
@@ -122,7 +136,7 @@ describe('配置页客户端交互回归（不写客户记录）', () => {
     expect(within(library.querySelectorAll('article')[1]).getByRole('button', { name: '已应用' })).toBeTruthy()
   })
   test('首页关于开关可保存，提交只含开关，实力显示数字/单位/说明', async () => {
-    render(h(HomepageBannerEditor, { companySlug: 'test', initial: { showCompanyIntro: true,
+    render(h(HomepageBannerEditor, { companyID: 1, companySlug: 'test', initial: { showCompanyIntro: true,
       strengthItems: [{ label: '行业经验', value: '20', unit: '年', sortOrder: 1 }] } }))
     await act(async () => {})
     fireEvent.click(screen.getByRole('button', { name: /关于我们/ }))
@@ -142,7 +156,7 @@ describe('配置页客户端交互回归（不写客户记录）', () => {
     fetchMock.mockImplementation(() => new Promise<Response>((done) => { resolve = done }))
     const row = { childCount: 0, contentCount: 1, id: 1, level: 1, name: '产品分类', parentID: null,
       slug: 'products', sortOrder: 1, translationComplete: false, updatedAt: '2026-01-01' }
-    render(h(WorkspaceCategories, { companyName: '测试公司', endpoint: '/api/test/categories',
+    render(h(WorkspaceCategories, { companySlug: 'test', companyName: '测试公司', endpoint: '/api/test/categories',
       categories: { products: [row], news: [], cases: [], posts: [] } }))
     fireEvent.click(screen.getByRole('button', { name: '语言' }))
     fireEvent.click(screen.getByRole('button', { name: /文章分类/ }))
@@ -152,7 +166,7 @@ describe('配置页客户端交互回归（不写客户记录）', () => {
   })
   test('只读账号可查看，但不能保存/上传联系和选择新模板', () => {
     state.canEditContent = false; state.canManageSite = false
-    const first = render(h(ContactEditor, { companySlug: 'test', initial: { address: '地址', email: 'a@test.com',
+    const first = render(h(ContactEditor, { companySlug: 'test', initial: { address: '地址', email: 'demo@example.invalid',
       phone: '123', whatsapp: '', title: '', intro: '', showInquiryForm: true } }))
     expect((screen.getByRole('button', { name: '保存联系信息' }) as HTMLButtonElement).disabled).toBe(true)
     expect((screen.getByLabelText('上传 WhatsApp 二维码') as HTMLInputElement).matches(':disabled')).toBe(true)

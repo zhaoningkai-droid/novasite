@@ -15,8 +15,8 @@ export default async function WorkspaceCategoriesPage({ params }: Props) {
   if (!company) return null
   const payload = await getPayload({ config })
   const entries = await Promise.all((Object.keys(workspaceCategoryConfig) as CategoryKind[]).map(async (kind) => [
-    kind, await getWorkspaceCategoryRows(payload, kind, company.id, user),
+    kind, await getWorkspaceCategoryRows(payload, kind, company.id, user, company.defaultLocale),
   ] as const))
   const categories = Object.fromEntries(entries) as Record<CategoryKind, WorkspaceCategory[]>
-  return <WorkspaceCategories categories={categories} companyName={company.name} endpoint={`/api/workspace/${slug}/categories`} />
+  return <WorkspaceCategories companySlug={slug} categories={categories} companyName={company.name} endpoint={`/api/workspace/${slug}/categories`} />
 }

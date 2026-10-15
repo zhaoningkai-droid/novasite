@@ -1,6 +1,8 @@
 import type { CollectionConfig } from 'payload'
 
 import { contentEditors, siteAdmins } from '../access/roles'
+import { localeOptions } from '../platform/site-locales'
+import { guardSpecificationTranslationChange, guardSpecificationTranslationDelete } from '../platform/product-translation/jobs'
 
 export const ProductSpecifications: CollectionConfig = {
   slug: 'product-specifications',
@@ -11,6 +13,7 @@ export const ProductSpecifications: CollectionConfig = {
     read: contentEditors,
     update: contentEditors,
   },
+  hooks: { beforeChange: [guardSpecificationTranslationChange], beforeDelete: [guardSpecificationTranslationDelete] },
   admin: {
     group: '产品中心',
     useAsTitle: 'title',
@@ -26,12 +29,7 @@ export const ProductSpecifications: CollectionConfig = {
       type: 'select',
       required: true,
       index: true,
-      options: [
-        { label: '英语', value: 'en' },
-        { label: '简体中文', value: 'zh' },
-        { label: '俄语', value: 'ru' },
-        { label: '印尼语', value: 'id' },
-      ],
+      options: localeOptions.map(({ code, label }) => ({ label, value: code })),
     },
     {
       name: 'items',

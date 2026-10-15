@@ -6,6 +6,8 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RUNTIME_DIR="$PROJECT_DIR/.codex-runtime"
 PID_FILE="$RUNTIME_DIR/next-dev.pid"
 LOG_FILE="$RUNTIME_DIR/next-dev.log"
+TRANSLATION_PID_FILE="$RUNTIME_DIR/product-translation-worker.pid"
+TRANSLATION_LOG_FILE="$RUNTIME_DIR/product-translation-worker.log"
 PORT="${NOVASITE_PORT:-3100}"
 BASE_URL="http://localhost:${PORT}"
 
@@ -53,6 +55,34 @@ health_is_ok() {
   curl --fail --silent --max-time 3 "$BASE_URL/health" >/dev/null 2>&1
 }
 
+translation_worker_running() {
+  [[ -f "$TRANSLATION_PID_FILE" ]] || return 1
+  local worker_pid worker_command
+  worker_pid="$(cat "$TRANSLATION_PID_FILE")"
+  [[ "$worker_pid" =~ ^[0-9]+$ ]] || return 1
+  kill -0 "$worker_pid" 2>/dev/null || return 1
+  worker_command="$(ps -p "$worker_pid" -o command= 2>/dev/null || true)"
+  [[ "$worker_command" == *"scripts/run-product-translations.mts"* ]]
+}
+
+start_translation_worker() {
+  node --env-file=.env --input-type=module -e 'process.exit(process.env.PRODUCT_TRANSLATION_QUEUE_ENABLED === "true" ? 0 : 1)' || return 0
+  translation_worker_running && return 0
+  mkdir -p "$RUNTIME_DIR"
+  nohup env NODE_ENV=production node --env-file=.env \
+    --import ./scripts/verify-v1-node-style-hook.mjs --import tsx \
+    scripts/run-product-translations.mts >> "$TRANSLATION_LOG_FILE" 2>&1 < /dev/null &
+  printf '%s\n' "$!" > "$TRANSLATION_PID_FILE"
+  say "后台翻译工作进程已启动；状态可通过 npm run local:status 查看。"
+}
+
+stop_translation_worker() {
+  if translation_worker_running; then
+    kill "$(cat "$TRANSLATION_PID_FILE")"
+  fi
+  rm -f "$TRANSLATION_PID_FILE"
+}
+
 start() {
   cd "$PROJECT_DIR"
   require_command docker
@@ -66,6 +96,7 @@ start() {
   ensure_database
 
   if health_is_ok; then
+    start_translation_worker
     say "后台已在运行：$BASE_URL/admin"
     [[ "${NOVASITE_NO_OPEN:-}" == "1" ]] || open "$BASE_URL/admin" >/dev/null 2>&1 || true
     return
@@ -81,6 +112,7 @@ start() {
   fi
 
   rm -f "$PID_FILE"
+  start_translation_worker
   say "正在启动后台。请保持此终端窗口打开；出现 Ready 后即可使用后台。"
   (
     for _ in $(seq 1 45); do
@@ -103,9 +135,13 @@ status() {
   if docker compose exec -T postgres pg_isready -U novasite -d novasite >/dev/null 2>&1; then printf '正常\n'; else printf '不可用\n'; fi
   printf '后台：'
   if health_is_ok; then printf '正常（%s/admin）\n' "$BASE_URL"; else printf '未运行或不可用\n'; fi
+  printf '后台翻译：'
+  if translation_worker_running; then printf '工作进程运行中\n'; else printf '未运行（未启用时属正常）\n'; fi
 }
 
 stop() {
+  cd "$PROJECT_DIR"
+  stop_translation_worker
   local pid
   pid="$(listener_pid)"
   if [[ -z "$pid" ]]; then

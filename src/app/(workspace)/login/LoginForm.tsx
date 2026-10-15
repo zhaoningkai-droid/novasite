@@ -16,7 +16,7 @@ export function LoginForm({ error, redirectTo }: Props) {
       <div className="novasite-login__intro">
         <p>独立站运营工作台</p><h1>每一个客户网站，都有清晰的工作空间。</h1>
         <span>从产品与文章到多语言和网站设置，在同一个后台完成日常维护。</span>
-        <ul><li>公司独立管理</li><li>九套行业模板</li><li>四语内容维护</li><li>网站即时预览</li></ul>
+        <ul><li>公司独立管理</li><li>产品与内容维护</li><li>多语言网站管理</li><li>网站实时预览</li></ul>
       </div>
     </section>
     <section className="novasite-login__panel">
@@ -25,7 +25,8 @@ export function LoginForm({ error, redirectTo }: Props) {
         <span className="novasite-login__lock" aria-hidden="true"><LockKeyhole size={25} /></span>
         <h2>欢迎回来</h2><p>登录后选择你要管理的客户公司。</p>
         <input name="redirect" type="hidden" value={redirectTo} />
-        <label>用户名或邮箱<input autoComplete="username" name="email" required /></label>
+        <label>账号 / 邮箱<input autoComplete="username" name="email"
+          placeholder="输入账号或邮箱" required /></label>
         <label>密码<div className="novasite-login__password">
           <input autoComplete="current-password" name="password" required
             type={visible ? 'text' : 'password'} />

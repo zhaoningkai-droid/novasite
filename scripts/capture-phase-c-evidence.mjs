@@ -23,7 +23,7 @@ await capturePublic('/s/huadong-fasteners/zh/blog', '05-huadong-blog.png')
 await capturePublic('/s/volttrans/en/products', '06-volttrans-products.png')
 
 const login = await page.request.post(`${baseURL}/api/users/login`, {
-  data: { email: process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local', password: process.env.SEED_ADMIN_PASSWORD || '' },
+  data: { email: process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid', password: process.env.SEED_ADMIN_PASSWORD || '' },
 })
 if (!login.ok()) throw new Error(`后台登录失败：${login.status()}`)
 await context.addCookies([{ name: 'payload-tenant', value: '2', url: baseURL }])

@@ -2,7 +2,7 @@ import { sql, type PostgresAdapter } from '@payloadcms/db-postgres'
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { getPayload } from 'payload'
+import { APIError, getPayload } from 'payload'
 import config from '@payload-config'
 import { userHasRole } from '@/access/roles'
 import { getMeUser } from '@/utilities/getMeUser'
@@ -67,6 +67,7 @@ export async function deleteWorkspaceContent(request: Request, slug: string, col
       revalidatePath(`/s/${slug}/${locale}`, 'layout')
     return NextResponse.json({ message: `已删除 ${ids.length} 条${names[collection]}。` })
   } catch (error) {
+    if (error instanceof APIError && error.status === 409) return NextResponse.json({message:error.message},{status:409})
     if (error instanceof DeleteError)
       return NextResponse.json({ message: error.message }, { status: error.status })
     console.error('[workspace-content-delete]', error)

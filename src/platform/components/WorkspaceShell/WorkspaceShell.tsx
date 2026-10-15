@@ -10,6 +10,7 @@ type Props = {
   currentCompany: WorkspaceCompany
   canEditContent: boolean
   canManageSite: boolean
+  canManageInquiries?: boolean
 }
 
 export function WorkspaceShell(props: Props) {

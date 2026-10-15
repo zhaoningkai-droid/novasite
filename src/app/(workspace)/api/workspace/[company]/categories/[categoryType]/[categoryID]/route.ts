@@ -10,7 +10,7 @@ import {
 import { SettingsInputError, settingsID, settingsObject, settingsOrder, settingsText } from '@/platform/workspace-settings-validation'
 
 type Context = { params: Promise<{ categoryID: string; categoryType: string; company: string }> }
-const locales = ['zh', 'en', 'ru', 'id'] as const
+import { locales } from '@/platform/site-locales'
 
 export async function GET(_request: Request, { params }: Context) {
   try {
@@ -40,24 +40,24 @@ export async function PATCH(request: Request, { params }: Context) {
     const current = await findOwnedWorkspaceCategory(scoped.payload, categoryType, id, scoped.company.id, scoped.user)
     if (!current) return NextResponse.json({ message: '未找到当前公司的分类。' }, { status: 404 })
     const body = settingsObject(await request.json().catch(() => null))
-    const locale = body.locale === undefined ? 'zh' : body.locale
+    const locale = body.locale === undefined ? scoped.company.defaultLocale : body.locale
     if (!locales.includes(locale as typeof locales[number])) throw new SettingsInputError('分类语言无效，请重新选择。')
     const name = settingsText(body.name)
     if (!name) throw new SettingsInputError('分类名称不能为空。')
     const parentID = body.parentID === undefined ? categoryRelationshipID(current.parent) : settingsID(body.parentID, '上级分类')
-    if (locale === 'zh') await validateWorkspaceCategoryParent(scoped.payload, categoryType, parentID, scoped.company.id, scoped.user, id)
-    const categorySlug = body.slug === undefined ? String(current.slug || '') : settingsText(body.slug)
-    if (locale === 'zh' && !categorySlug) throw new SettingsInputError('分类地址标识不能为空。')
+    if (body.locale === undefined) await validateWorkspaceCategoryParent(scoped.payload, categoryType, parentID, scoped.company.id, scoped.user, id)
+    const categorySlug = settingsText(body.slug) || String(current.slug || '')
+    if (body.locale === undefined && !categorySlug) throw new SettingsInputError('分类地址标识不能为空。')
     await scoped.payload.update({
       collection: workspaceCategoryConfig[categoryType].collection, id, locale: locale as typeof locales[number],
       overrideAccess: false, user: scoped.user,
-      data: { [workspaceCategoryConfig[categoryType].field]: name, ...(locale === 'zh' ? {
+      data: { [workspaceCategoryConfig[categoryType].field]: name, ...(body.locale === undefined ? {
         parent: parentID, slug: categorySlug, sortOrder: settingsOrder(body.sortOrder, Number(current.sortOrder || 0)),
       } : {}) } as never,
     })
-    const category = await getWorkspaceCategoryRow(scoped.payload, categoryType, id, scoped.company.id, scoped.user)
+    const category = await getWorkspaceCategoryRow(scoped.payload, categoryType, id, scoped.company.id, scoped.user, scoped.company.defaultLocale)
     revalidateWorkspaceSettings(slug, 'categories')
-    return NextResponse.json({ category, message: locale === 'zh' ? '分类已保存。' : '该语言已保存。' })
+    return NextResponse.json({ category, message: body.locale === undefined ? '分类已保存。' : '该语言已保存。' })
   } catch (error) { return settingsAPIError(error, '分类保存未完成，请稍后重试。') }
 }
 

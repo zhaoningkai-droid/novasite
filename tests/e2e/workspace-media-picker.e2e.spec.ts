@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 
 import { login } from '../helpers/login'
 
-const adminUser = { email: process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local', password: process.env.SEED_ADMIN_PASSWORD || '' }
+const adminUser = { email: process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid', password: process.env.SEED_ADMIN_PASSWORD || '' }
 const fixture = { buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#2864e8"/></svg>'), mimeType: 'image/svg+xml', name: 'step-08-media.svg' }
 
 const openCompanyProduct = async (page: Parameters<typeof login>[0]['page'], name: string) => {

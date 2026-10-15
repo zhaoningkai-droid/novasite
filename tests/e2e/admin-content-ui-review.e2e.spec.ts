@@ -45,6 +45,8 @@ const rowAction = async (page: Page, row: Locator, name: RegExp) => {
   await action.click()
   return action
 }
+const searchButton = (page: Page, suffix: string) =>
+  page.getByRole('button', { name: suffix === '' ? '搜索产品' : '查询', exact: true })
 
 test.beforeEach(async ({ page }) => {
   test.skip(!process.env.SEED_ADMIN_EMAIL || !process.env.SEED_ADMIN_PASSWORD, '需要通过 SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD 指定本地验收账号；不使用示例密码尝试登录。')
@@ -70,7 +72,7 @@ test('四类内容有明确标题、真实筛选、重复参数和空态', async
     await expect(page.getByRole('navigation', { name: '内容管理类型' })).toBeVisible()
     await expect(page.getByRole('navigation', { name: '列表分页' })).toBeVisible()
     await page.getByLabel(list.search).fill('ADMIN-UI-NO-MATCH-20260928')
-    await page.getByRole('button', { name: '查询', exact: true }).click()
+    await searchButton(page, list.suffix).click()
     await expect(page.getByRole('heading', { level: 2, name: /^没有匹配的/ })).toBeVisible()
     await expect(page.getByRole('link', { name: '清除筛选', exact: true })).toBeVisible()
     await page.goto(
@@ -112,12 +114,12 @@ test('重新筛选清空选择，全选支持部分选中状态', async ({ page 
   }
   const title = await page.locator('tbody tr').first().locator('strong').first().innerText()
   await page.getByLabel('搜索产品').fill(title)
-  await page.getByRole('button', { name: '查询', exact: true }).click()
+  await searchButton(page, '').click()
   await expect(page.getByText(/^已选择 \d+ 项$/)).toHaveCount(0)
 })
 
-test('详情弹窗只读，Tab留在弹窗，Escape恢复焦点', async ({ page }) => {
-  await page.goto(base)
+test('新闻详情弹窗只读，Tab留在弹窗，Escape恢复焦点', async ({ page }) => {
+  await page.goto(base + '/news')
   const opener = await rowAction(page, page.locator('tbody tr').first(), /^查看 .* 完整信息$/)
   const dialog = page.getByRole('dialog', { name: '完整内容', exact: true })
   await expect(dialog).toBeVisible()
@@ -167,14 +169,14 @@ test('窄屏筛选可操作，列表只在自身滚动，减少动态设置生�
   for (const list of lists) {
     await page.goto(base + list.suffix)
     await expect(page.getByLabel(list.search)).toBeVisible()
-    await expect(page.getByRole('button', { name: '查询', exact: true })).toBeVisible()
+    await expect(searchButton(page, list.suffix)).toBeVisible()
     const dimensions = await page.evaluate(() => ({
       page: document.documentElement.scrollWidth,
       viewport: window.innerWidth,
     }))
     expect(dimensions.page).toBeLessThanOrEqual(dimensions.viewport + 1)
   }
-  await page.goto(base)
+  await page.goto(base + '/news')
   await rowAction(page, page.locator('tbody tr').first(), /^查看 .* 完整信息$/)
   await expect(page.getByRole('dialog', { name: '完整内容' })).toHaveCSS('animation-duration', '0s')
 })

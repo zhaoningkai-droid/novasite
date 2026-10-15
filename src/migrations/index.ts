@@ -1,22 +1,32 @@
+import * as migration_20261004_010000_navigation_branding from './20261004_010000_navigation_branding'
 import * as migration_contact_third_qr from './20260927_020000_contact_third_qr'
-import * as migration_20260905_153403_initial_platform_schema from './20260905_153403_initial_platform_schema';
-import * as migration_20260906_010110_navigation_information_architecture from './20260906_010110_navigation_information_architecture';
-import * as migration_20260906_020031_storage_adapter_boundary from './20260906_020031_storage_adapter_boundary';
-import * as migration_20260906_094218_phase_b_site_settings from './20260906_094218_phase_b_site_settings';
-import * as migration_20260906_104311_phase_c_fastener_content from './20260906_104311_phase_c_fastener_content';
-import * as migration_20260906_150940_phase_d_editable_fixed_pages from './20260906_150940_phase_d_editable_fixed_pages';
-import * as migration_20260906_152657_phase_d_navigation_documents from './20260906_152657_phase_d_navigation_documents';
-import * as migration_20260906_155420_phase_e_product_specifications from './20260906_155420_phase_e_product_specifications';
-import * as migration_20260907_144259_step11_category_hierarchy from './20260907_144259_step11_category_hierarchy';
-import * as migration_20260908_010239_step12_product_content_fields from './20260908_010239_step12_product_content_fields';
-import * as migration_20260908_020000_step13_news_content_fields from './20260908_020000_step13_news_content_fields';
-import * as migration_20260908_030000_step14_case_content_fields from './20260908_030000_step14_case_content_fields';
-import * as migration_20260908_050000_step18_homepage_modules from './20260908_050000_step18_homepage_modules';
-import * as migration_20260908_060000_step19_about_modules from './20260908_060000_step19_about_modules';
-import * as migration_20260908_144543_homepage_management_fields from './20260908_144543_homepage_management_fields';
-import * as migration_20260909_010000_strength_item_images from './20260909_010000_strength_item_images';
-import * as migration_20260927_010000_template_catalog_and_history from './20260927_010000_template_catalog_and_history';
-import * as migration_20260927_010001_template_history_locked_document_relations from './20260927_010001_template_history_locked_document_relations';
+import * as migration_20260929_010000_executive_homepage_settings from './20260929_010000_executive_homepage_settings'
+import * as migration_20260929_020000_lead_address from './20260929_020000_lead_address'
+import * as migration_20260929_030000_faq_tenant_limit from './20260929_030000_faq_tenant_limit'
+import * as migration_20260930_010000_register_executive_industrial_pro_template from './20260930_010000_register_executive_industrial_pro_template'
+import * as migration_20260930_020000_site_navigation_language_codes from './20260930_020000_site_navigation_language_codes'
+import * as migration_20260930_030000_product_translation_jobs from './20260930_030000_product_translation_jobs'
+import * as migration_20261001_010000_inquiry_delivery from './20261001_010000_inquiry_delivery'
+import * as migration_20261001_020000_translation_usage from './20261001_020000_translation_usage'
+import * as migration_20261003_010000_runtime_schema_gaps from './20261003_010000_runtime_schema_gaps'
+import * as migration_20260905_153403_initial_platform_schema from './20260905_153403_initial_platform_schema'
+import * as migration_20260906_010110_navigation_information_architecture from './20260906_010110_navigation_information_architecture'
+import * as migration_20260906_020031_storage_adapter_boundary from './20260906_020031_storage_adapter_boundary'
+import * as migration_20260906_094218_phase_b_site_settings from './20260906_094218_phase_b_site_settings'
+import * as migration_20260906_104311_phase_c_fastener_content from './20260906_104311_phase_c_fastener_content'
+import * as migration_20260906_150940_phase_d_editable_fixed_pages from './20260906_150940_phase_d_editable_fixed_pages'
+import * as migration_20260906_152657_phase_d_navigation_documents from './20260906_152657_phase_d_navigation_documents'
+import * as migration_20260906_155420_phase_e_product_specifications from './20260906_155420_phase_e_product_specifications'
+import * as migration_20260907_144259_step11_category_hierarchy from './20260907_144259_step11_category_hierarchy'
+import * as migration_20260908_010239_step12_product_content_fields from './20260908_010239_step12_product_content_fields'
+import * as migration_20260908_020000_step13_news_content_fields from './20260908_020000_step13_news_content_fields'
+import * as migration_20260908_030000_step14_case_content_fields from './20260908_030000_step14_case_content_fields'
+import * as migration_20260908_050000_step18_homepage_modules from './20260908_050000_step18_homepage_modules'
+import * as migration_20260908_060000_step19_about_modules from './20260908_060000_step19_about_modules'
+import * as migration_20260908_144543_homepage_management_fields from './20260908_144543_homepage_management_fields'
+import * as migration_20260909_010000_strength_item_images from './20260909_010000_strength_item_images'
+import * as migration_20260927_010000_template_catalog_and_history from './20260927_010000_template_catalog_and_history'
+import * as migration_20260927_010001_template_history_locked_document_relations from './20260927_010001_template_history_locked_document_relations'
 
 export const migrations = [
   {
@@ -109,5 +119,55 @@ export const migrations = [
     down: migration_20260927_010001_template_history_locked_document_relations.down,
     name: '20260927_010001_template_history_locked_document_relations',
   },
-  { up: migration_contact_third_qr.up, down: migration_contact_third_qr.down, name: '20260927_020000_contact_third_qr' },
-];
+  {
+    up: migration_contact_third_qr.up,
+    down: migration_contact_third_qr.down,
+    name: '20260927_020000_contact_third_qr',
+  },
+  {
+    up: migration_20260929_010000_executive_homepage_settings.up,
+    down: migration_20260929_010000_executive_homepage_settings.down,
+    name: '20260929_010000_executive_homepage_settings',
+  },
+  {
+    up: migration_20260929_020000_lead_address.up,
+    down: migration_20260929_020000_lead_address.down,
+    name: '20260929_020000_lead_address',
+  },
+  {
+    up: migration_20260929_030000_faq_tenant_limit.up,
+    down: migration_20260929_030000_faq_tenant_limit.down,
+    name: '20260929_030000_faq_tenant_limit',
+  },
+  {
+    up: migration_20260930_010000_register_executive_industrial_pro_template.up,
+    down: migration_20260930_010000_register_executive_industrial_pro_template.down,
+    name: '20260930_010000_register_executive_industrial_pro_template',
+  },
+  {
+    up: migration_20260930_020000_site_navigation_language_codes.up,
+    down: migration_20260930_020000_site_navigation_language_codes.down,
+    name: '20260930_020000_site_navigation_language_codes',
+  },
+  {
+    up: migration_20260930_030000_product_translation_jobs.up,
+    down: migration_20260930_030000_product_translation_jobs.down,
+    name: '20260930_030000_product_translation_jobs',
+  },
+  {
+    up: migration_20261001_010000_inquiry_delivery.up,
+    down: migration_20261001_010000_inquiry_delivery.down,
+    name: '20261001_010000_inquiry_delivery',
+  },
+  {
+    up: migration_20261001_020000_translation_usage.up,
+    down: migration_20261001_020000_translation_usage.down,
+    name: '20261001_020000_translation_usage',
+  },
+  {
+    up: migration_20261003_010000_runtime_schema_gaps.up,
+    down: migration_20261003_010000_runtime_schema_gaps.down,
+    name: '20261003_010000_runtime_schema_gaps',
+  },
+  { up: migration_20261004_010000_navigation_branding.up, down: migration_20261004_010000_navigation_branding.down, name: '20261004_010000_navigation_branding' },
+]

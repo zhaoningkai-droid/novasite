@@ -23,7 +23,7 @@ await capturePublic('/s/huadong-fasteners/en', '06-language-switch-en.png', 'Rel
 await capturePublic('/s/huadong-fasteners/zh/about', '02-about-page.png', '关于我们的制造能力')
 await capturePublic('/s/huadong-fasteners/zh/contact', '03-contact-page.png', '联系外贸团队')
 
-const login = await page.request.post(`${baseURL}/api/users/login`, { data: { email: process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local', password: process.env.SEED_ADMIN_PASSWORD || '' } })
+const login = await page.request.post(`${baseURL}/api/users/login`, { data: { email: process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid', password: process.env.SEED_ADMIN_PASSWORD || '' } })
 console.log(`后台登录响应：${login.status()}`)
 if (!login.ok()) throw new Error(`后台登录失败：${login.status()}`)
 await context.addCookies([{ name: 'payload-tenant', value: '2', url: baseURL }])

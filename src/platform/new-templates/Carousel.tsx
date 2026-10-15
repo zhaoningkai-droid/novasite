@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { templateCopy } from './copy'
 import type { SiteLocale } from '@/platform/site'
 export type Banner = {
@@ -13,24 +13,35 @@ export function Carousel({
   banners,
   locale,
   company,
+  autoplay = false,
+  interval = 6000,
+  quote,
 }: {
   banners: Banner[]
   locale: SiteLocale
   company: string
+  autoplay?: boolean
+  interval?: number
+  quote?: ReactNode
 }) {
   const [active, setActive] = useState(0)
-  const [playing, setPlaying] = useState(false)
+  const [playing, setPlaying] = useState(autoplay)
+  const [paused, setPaused] = useState(false)
   const t = templateCopy(locale)
   useEffect(() => {
     if (
       !playing ||
+      paused ||
       banners.length < 2 ||
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
     )
       return
-    const timer = window.setInterval(() => setActive((i) => (i + 1) % banners.length), 6000)
+    const timer = window.setInterval(() => {
+      if (!document.hidden && !window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+        setActive((i) => (i + 1) % banners.length)
+    }, interval)
     return () => window.clearInterval(timer)
-  }, [playing, banners.length])
+  }, [playing, paused, banners.length, interval])
   if (!banners.length)
     return (
       <section className="nt-hero nt-hero--plain">
@@ -38,7 +49,16 @@ export function Carousel({
       </section>
     )
   return (
-    <section className="nt-hero" aria-label={company}>
+    <section
+      className="nt-hero"
+      aria-label={company}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node)) setPaused(false)
+      }}
+    >
       {banners.map((banner, i) => (
         <div className="nt-slide" key={i} hidden={active !== i}>
           {banner.desktopImage || banner.mobileImage ? (
@@ -49,8 +69,8 @@ export function Carousel({
               <img
                 src={banner.desktopImage || banner.mobileImage}
                 alt=""
-                width="1600"
-                height="760"
+                width="1920"
+                height="800"
                 fetchPriority={i === 0 ? 'high' : 'auto'}
                 loading={i === 0 ? 'eager' : 'lazy'}
               />
@@ -64,6 +84,7 @@ export function Carousel({
                 {t.detail}
               </a>
             ) : null}
+            {quote}
           </div>
         </div>
       ))}

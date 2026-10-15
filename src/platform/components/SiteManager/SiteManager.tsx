@@ -6,9 +6,11 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { getLegacyTemplate } from '@/platform/legacy-template-catalog'
 import { getNewTemplate } from '@/platform/new-templates/registry'
+import { localeOptions } from '@/platform/site-locales'
 
 import { useWorkspaceUnsaved } from '../WorkspaceEditor/useWorkspaceUnsaved'
 import { useWorkspacePermissions } from '../WorkspaceShell/WorkspacePermissions'
+import { ContentTranslationAction } from '../WorkspaceTranslations/ContentTranslationAction'
 import './site-manager.scss'
 
 type Value = {
@@ -19,6 +21,7 @@ type Value = {
   favicon?: number
   faviconURL?: string
   indexingEnabled: boolean
+  headerText?: string
   logo?: number
   logoURL?: string
   name: string
@@ -39,6 +42,7 @@ type TemplateOption = {
 }
 
 type Props = {
+  companyID: number
   companySlug: string
   createdAt: string
   initial: Value
@@ -58,25 +62,19 @@ type Props = {
   }[]
 }
 
-const all = [
-  ['zh', '简体中文'],
-  ['en', '英语'],
-  ['ru', '俄语'],
-  ['id', '印尼语'],
-] as const
-
 const templateLabel = (template?: TemplateOption | null) => {
   if (!template) return '默认工业模板'
   const legacy = getLegacyTemplate(template.key)
   if (legacy) return `${legacy.name}（${template.version || '1.0.0'}）`
-  return `${template.name}${template.version ? `（${template.version}）` : ''}`
+  const definition = getNewTemplate(template.key)
+  return `${definition?.name || template.name}${template.version ? `（${template.version}）` : ''}`
 }
 
 const templateDescription = (template?: TemplateOption | null) => {
   if (!template) return '默认用于紧固件五金、机械设备、B2B 外贸站点的深色工业风格。'
   const legacy = getLegacyTemplate(template.key)
   if (legacy) return legacy.description
-  return template.description || '保存后客户网站会立即应用该模板。'
+  return getNewTemplate(template.key)?.description || template.description || '保存后客户网站会立即应用该模板。'
 }
 
 const parseUploadResponse = async (response: Response) => {
@@ -89,7 +87,7 @@ const parseUploadResponse = async (response: Response) => {
   }
 }
 
-export function SiteManager({ companySlug, initial, createdAt, templateName, templates, templateHistory }: Props) {
+export function SiteManager({ companyID, companySlug, initial, createdAt, templateName, templates, templateHistory }: Props) {
   const { canManageSite } = useWorkspacePermissions()
   const [value, setValue] = useState(initial)
   const [savedValue, setSavedValue] = useState(initial)
@@ -99,6 +97,11 @@ export function SiteManager({ companySlug, initial, createdAt, templateName, tem
   const [status, setStatus] = useState('')
   const [error, setError] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [translationLocked, setTranslationLocked] = useState(false)
+  const previewURL = new URL(
+    `/s/${companySlug}/${savedValue.defaultLocale}`,
+    initial.previewDomain,
+  ).href
   const dirty = JSON.stringify(value) !== JSON.stringify(savedValue)
   useWorkspaceUnsaved(dirty, saving)
   const router = useRouter()
@@ -119,7 +122,7 @@ export function SiteManager({ companySlug, initial, createdAt, templateName, tem
   const displayedTemplate = selectedTemplate ? templateLabel(selectedTemplate) : templateName
 
   const uploadSiteImage = async (file: File, target: 'logo' | 'favicon') => {
-    if (saving || !canManageSite) return
+    if (saving || translationLocked || !canManageSite) return
     if (file.size > 500 * 1024) {
       setError(true)
       setStatus(`图片大小为 ${(file.size / 1024).toFixed(file.size >= 1024 * 1024 ? 1 : 0)}KB，超过单张 500KB 限制，请压缩后重新选择。`)
@@ -150,7 +153,7 @@ export function SiteManager({ companySlug, initial, createdAt, templateName, tem
   }
 
   const save = async () => {
-    if (saving || !canManageSite) return
+    if (saving || translationLocked || !canManageSite) return
     if (!value.enabledLocales.length) { setStatus('至少启用一种语言后再保存。'); return }
     setSaving(true)
     setStatus('')
@@ -206,7 +209,7 @@ export function SiteManager({ companySlug, initial, createdAt, templateName, tem
   }
 
   const rollback = async (changeId: number) => {
-    if (saving || !canManageSite) return
+    if (saving || translationLocked || !canManageSite) return
     if (dirty) { setStatus('请先保存或撤销站点修改，再恢复模板版本。'); return }
     if (!window.confirm('将当前公司恢复到这次变更前的模板？产品、文章和其他内容会继续保留。')) return
     setSaving(true)
@@ -241,10 +244,9 @@ export function SiteManager({ companySlug, initial, createdAt, templateName, tem
   }
 
   return <section className="workspace-fixed-editor site-manager">
-    <header><div><p>独立站 / 站点管理</p><h1>站点管理</h1>
-      <span>{canManageSite ? '配置当前公司的网站信息、语言与模板，保存后生效。' : '当前账号可查看站点信息，站点管理员可以修改。'}</span></div>
-      <button disabled={saving || !canManageSite} form="site-settings" type="submit"><Save size={17} />
-        {saving ? '处理中…' : '保存站点设置'}</button></header>
+    <header><div><h1>站点与模板</h1></div>
+      <div className="content-translation-header-actions"><ContentTranslationAction companySlug={companySlug} resource="settings" id={companyID} disabled={dirty || saving || !canManageSite} refreshKey={JSON.stringify(savedValue)} onLockedChange={setTranslationLocked} /><button disabled={saving || translationLocked || !canManageSite} form="site-settings" type="submit"><Save size={17} />
+        {saving ? '处理中…' : '保存站点设置'}</button></div></header>
     {status && <div className={error ? 'site-manager__feedback is-error' : 'site-manager__feedback'} role={error ? 'alert' : 'status'}><span>{status}</span>
       <button aria-label="关闭提示" onClick={() => setStatus('')} type="button"><X size={16} /></button></div>}
     <nav className="site-manager__tabs" aria-label="站点设置分类">
@@ -253,12 +255,12 @@ export function SiteManager({ companySlug, initial, createdAt, templateName, tem
       <button aria-pressed={tab === 'settings'} className={tab === 'settings' ? 'active' : ''} disabled={saving}
         onClick={() => setTab('settings')} type="button">品牌与全局设置</button></nav>
     <form id="site-settings" onSubmit={(event) => { event.preventDefault(); void save() }}>
-      <fieldset className="site-manager__controls" disabled={saving || !canManageSite}>
+      <fieldset className="site-manager__controls" disabled={saving || translationLocked || !canManageSite}>
       {tab === 'site' ? <>
         <dl className="site-manager__facts">
           <div><dt>当前应用模板</dt><dd>{templateLabel(templates.find((item) => item.id === savedTemplateID)) || templateName}</dd></div>
           <div><dt>主域名</dt><dd>{value.primaryDomain || '暂未绑定'}</dd></div>
-          <div><dt>启用语言</dt><dd>{value.enabledLocales.length}<small> / 4 个版本</small></dd></div>
+          <div><dt>启用语言</dt><dd>{value.enabledLocales.length}<small> / {localeOptions.length} 个版本</small></dd></div>
           <div><dt>站点创建时间</dt><dd>{new Date(createdAt).toLocaleDateString('zh-CN')}</dd></div>
         </dl>
         <section className="site-manager__settings-panel"><div className="site-manager__section-heading">
@@ -268,15 +270,16 @@ export function SiteManager({ companySlug, initial, createdAt, templateName, tem
               value={value.status}><option value="building">搭建中</option><option value="published">已发布</option>
               <option value="suspended">已暂停</option></select></label>
             <label>主域名<input onChange={(event) => setValue({ ...value, primaryDomain: event.target.value })}
-              placeholder="www.example.com" spellCheck={false} value={value.primaryDomain} /></label>
-            <label>临时预览地址<input onChange={(event) => setValue({ ...value, previewDomain: event.target.value })}
-              placeholder={`http://localhost:3100/s/${companySlug}/zh`} spellCheck={false} value={value.previewDomain} /></label></div>
-          <div className="site-manager__preview-link"><span>本地预览</span><a href={`/s/${companySlug}/${value.defaultLocale}`}
-            rel="noopener noreferrer" target="_blank">打开当前网站<ExternalLink size={14} /></a></div>
+              placeholder="选填，域名或完整网址均可" spellCheck={false} value={value.primaryDomain} /></label>
+            <label>临时域名<input readOnly spellCheck={false} value={previewURL} />
+              <a className="site-manager__domain-link" href={previewURL}
+                rel="noopener noreferrer" target="_blank">
+                预览网站内容<ExternalLink size={14} />
+              </a></label></div>
         </section>
         <section className="site-manager__settings-panel"><div className="site-manager__section-heading">
           <h2>语言版本</h2><span>至少保留一种启用语言</span></div>
-          <div className="site-manager__languages">{all.map(([code, label]) => {
+          <div className="site-manager__languages">{localeOptions.map(({ code, label }) => {
             const enabled = value.enabledLocales.includes(code)
             const last = enabled && value.enabledLocales.length === 1
             return <label key={code}><input checked={enabled} disabled={last}
@@ -291,8 +294,8 @@ export function SiteManager({ companySlug, initial, createdAt, templateName, tem
               <span className={enabled ? 'is-enabled' : 'is-disabled'}>{enabled ? '已启用' : '已停用'}</span></label>
           })}</div>
           <label className="site-manager__default-language">默认语言<select onChange={(event) => setValue({ ...value, defaultLocale: event.target.value })}
-            value={value.defaultLocale}>{all.filter(([code]) => value.enabledLocales.includes(code))
-              .map(([code, label]) => <option key={code} value={code}>{label}</option>)}</select></label>
+            value={value.defaultLocale}>{localeOptions.filter(({ code }) => value.enabledLocales.includes(code))
+              .map(({ code, label }) => <option key={code} value={code}>{label}</option>)}</select></label>
         </section>
         <section className="site-manager__template-history" aria-label="模板版本记录">
           <div className="site-manager__history-heading"><div><h2>模板版本记录</h2>
@@ -310,6 +313,7 @@ export function SiteManager({ companySlug, initial, createdAt, templateName, tem
           <span>Logo 与站点图标只用于当前公司</span></div>
           <label>网站显示公司名称<input onChange={(event) => setValue({ ...value, companyName: event.target.value })}
             value={value.companyName} /></label>
+          <label>Logo 旁展示文字（选填）<input maxLength={120} value={value.headerText || ''} onChange={(event) => setValue({ ...value, headerText: event.target.value })} /></label>
           <div className="site-manager__media-row">{(['logo', 'favicon'] as const).map((target) => {
             const label = target === 'logo' ? '网站 Logo' : '站点图标 Favicon'
             const source = value[`${target}URL`]
@@ -322,13 +326,13 @@ export function SiteManager({ companySlug, initial, createdAt, templateName, tem
                 type="file" /></label>
           })}</div>
         </section>
-        <section className="site-manager__settings-panel"><div className="site-manager__section-heading"><h2>搜索引擎设置</h2></div>
+        <details className="site-manager__settings-panel"><summary>搜索优化</summary>
           <label>SEO 标题后缀<input onChange={(event) => setValue({ ...value, titleSuffix: event.target.value })}
             value={value.titleSuffix} /></label><label>默认 SEO 描述<textarea
               onChange={(event) => setValue({ ...value, defaultDescription: event.target.value })} value={value.defaultDescription} /></label>
           <label className="site-manager__checkbox"><input checked={value.indexingEnabled}
             onChange={(event) => setValue({ ...value, indexingEnabled: event.target.checked })} type="checkbox" />允许搜索引擎收录</label>
-        </section>
+        </details>
         <section className="site-manager__blog-note"><div><h2>博客内容</h2><p>博客文章与分类在内容管理中维护，沿用当前公司的数据。</p></div>
           <a href={`/workspace/${companySlug}/website/content/blog`}>管理博客<ExternalLink size={14} /></a></section>
       </>}
@@ -346,14 +350,20 @@ export function SiteManager({ companySlug, initial, createdAt, templateName, tem
         const selected = value.selectedTemplate === item.id
         const applied = savedTemplateID === item.id
         return <article className={selected ? 'is-selected' : ''} key={item.id}>
-          <div className={`site-manager__layout-demo layout-${definition?.tone || legacy?.tone}`} aria-label="布局示意">
-            <div className="demo-nav" /><div className="demo-hero" /><div className="demo-content"><i /><i /><i /><i /></div>
-            <small>布局示意</small>{applied && <b>当前应用</b>}</div>
-          <h3>{legacy?.name || item.name}</h3><p>{legacy?.description || templateDescription(item)}</p>
+          <div className={`site-manager__layout-demo layout-${definition?.tone || legacy?.tone}`} aria-label={item.key === 'executive-industrial-pro-v1' ? '古建首页效果示意' : '布局示意'}>
+            {item.key === 'executive-industrial-pro-v1' ? <div className="executive-template-thumb">
+              <span className="executive-template-thumb__nav"><b>匠境古建</b><i>主页　产品　新闻　案例　关于我们</i><em>EN⌄</em></span>
+              <span className="executive-template-thumb__hero"><b>让传统建筑之美<br />以可靠的构件落地</b><i>古建构件 · 庭院营造</i></span>
+              <span className="executive-template-thumb__sections"><i /><i /><i /><i /></span>
+            </div> : <><div className="demo-nav" /><div className="demo-hero" /><div className="demo-content"><i /><i /><i /><i /></div></>}
+            <small>{item.key === 'executive-industrial-pro-v1' ? '古建首页效果' : '布局示意'}</small>{applied && <b>当前应用</b>}</div>
+          <h3>{legacy?.name || definition?.name || item.name}</h3><p>{legacy?.description || templateDescription(item)}</p>
           <small>{definition ? `参考编号 ${definition.reference}` : '原有模板'} · 版本 {item.version || '1.0.0'}</small>
-          <div className="site-manager__template-actions"><a href={`/template-preview/${companySlug}/${item.key}/${value.defaultLocale}`}
+          <div className="site-manager__template-actions"><a href={['executive-industrial-pro-v1', 'power-705-v1', 'autoparts-571-v1'].includes(item.key)
+            ? `/template-demo/${item.key}/zh`
+            : `/template-preview/${companySlug}/${item.key}/${value.defaultLocale}`}
             target="_blank" rel="noopener noreferrer">预览模板<ExternalLink size={13} /></a>
-            <button type="button" aria-pressed={selected} disabled={saving || !canManageSite} onClick={() => {
+            <button type="button" aria-pressed={selected} disabled={saving || translationLocked || !canManageSite} onClick={() => {
               pendingRequestKey.current = null; setValue({ ...value, selectedTemplate: item.id })
             }}>{selected ? applied ? '已应用' : '待保存' : '选择模板'}</button></div>
         </article>

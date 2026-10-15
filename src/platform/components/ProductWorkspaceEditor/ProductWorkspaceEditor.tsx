@@ -17,15 +17,15 @@ import {
   ListOrdered,
   Loader2,
   Save,
-  Sparkles,
   Table2,
   TriangleAlert,
   Underline,
   X,
 } from 'lucide-react'
-import { ClipboardEvent, useEffect, useRef, useState } from 'react'
+import { ClipboardEvent, useCallback, useEffect, useRef, useState } from 'react'
 
 import { sanitizeRichHTML } from '@/platform/sanitizeRichHTML'
+import { localeOptions, type SiteLocale } from '@/platform/site-locales'
 import {
   WorkspaceMediaBrowser,
   WorkspaceMediaImage,
@@ -41,21 +41,29 @@ import {
 } from '../WorkspaceEditor/workspaceResponse'
 import '../WorkspaceEditor/content-entry-editor.scss'
 import './product-workspace-editor.scss'
+import { ProductDatasheetField, type ProductDatasheet } from './ProductDatasheetField'
 
 type Category = { id: number; name: string }
 type Media = WorkspaceMediaImage
 type Initial = {
   category?: number
+  datasheet?: ProductDatasheet | null
   detailHTML?: string
   gallery?: Media[]
   id?: number
   keywords?: string
   sortOrder?: number
+  status?: 'draft' | 'published'
   summary?: string
   tags?: string[]
   title?: string
 }
-type Props = { categories: Category[]; companySlug: string; initial?: Initial }
+type Props = {
+  categories: Category[]
+  companySlug: string
+  initial?: Initial
+  sourceLocale?: SiteLocale
+}
 const plainText = (html: string) =>
   html
     .replace(/<[^>]*>/g, ' ')
@@ -88,31 +96,51 @@ const imageDimensions = (file: File) =>
 
 export function ProductWorkspaceEditor(props: Props) {
   return (
-    <ProductWorkspaceForm {...props} key={`${props.companySlug}:${props.initial?.id || 'new'}`} />
+    <ProductWorkspaceForm
+      {...props}
+      key={`${props.companySlug}:${props.sourceLocale}:${props.initial?.id || 'new'}`}
+    />
   )
 }
 
-function ProductWorkspaceForm({ categories, companySlug, initial = {} }: Props) {
+function ProductWorkspaceForm({
+  categories,
+  companySlug,
+  initial = {},
+  sourceLocale = 'zh',
+}: Props) {
   const router = useRouter()
+  const sourceLocaleLabel =
+    localeOptions.find((locale) => locale.code === sourceLocale)?.label ||
+    sourceLocale.toUpperCase()
   const [title, setTitle] = useState(initial.title || '')
   const [category, setCategory] = useState(String(initial.category || ''))
   const [keywords, setKeywords] = useState(initial.keywords || '')
   const [summary, setSummary] = useState(initial.summary || '')
   const [sortOrder, setSortOrder] = useState(String(initial.sortOrder ?? 0))
   const [tags, setTags] = useState(initial.tags || [])
+  const savedTags = useRef(initial.tags || [])
   const [tagInput, setTagInput] = useState('')
   const [gallery, setGallery] = useState<Media[]>(initial.gallery || [])
+  const [datasheet, setDatasheet] = useState<ProductDatasheet | null>(initial.datasheet || null)
   const [detailHTML, setDetailHTML] = useState(() => sanitizeRichHTML(initial.detailHTML || ''))
   const [message, setMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [published, setPublished] = useState(initial.status === 'published')
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [uploadingDatasheet, setUploadingDatasheet] = useState(false)
   const [uploadProgress, setUploadProgress] = useState('')
   const [savedID, setSavedID] = useState(initial.id)
   const savedIDRef = useRef(initial.id)
   const savingRef = useRef(false)
   const uploadingRef = useRef(false)
+  const uploadingDatasheetRef = useRef(false)
+  const datasheetBusy = useCallback((active: boolean) => {
+    uploadingDatasheetRef.current = active
+    setUploadingDatasheet(active)
+  }, [])
   const galleryRef = useRef(gallery)
   const request = useRef<AbortController | null>(null)
   const draftKey = useRef(createWorkspaceDraftKey())
@@ -124,6 +152,7 @@ function ProductWorkspaceForm({ categories, companySlug, initial = {} }: Props) 
   const detailTouched = useRef(false)
   const values = {
     category,
+    datasheet: datasheet?.id ?? null,
     detailHTML,
     gallery: gallery.map((item) => item.id),
     keywords,
@@ -135,7 +164,7 @@ function ProductWorkspaceForm({ categories, companySlug, initial = {} }: Props) 
   }
   const [savedSignature, setSavedSignature] = useState(() => JSON.stringify(values))
   const dirty = JSON.stringify(values) !== savedSignature
-  const busy = saving || uploading
+  const busy = saving || uploading || uploadingDatasheet
   useWorkspaceUnsaved(dirty, busy)
 
   useEffect(() => {
@@ -218,7 +247,7 @@ function ProductWorkspaceForm({ categories, companySlug, initial = {} }: Props) 
     format('insertHTML', safe)
   }
   const uploadFiles = async (files: File[]) => {
-    if (uploadingRef.current || savingRef.current) return
+    if (uploadingRef.current || uploadingDatasheetRef.current || savingRef.current) return
     const slots = 5 - galleryRef.current.length
     if (slots <= 0) return notice('产品图片最多 5 张，可先移除一张再上传。', true)
     const queue = files.slice(0, slots)
@@ -282,15 +311,18 @@ function ProductWorkspaceForm({ categories, companySlug, initial = {} }: Props) 
       }
     }
   }
-  const save = async (continueAdding = false) => {
-    if (savingRef.current || uploadingRef.current) return
+  const save = async (continueAdding = false, publish = false) => {
+    if (savingRef.current || uploadingRef.current || uploadingDatasheetRef.current) return
     const pendingTag = tagInput.trim()
     const nextTags = pendingTag && !tags.includes(pendingTag) ? [...tags, pendingTag] : tags
+    const tagsChanged =
+      !savedIDRef.current || JSON.stringify(nextTags) !== JSON.stringify(savedTags.current)
     const html = sanitizeRichHTML(editorRef.current?.innerHTML || '')
     const nextErrors: Record<string, string> = {}
     if (!category) nextErrors.category = '请选择产品分类'
     if (!title.trim()) nextErrors.title = '请输入产品名称'
-    if (!nextTags.length) nextErrors.tags = '请填写至少一个产品标签'
+    if (!nextTags.length && (!savedIDRef.current || tagsChanged || publish))
+      nextErrors.tags = '请填写至少一个产品标签'
     if (nextTags.length > 12) nextErrors.tags = '产品标签最多 12 个'
     if (!gallery.length) nextErrors.gallery = '请上传或选择至少一张产品图片'
     if (!plainText(html) && !/<img\b/.test(html)) nextErrors.detail = '请输入产品详情'
@@ -307,15 +339,19 @@ function ProductWorkspaceForm({ categories, companySlug, initial = {} }: Props) 
     const id = savedIDRef.current
     const payload = {
       category: Number(category),
+      datasheet: datasheet?.id ?? null,
       continueAdding,
       detailHTML: html,
       detailChanged: detailTouched.current && html !== savedDetail.current,
       gallery: gallery.map((item) => item.id),
       idempotencyKey: id ? undefined : draftKey.current,
       keywords,
+      publish,
       sortOrder: Number(sortOrder),
       summary,
+      sourceLocale,
       tags: nextTags,
+      tagsChanged,
       title,
     }
     savingRef.current = true
@@ -330,7 +366,11 @@ function ProductWorkspaceForm({ categories, companySlug, initial = {} }: Props) 
           method: id ? 'PATCH' : 'POST',
         },
       )
-      const result = await readWorkspaceResponse<{ id?: number; message?: string }>(response)
+      const result = await readWorkspaceResponse<{
+        id?: number
+        message?: string
+        published?: boolean
+      }>(response)
       if (!response.ok) throw new Error(result.message || '保存未完成，请检查产品资料。')
       if (!id && (!Number.isInteger(result.id) || Number(result.id) < 1))
         throw new Error('保存响应缺少产品编号，请重试。已填写的内容已保留。')
@@ -338,8 +378,10 @@ function ProductWorkspaceForm({ categories, companySlug, initial = {} }: Props) 
         savedIDRef.current = result.id
         setSavedID(result.id)
       }
+      setPublished(result.published === true)
       savedDetail.current = html
       detailTouched.current = false
+      savedTags.current = nextTags
       setTags(nextTags)
       setTagInput('')
       setDetailHTML(html)
@@ -351,10 +393,12 @@ function ProductWorkspaceForm({ categories, companySlug, initial = {} }: Props) 
         allowWorkspaceNavigation()
         setTitle('')
         setCategory('')
+        setDatasheet(null)
         setKeywords('')
         setSummary('')
         setSortOrder('0')
         setTags([])
+        savedTags.current = []
         setTagInput('')
         updateGallery([])
         setDetailHTML('')
@@ -366,6 +410,7 @@ function ProductWorkspaceForm({ categories, companySlug, initial = {} }: Props) 
         setSavedSignature(
           JSON.stringify({
             category: '',
+            datasheet: null,
             detailHTML: '',
             gallery: [],
             keywords: '',
@@ -391,15 +436,6 @@ function ProductWorkspaceForm({ categories, companySlug, initial = {} }: Props) 
       setSaving(false)
       savingRef.current = false
     }
-  }
-  const generate = () => {
-    const name = title.trim() || '产品'
-    if (!summary.trim()) setSummary(`${name}，查看产品信息，并联系我们了解规格、交付与服务。`)
-    if (editorRef.current && !plainText(editorRef.current.innerHTML)) {
-      editorRef.current.innerHTML = `<h2>${escapeHTML(name)}</h2><p>请补充产品用途、规格、材料与应用场景。</p>`
-      syncDetail()
-    }
-    notice('已填入文案起稿模板，请核对并补充真实产品信息后保存。')
   }
   const invalid = (field: string) => ({
     'aria-invalid': Boolean(errors[field]),
@@ -438,29 +474,33 @@ function ProductWorkspaceForm({ categories, companySlug, initial = {} }: Props) 
           </Link>
           <h1>{savedID ? '编辑产品' : '新增产品'}</h1>
           <p>
-            先完善图文，再设置分类与标签。带 <em>*</em> 的内容为必填。
+            当前编辑语言：{sourceLocaleLabel}
+            （站点默认语言）。保存草稿不会更新客户网站；发布后立即生效。带 <em>*</em> 的内容为必填。
           </p>
         </div>
         <div className="ws-entry-editor__actions product-editor__actions">
           <span className={`ws-entry-editor__save-state${dirty ? ' is-dirty' : ''}`}>
             {busy
-              ? uploading
+              ? uploadingDatasheet
+                ? 'PDF 上传中…'
+                : uploading
                 ? `图片上传中 ${uploadProgress}`
                 : '正在保存…'
               : dirty
                 ? '有未保存修改'
-                : savedID
-                  ? '当前产品已保存'
-                  : '开始编辑产品'}
+                : published
+                  ? '已发布到客户网站'
+                  : savedID
+                    ? '草稿已保存，客户网站未更新'
+                    : '新产品将保存为草稿'}
           </span>
           <button
             className="ws-entry-editor__secondary"
             disabled={busy}
-            onClick={generate}
+            onClick={() => void save(false, true)}
             type="button"
           >
-            <Sparkles size={15} />
-            生成文案草稿
+            {published ? '发布更新' : '发布到网站'}
           </button>
           <button
             className="ws-entry-editor__secondary"
@@ -468,7 +508,7 @@ function ProductWorkspaceForm({ categories, companySlug, initial = {} }: Props) 
             onClick={() => void save(true)}
             type="button"
           >
-            保存并继续添加
+            保存草稿并继续添加
             <ArrowRight size={15} />
           </button>
           <button
@@ -482,7 +522,7 @@ function ProductWorkspaceForm({ categories, companySlug, initial = {} }: Props) 
             ) : (
               <Save size={16} />
             )}
-            {saving ? '保存中…' : uploading ? '图片上传中…' : '保存'}
+            {saving ? '保存中…' : uploadingDatasheet ? 'PDF 上传中…' : uploading ? '图片上传中…' : '保存草稿'}
           </button>
         </div>
       </header>
@@ -780,6 +820,17 @@ function ProductWorkspaceForm({ categories, companySlug, initial = {} }: Props) 
               </div>
               {fieldError('detail')}
             </section>
+            <section className="ws-entry-editor__card">
+              <div className="ws-entry-editor__card-heading">
+                <span>04</span>
+                <div>
+                  <h2>产品资料 <small>选填</small></h2>
+                  <p>上传规格书、图册或说明书，供客户在产品详情页下载。</p>
+                </div>
+              </div>
+              <ProductDatasheetField companySlug={companySlug} disabled={busy}
+                onBusyChange={datasheetBusy} onChange={setDatasheet} value={datasheet} />
+            </section>
           </div>
           <aside className="ws-entry-editor__aside">
             <section className="ws-entry-editor__card">
@@ -841,7 +892,11 @@ function ProductWorkspaceForm({ categories, companySlug, initial = {} }: Props) 
                     添加
                   </button>
                 </div>
-                <small>至少 1 个，最多 12 个</small>
+                <small>
+                  {savedID && !tags.length
+                    ? '此旧产品暂无标签，可先保存草稿；发布前需补充标签。'
+                    : '至少 1 个，最多 12 个'}
+                </small>
                 {fieldError('tags')}
               </div>
               <label className="ws-entry-editor__field">

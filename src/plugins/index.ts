@@ -12,6 +12,8 @@ import { beforeSyncWithSearch } from '@/search/beforeSync'
 import { Page, Post } from '@/payload-types'
 import { getServerSideURL } from '@/utilities/getURL'
 import { createStoragePlugin } from '@/platform/adapters/storage'
+import { superAdmins } from '@/access/roles'
+import { mediaAccessControlPlugin } from '@/platform/storage/access-control'
 
 const generateTitle: GenerateTitle<Post | Page> = ({ doc }) => {
   return doc?.title ? `${doc.title} | Payload Website Template` : 'Payload Website Template'
@@ -56,6 +58,7 @@ export const plugins: Plugin[] = [
   redirectsPlugin({
     collections: ['pages', 'posts'],
     overrides: {
+      access: { read: superAdmins, create: superAdmins, update: superAdmins, delete: superAdmins },
       labels: { singular: '重定向规则', plural: '重定向' },
       admin: { group: '系统设置', useAsTitle: 'from' },
       // @ts-expect-error - This is a valid override, mapped fields don't resolve to the same type
@@ -89,6 +92,7 @@ export const plugins: Plugin[] = [
     collections: ['posts'],
     beforeSync: beforeSyncWithSearch,
     searchOverrides: {
+      access: { read: superAdmins, create: superAdmins, update: superAdmins, delete: superAdmins },
       labels: { singular: '搜索索引', plural: '搜索结果' },
       admin: { group: '系统设置', useAsTitle: 'title' },
       fields: ({ defaultFields }) => {
@@ -96,4 +100,5 @@ export const plugins: Plugin[] = [
       },
     },
   }),
+  mediaAccessControlPlugin(),
 ]

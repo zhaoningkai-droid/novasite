@@ -18,7 +18,7 @@ const browser = await chromium.launch({ headless: true })
 
 const login = async (page: Awaited<ReturnType<ReturnType<typeof browser.newContext>['newPage']>>) => {
   await page.goto(`${baseURL}/admin/login`, { waitUntil: 'networkidle' })
-  await page.locator('#field-email').fill(process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local')
+  await page.locator('#field-email').fill(process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid')
   await page.locator('#field-password').fill(process.env.SEED_ADMIN_PASSWORD || '')
   await page.locator('button[type="submit"]').click()
   await page.waitForURL(`${baseURL}/workspace/companies`, { waitUntil: 'networkidle' })

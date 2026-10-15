@@ -1,0 +1,173 @@
+{
+  "templateKey": "executive-industrial-pro-v1",
+  "demoBrand": "NovaSite 古建演示 / NovaSite Heritage Demo",
+  "createdAt": "2026-09-29",
+  "updatedAt": "2026-09-29",
+  "dataBoundary": "These assets are referenced only by the public template demo component. They are not written to tenant records, Payload media, product collections, or customer uploads.",
+  "delivery": {
+    "type": "remote-demo-reference",
+    "imageUrlPattern": "https://images.pexels.com/photos/{id}/pexels-photo-{id}.jpeg?auto=compress&cs=tinysrgb&w={width}",
+    "localArchiveCreated": false,
+    "tenantMediaImport": false,
+    "notes": "The demo uses the CDN URLs in executive-demo-data.ts. Width is selected per component use. This inventory does not imply local ownership or tenant media storage."
+  },
+  "license": {
+    "name": "Pexels License",
+    "url": "https://www.pexels.com/license/",
+    "notes": "Each image and video links to its Pexels source page. This inventory is not a legal clearance record; recheck the source page and license before commercial deployment or local redistribution."
+  },
+  "photos": [
+    {
+      "id": 5620808,
+      "source": "https://www.pexels.com/photo/entrance-to-a-building-with-a-frame-with-chinese-writing-on-it-5620808/",
+      "author": "Sandra Peng",
+      "attributionStatus": "verified",
+      "uses": ["strength gallery", "category", "news"]
+    },
+    {
+      "id": 6903502,
+      "source": "https://www.pexels.com/photo/roof-of-a-pagoda-6903502/",
+      "author": "zhang kaiyv",
+      "attributionStatus": "verified",
+      "uses": ["strength gallery", "category", "sample product scene", "footer background"]
+    },
+    {
+      "id": 9165113,
+      "source": "https://www.pexels.com/photo/tree-on-courtyard-of-buddhist-temple-9165113/",
+      "author": "Ridzuan Ibrahim",
+      "attributionStatus": "verified",
+      "uses": ["case"]
+    },
+    {
+      "id": 13532047,
+      "source": "https://www.pexels.com/photo/tiled-chinese-rooftop-13532047/",
+      "author": "Lan Yao",
+      "attributionStatus": "verified",
+      "uses": ["category", "sample product"]
+    },
+    {
+      "id": 17177081,
+      "source": "https://www.pexels.com/photo/stone-bridge-railing-17177081/",
+      "author": "Weichen Tian",
+      "attributionStatus": "verified",
+      "uses": ["stone balustrade category"]
+    },
+    {
+      "id": 17266493,
+      "source": "https://www.pexels.com/photo/traditional-chinese-architecture-17266493/",
+      "author": "Star Zhang",
+      "attributionStatus": "verified",
+      "uses": ["strength gallery", "news", "inquiry background"]
+    },
+    {
+      "id": 19479337,
+      "source": "https://www.pexels.com/photo/traditional-chinese-building-19479337/",
+      "author": "征宇 郑",
+      "attributionStatus": "verified",
+      "uses": ["sample timber entry product"]
+    },
+    {
+      "id": 28956202,
+      "source": "https://www.pexels.com/photo/ornate-roof-detail-in-traditional-chinese-architecture-28956202/",
+      "author": "zhai zhai",
+      "attributionStatus": "verified",
+      "uses": ["category", "sample product"]
+    },
+    {
+      "id": 32045354,
+      "source": "https://www.pexels.com/photo/traditional-chinese-architecture-roof-detail-32045354/",
+      "author": "Andy Lee",
+      "attributionStatus": "verified",
+      "uses": ["strength gallery", "category", "sample product"]
+    },
+    {
+      "id": 32565703,
+      "source": "https://www.pexels.com/photo/traditional-chinese-architecture-with-ornate-roof-details-32565703/",
+      "author": "mingche lee",
+      "attributionStatus": "verified",
+      "uses": ["category", "sample product"]
+    },
+    {
+      "id": 33947972,
+      "source": "https://www.pexels.com/photo/traditional-chinese-architecture-courtyard-with-pagoda-33947972/",
+      "author": "zhangliubin",
+      "attributionStatus": "verified",
+      "uses": ["hero", "case", "category", "menu inspiration"]
+    },
+    {
+      "id": 34643424,
+      "source": "https://www.pexels.com/photo/traditional-chinese-courtyard-architecture-34643424/",
+      "author": "Sheldon Li",
+      "attributionStatus": "verified",
+      "uses": ["hero", "case", "news", "sample product scene"]
+    },
+    {
+      "id": 34953167,
+      "source": "https://www.pexels.com/photo/traditional-chinese-courtyard-with-tree-and-sunlight-34953167/",
+      "author": null,
+      "attributionStatus": "unverified",
+      "uses": ["about background", "strength gallery", "category"]
+    },
+    {
+      "id": 35473354,
+      "source": "https://www.pexels.com/photo/traditional-chinese-architecture-with-tiled-roof-35473354/",
+      "author": "樑 王",
+      "attributionStatus": "verified",
+      "uses": ["hero", "category", "sample product scene"]
+    },
+    {
+      "id": 35831301,
+      "source": "https://www.pexels.com/photo/traditional-suzhou-garden-window-with-geometric-patterns-35831301/",
+      "author": null,
+      "attributionStatus": "unverified",
+      "sourceDimensions": "6176x4652",
+      "uses": ["category", "sample product"]
+    },
+    {
+      "id": 36496621,
+      "source": "https://www.pexels.com/photo/traditional-asian-courtyard-with-tile-roof-36496621/",
+      "author": null,
+      "attributionStatus": "unverified",
+      "uses": ["case"]
+    },
+    {
+      "id": 37154427,
+      "source": "https://www.pexels.com/photo/traditional-chinese-pavilion-in-tranquil-garden-37154427/",
+      "author": "Vladislovas Sketerskis",
+      "attributionStatus": "verified",
+      "uses": ["category", "sample product"]
+    },
+    {
+      "id": 37394142,
+      "source": "https://www.pexels.com/photo/ancient-chinese-stone-carving-on-traditional-building-37394142/",
+      "author": "Qing Luo",
+      "attributionStatus": "verified",
+      "uses": ["category", "sample product"]
+    },
+    {
+      "id": 37731980,
+      "source": "https://www.pexels.com/photo/serene-view-of-traditional-chinese-courtyard-37731980/",
+      "author": "Peter Xie",
+      "attributionStatus": "verified",
+      "uses": ["case", "category", "sample product scene"]
+    }
+  ],
+  "video": {
+    "source": "https://www.pexels.com/video/traditional-chinese-architecture-under-sunlight-36382228/",
+    "stream": "https://videos.pexels.com/video-files/36382228/15429802_3840_2160_25fps.mp4",
+    "author": "LayG Traveller",
+    "attributionStatus": "verified",
+    "format": "MP4",
+    "resolution": "3840x2160",
+    "durationSeconds": 6
+  },
+  "demoDocuments": [
+    {
+      "file": "novasite-heritage-roof-demo.pdf",
+      "path": "/template-demos/executive-industrial-pro-v1/novasite-heritage-roof-demo.pdf",
+      "type": "template-demo-product-sheet",
+      "product": "仿古灰瓦屋面组合 / Traditional grey roof set",
+      "warning": "Sample only. Not a real product specification. Never use as tenant content or a customer product PDF."
+    }
+  ]
+}

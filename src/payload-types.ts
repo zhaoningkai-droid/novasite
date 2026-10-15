@@ -135,7 +135,11 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale:
-    ('false' | 'none' | 'null') | false | null | ('en' | 'zh' | 'ru' | 'id') | ('en' | 'zh' | 'ru' | 'id')[];
+    | ('false' | 'none' | 'null')
+    | false
+    | null
+    | ('zh' | 'en' | 'es' | 'ar' | 'id' | 'de' | 'ru')
+    | ('zh' | 'en' | 'es' | 'ar' | 'id' | 'de' | 'ru')[];
   globals: {
     header: Header;
     footer: Footer;
@@ -144,7 +148,7 @@ export interface Config {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
   };
-  locale: 'en' | 'zh' | 'ru' | 'id';
+  locale: 'zh' | 'en' | 'es' | 'ar' | 'id' | 'de' | 'ru';
   widgets: {
     collections: CollectionsWidget;
   };
@@ -195,7 +199,7 @@ export interface Tenant {
    * 平台自动分配的预览地址。
    */
   previewDomain?: string | null;
-  defaultLocale: 'en' | 'zh' | 'ru' | 'id';
+  defaultLocale: 'zh' | 'en' | 'es' | 'ar' | 'id' | 'de' | 'ru';
   /**
    * 只读展示当前模板；请在站点管理的模板库中预览、应用或恢复版本。
    */
@@ -215,9 +219,10 @@ export interface Tenant {
     | number
     | boolean
     | null;
-  enabledLocales: ('en' | 'zh' | 'ru' | 'id')[];
+  enabledLocales: ('zh' | 'en' | 'es' | 'ar' | 'id' | 'de' | 'ru')[];
   branding: {
     companyName: string;
+    headerText?: string | null;
     tagline?: string | null;
     logo?: (number | null) | Media;
     /**
@@ -321,6 +326,72 @@ export interface Tenant {
         | null;
       showNews?: boolean | null;
       showCases?: boolean | null;
+      executiveHome?: {
+        advantagesEnabled?: boolean | null;
+        advantagesTitle?: string | null;
+        advantages?:
+          | {
+              /**
+               * 可选 drawing、material、measure、support、custom。
+               */
+              icon?: string | null;
+              title?: string | null;
+              description?: string | null;
+              sortOrder?: number | null;
+              id?: string | null;
+            }[]
+          | null;
+        marksEnabled?: boolean | null;
+        marks?:
+          | {
+              image?: (number | null) | Media;
+              label?: string | null;
+              sortOrder?: number | null;
+              id?: string | null;
+            }[]
+          | null;
+        certificatesEnabled?: boolean | null;
+        certificatesTitle?: string | null;
+        certificates?:
+          | {
+              image: number | Media;
+              name?: string | null;
+              alt?: string | null;
+              sortOrder?: number | null;
+              id?: string | null;
+            }[]
+          | null;
+        introBackground?: (number | null) | Media;
+        /**
+         * 范围0—0.85，只影响背景图，不影响文字和视频。
+         */
+        introOverlay?: number | null;
+        introButtonLabel?: string | null;
+        videoPoster?: (number | null) | Media;
+        strengthTitle?: string | null;
+        strengthGallery?:
+          | {
+              image: number | Media;
+              caption?: string | null;
+              alt?: string | null;
+              sortOrder?: number | null;
+              id?: string | null;
+            }[]
+          | null;
+        casesTitle?: string | null;
+        categoriesTitle?: string | null;
+        productsTitle?: string | null;
+        newsTitle?: string | null;
+        faqEnabled?: boolean | null;
+        faqTitle?: string | null;
+        faqLimit?: number | null;
+        caseCTATitle?: string | null;
+        caseCTADescription?: string | null;
+        caseCTAButton?: string | null;
+        productCTATitle?: string | null;
+        productCTADescription?: string | null;
+        productCTAButton?: string | null;
+      };
     };
     about?: {
       title?: string | null;
@@ -344,6 +415,11 @@ export interface Tenant {
     };
     footer?: {
       intro?: string | null;
+      backgroundImage?: (number | null) | Media;
+      /**
+       * 范围0—0.85，只影响背景图片。
+       */
+      backgroundOverlay?: number | null;
       socialLinks?:
         | {
             [k: string]: unknown;
@@ -534,10 +610,13 @@ export interface SiteNavigation {
   id: number;
   tenant?: (number | null) | Tenant;
   title: string;
-  localeCode: 'en' | 'zh' | 'ru' | 'id';
+  localeCode: 'zh' | 'en' | 'es' | 'ar' | 'id' | 'de' | 'ru';
   footerIntro?: string | null;
   items?:
     | {
+        sortOrder?: number | null;
+        translationKey?: number | null;
+        modifiedAt?: string | null;
         label: string;
         href: string;
         children?:
@@ -1106,7 +1185,7 @@ export interface ProductSpecification {
   tenant?: (number | null) | Tenant;
   title: string;
   product: number | Product;
-  localeCode: 'en' | 'zh' | 'ru' | 'id';
+  localeCode: 'zh' | 'en' | 'es' | 'ar' | 'id' | 'de' | 'ru';
   items?:
     | {
         label: string;
@@ -1165,6 +1244,7 @@ export interface Lead {
   tenant?: (number | null) | Tenant;
   name: string;
   company?: string | null;
+  address?: string | null;
   email: string;
   phone?: string | null;
   country?: string | null;
@@ -1548,6 +1628,7 @@ export interface TenantsSelect<T extends boolean = true> {
     | T
     | {
         companyName?: T;
+        headerText?: T;
         tagline?: T;
         logo?: T;
         favicon?: T;
@@ -1631,6 +1712,68 @@ export interface TenantsSelect<T extends boolean = true> {
               inquiryRequiredFields?: T;
               showNews?: T;
               showCases?: T;
+              executiveHome?:
+                | T
+                | {
+                    advantagesEnabled?: T;
+                    advantagesTitle?: T;
+                    advantages?:
+                      | T
+                      | {
+                          icon?: T;
+                          title?: T;
+                          description?: T;
+                          sortOrder?: T;
+                          id?: T;
+                        };
+                    marksEnabled?: T;
+                    marks?:
+                      | T
+                      | {
+                          image?: T;
+                          label?: T;
+                          sortOrder?: T;
+                          id?: T;
+                        };
+                    certificatesEnabled?: T;
+                    certificatesTitle?: T;
+                    certificates?:
+                      | T
+                      | {
+                          image?: T;
+                          name?: T;
+                          alt?: T;
+                          sortOrder?: T;
+                          id?: T;
+                        };
+                    introBackground?: T;
+                    introOverlay?: T;
+                    introButtonLabel?: T;
+                    videoPoster?: T;
+                    strengthTitle?: T;
+                    strengthGallery?:
+                      | T
+                      | {
+                          image?: T;
+                          caption?: T;
+                          alt?: T;
+                          sortOrder?: T;
+                          id?: T;
+                        };
+                    casesTitle?: T;
+                    categoriesTitle?: T;
+                    productsTitle?: T;
+                    newsTitle?: T;
+                    faqEnabled?: T;
+                    faqTitle?: T;
+                    faqLimit?: T;
+                    caseCTATitle?: T;
+                    caseCTADescription?: T;
+                    caseCTAButton?: T;
+                    productCTATitle?: T;
+                    productCTADescription?: T;
+                    productCTAButton?: T;
+                  };
             };
         about?:
           | T
@@ -1660,6 +1803,8 @@ export interface TenantsSelect<T extends boolean = true> {
           | T
           | {
               intro?: T;
+              backgroundImage?: T;
+              backgroundOverlay?: T;
               socialLinks?: T;
               quickLinks?:
                 | T
@@ -1685,6 +1830,9 @@ export interface SiteNavigationSelect<T extends boolean = true> {
   items?:
     | T
     | {
+        sortOrder?: T;
+        translationKey?: T;
+        modifiedAt?: T;
         label?: T;
         href?: T;
         children?:
@@ -2179,6 +2327,7 @@ export interface LeadsSelect<T extends boolean = true> {
   tenant?: T;
   name?: T;
   company?: T;
+  address?: T;
   email?: T;
   phone?: T;
   country?: T;

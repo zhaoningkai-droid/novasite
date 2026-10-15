@@ -1,16 +1,19 @@
+import { platformDomainsEnabled, platformDomainSettings } from '@/platform/platform-hosts'
 import { getLegacyTemplate } from '@/platform/legacy-template-catalog'
+import { getNewTemplate } from '@/platform/new-templates/registry'
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
 import { SiteManager } from '@/platform/components/SiteManager/SiteManager'
 import { getAccessibleWorkspaceCompanyBySlug } from '@/platform/workspace'
 import { getMeUser } from '@/utilities/getMeUser'
+import { getServerSideURL } from '@/utilities/getURL'
 
 const templateDisplayName = (template: { key?: string; name?: string; version?: string } | null | undefined) => {
   if (!template) return '默认工业模板'
   const legacy = getLegacyTemplate(template.key || '')
   if (legacy) return `${legacy.name}（${template.version || '1.0.0'}）`
-  return template.name || '默认工业模板'
+  return getNewTemplate(template.key)?.name || template.name || '默认工业模板'
 }
 
 export default async function SitesPage({ params }: { params: Promise<{ company: string }> }) {
@@ -21,7 +24,7 @@ export default async function SitesPage({ params }: { params: Promise<{ company:
 
   const payload = await getPayload({ config })
   const [site, templatesResult, changesResult] = await Promise.all([
-    payload.findByID({ collection: 'tenants', id: company.id, depth: 1, locale: 'zh', overrideAccess: false, showHiddenFields: true, user }),
+    payload.findByID({ collection: 'tenants', id: company.id, depth: 1, locale: company.defaultLocale, fallbackLocale: false, overrideAccess: false, showHiddenFields: true, user }),
     payload.find({
       collection: 'templates',
       depth: 0,
@@ -42,8 +45,13 @@ export default async function SitesPage({ params }: { params: Promise<{ company:
   ])
   const selectedTemplate = typeof site.selectedTemplate === 'object' ? site.selectedTemplate : null
   const revision = site.templateRevision || 0
+  const previewOrigin = platformDomainsEnabled()
+    ? `https://${platformDomainSettings().admin}`
+    : getServerSideURL()
+  const previewDomain = new URL(`/s/${slug}/${site.defaultLocale || 'zh'}`, previewOrigin).href
 
   return <SiteManager
+    companyID={company.id}
     companySlug={slug}
     createdAt={site.createdAt}
     templateName={templateDisplayName(selectedTemplate)}
@@ -70,7 +78,8 @@ export default async function SitesPage({ params }: { params: Promise<{ company:
       name: site.name,
       companyName: site.branding.companyName || '',
       primaryDomain: site.primaryDomain || '',
-      previewDomain: site.previewDomain || '',
+      previewDomain,
+      headerText: site.branding.headerText || '',
       defaultLocale: site.defaultLocale || 'zh',
       enabledLocales: site.enabledLocales || ['zh', 'en', 'ru', 'id'],
       status: site.status,

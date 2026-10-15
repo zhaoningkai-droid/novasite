@@ -1,39 +1,34 @@
-# Self-hosting and adapter boundaries
+# 自托管与部署边界
 
-NovaSite does not use or require Payload Cloud. Payload runs inside the Next.js process and connects directly to infrastructure owned by the deployment account.
+本文记录代码支持的适配边界及当前生产拓扑。它不是一份可直接复制粘贴的生产安装脚本。生产服务器配置、环境变量、证书材料、数据库备份和客户媒体不在本仓库。
 
-## 首次生产上线：完整数据迁移（阻塞项）
+## 当前观察到的生产架构
 
-> **未完成本节前，不能将当前本地开发数据库当作可上线的生产基线。**
-> 本地开发环境由 Payload 的开发期 schema 同步支撑，已经验证的 A–E 功能是真实可用的；但阶段 B、C、D、E 的正式迁移尚未在一套全新、可复现的生产 PostgreSQL 环境中完整演练并登记。因此，正式上线前必须完成以下清单。
+截至 2026-10-05 发布记录和服务器核对：阿里云香港 ECS 运行 Docker Compose 管理的 NovaSite Web、产品翻译 Worker、PostgreSQL 和 Caddy。Web 与 Worker 版本独立发布；管理入口域为 `admin.o669.com`。具体镜像和版本证据见 [生产版本对照](./RELEASES/production-baseline-2026-10.md)。
 
-- [ ] 为生产环境准备独立 PostgreSQL 数据库；若已有业务数据，先备份，并在备份副本上演练。不得对本机开发数据库强制执行生产迁移。
-- [ ] 配置生产环境变量和数据库连接后执行 `npm run payload -- migrate`，使 `src/migrations` 中的全部迁移进入生产数据库。
-- [ ] 执行 `npm run payload -- migrate:status`，确认阶段 B、C、D、E 对应迁移均显示为已执行（`Yes`）。
-- [ ] 通过后台或受控导入写入真实客户站点、内容和媒体。演示数据脚本仅用于演示/测试环境；正式客户数据不得以演示种子数据覆盖。
-- [ ] 对每个生产站点验证产品技术参数：每个有参数的产品均应有 4 条语言记录（en、zh、ru、id），并在四种前台语言下实际打开产品详情页核验。
-- [ ] 运行多站点隔离、前台路由、询盘写入和媒体读取的上线前验收；验收通过后才构建并发布应用。
+仓库中的根目录 `docker-compose.yml` 是本地开发环境，包含本地 PostgreSQL 和可选开发服务，不是生产 Compose。旧 `deploy/` 文件来源较早，不能在没有逐项核对的情况下用作当前正式配置。生产环境实际 Compose、Caddyfile、系统服务、密钥和数据目录必须从受控运维记录单独核验，不应复制到公开仓库。
 
-这是一项**生产上线前必须关闭的待办**，不是当前本地 A–E 功能验收的否定。迁移完成后，应在本节逐项勾选，并保留迁移状态和验收记录。
+## 配置适配器
 
-### 本地独立演练记录（不等同于生产上线）
+- 数据库：`src/platform/adapters/database.ts` 用 `DATABASE_URL` 构建 Payload PostgreSQL adapter。生产运行时禁用 schema push；schema 变化走 `src/migrations` 的正式迁移流程。
+- 媒体：`src/platform/adapters/storage.ts` 在 `S3_ENABLED=true` 时启用 S3 兼容存储；密钥由环境注入。生产媒体不应依赖容易丢失的容器本地文件系统。
+- Web/Worker：Web 是 Next.js + Payload 进程；`scripts/run-product-translations.mts` 是独立 Worker 入口。部署时必须成对登记各自的源码提交和镜像摘要，不可因 Worker 版本号更旧就覆盖或猜测。
+- HTTPS/路由：当前生产拓扑使用 Caddy，管理域通过 DNS 指向服务入口。自定义客户正式域名的自动接入、证书与租户路由流程尚未完整实现。
 
-2026-09-22 已在两个独立演练数据库完成空库迁移、备份恢复、受控数据导入和应用启动验证；16 个迁移均为 `Yes`。详细记录见 `docs/evidence/v1-step-06/README.md`。生产环境仍必须逐项完成上方清单，尤其是独立基础设施、对象存储、四语言产品参数核验和外网验收。
+## 新环境上线前需要完成
 
-## Adapter boundaries
+1. 由负责人确认云厂商、网络入口、磁盘、操作系统维护与访问控制策略。
+2. 准备单独的生产数据库、备份策略和恢复演练；不得从本地开发数据库直接复制来代替设计。
+3. 准备生产对象存储、私有密钥、邮箱/AI provider 配置与轮换流程。
+4. 审查 `src/migrations`，在可恢复的隔离环境演练迁移；正式执行前备份并记录迁移状态。
+5. 完成正式域名接入、HTTPS、租户隔离、媒体访问和询盘持久化验收。
+6. 记录 Web、Worker、数据库和反向代理各自的版本、镜像摘要、源码提交和部署时间。
+7. 准备故障回退方案，并确认回退镜像与数据库 schema 兼容。
 
-- Database: `src/platform/adapters/database.ts` creates the PostgreSQL adapter from `DATABASE_URL`.
-- Media: `src/platform/adapters/storage.ts` selects local disk in development or an S3-compatible service when `S3_ENABLED=true`.
-- S3 compatibility covers AWS S3, Cloudflare R2 and self-hosted MinIO. Set the endpoint and path-style options for the selected provider.
-- Schema changes are versioned in `src/migrations` and are applied with `npm run payload migrate` before starting a production release.
+当前站点的客户自有域名支持仍未完整交付；“需要支持正式域名”是产品要求，不应被误读为目前已具备通用自助接入能力。管理域预览的测试询盘持久化与标记机制也尚未实现。
 
-## Hosting targets
+## 不适合公开仓库的内容
 
-| Runtime | Database | Media storage |
-| --- | --- | --- |
-| Vercel | Managed PostgreSQL | S3 or R2 with `S3_CLIENT_UPLOADS=true` |
-| Cloudflare container/runtime | Managed PostgreSQL | R2 |
-| AWS ECS/App Runner | RDS PostgreSQL | S3 |
-| Ubuntu VPS / Docker | PostgreSQL container or managed PostgreSQL | MinIO, S3 or persistent local volume |
+生产环境变量、数据库 URL、管理员凭据、TLS 私钥、云厂商 API key、Cloudflare token、服务器 IP/SSH 资料、数据库备份、客户上传媒体及运行日志必须保存在私有密钥管理和备份系统。请不要将它们粘贴进 issue、README、部署记录或 Git 历史。
 
-Do not deploy production uploads to an ephemeral server filesystem. Payload Cloud credentials, plugins and APIs are deliberately absent from this project.
+具体上线和回退流程见 [部署与回退说明](./DEPLOYMENT_AND_ROLLBACK.md)。在负责人批准前，不能把当前候选直接部署。

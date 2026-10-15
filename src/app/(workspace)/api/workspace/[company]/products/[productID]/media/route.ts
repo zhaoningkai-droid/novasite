@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { getPayload } from 'payload'
+import { APIError, getPayload } from 'payload'
 
 import config from '@payload-config'
 import { getAccessibleWorkspaceCompanyBySlug } from '@/platform/workspace'
@@ -33,6 +33,12 @@ export async function PATCH(request: Request, { params }: Context) {
   if (!mediaResult.docs[0]) return NextResponse.json({ message: '该图片不属于当前公司，不能绑定到产品。' }, { status: 403 })
   const current = Array.isArray(product.gallery) ? product.gallery.map((item) => typeof item === 'number' ? item : item.id) : []
   const gallery = mode === 'replace' ? [mediaID] : mode === 'remove' ? current.filter((id) => id !== mediaID) : current.includes(mediaID) ? current : [...current, mediaID]
-  const updated = await payload.update({ collection: 'products', context: { workspaceBaseEdit: true }, data: { gallery }, id: product.id, locale: 'zh', overrideAccess: false, user })
+  let updated
+  try {
+    updated = await payload.update({ collection: 'products', context: { workspaceBaseEdit: true }, data: { gallery }, id: product.id, locale: 'zh', overrideAccess: false, user })
+  } catch (error) {
+    if (error instanceof APIError && error.status === 409) return NextResponse.json({message:error.message},{status:409})
+    return NextResponse.json({message:'图片操作未完成，请稍后重试。'},{status:500})
+  }
   return NextResponse.json({ gallery: Array.isArray(updated.gallery) ? updated.gallery.map((item) => typeof item === 'number' ? item : item.id) : [], message: mode === 'remove' ? '已从当前产品移除图片。' : '已绑定到当前产品。' })
 }

@@ -6,6 +6,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Inbox,
+  Languages,
+  Loader2,
   Trash2,
   X,
 } from 'lucide-react'
@@ -13,11 +15,17 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
+import {
+  translationViewLabel,
+  type ProductTranslationView,
+} from '../../product-translation/job-view'
 import { WorkspaceRowActions } from './WorkspaceRowActions'
 import './workspace-table.scss'
 
 export type WorkspaceTableColumn = { key: string; label: string; width?: string }
 export type WorkspaceTableRow = {
+  canTranslate?: boolean
+  translation?: ProductTranslationView
   cells: ReactNode[]
   details?: Array<{ label: string; value: ReactNode }>
   id: number
@@ -27,6 +35,8 @@ export type WorkspaceTableRow = {
 type Props = {
   ariaLabel?: string
   bulkDeleteURL?: string
+  bulkTranslateURL?: string
+  asyncTranslation?: boolean
   columns: WorkspaceTableColumn[]
   editBaseHref?: string
   translationBaseHref?: string
@@ -38,8 +48,12 @@ type Props = {
   pageSize?: number
   previousHref?: string
   rows: WorkspaceTableRow[]
+  showDetailsAction?: boolean
   totalDocs: number
   totalPages: number
+  selectionEnabled?: boolean
+  toolbarActionContent?: ReactNode
+  toolbarContent?: ReactNode
 }
 type TableModal =
   { kind: 'details'; row: WorkspaceTableRow } | { kind: 'delete'; rows: WorkspaceTableRow[] }
@@ -47,6 +61,8 @@ type TableModal =
 export function WorkspaceTable({
   ariaLabel = '内容列表',
   bulkDeleteURL,
+  bulkTranslateURL,
+  asyncTranslation = false,
   columns,
   editBaseHref,
   translationBaseHref,
@@ -58,25 +74,51 @@ export function WorkspaceTable({
   pageSize = 10,
   previousHref,
   rows,
+  showDetailsAction = true,
   totalDocs,
   totalPages,
+  selectionEnabled = false,
+  toolbarActionContent,
+  toolbarContent,
 }: Props) {
   const router = useRouter()
   const checkboxRef = useRef<HTMLInputElement>(null)
   const dialogRef = useRef<HTMLDialogElement>(null)
   const openerRef = useRef<HTMLElement | null>(null)
   const requestInProgress = useRef(false)
+  const [jobViews, setJobViews] = useState<Record<number, ProductTranslationView>>({})
+  const [progressReadError, setProgressReadError] = useState('')
+  const productIDs = rows.map((row) => row.id).join(',')
+  const translationFor = (row: WorkspaceTableRow) => jobViews[row.id] || row.translation
+  const rowBusy = (row: WorkspaceTableRow) => Boolean(translationFor(row)?.locked)
   const [selectedIDs, setSelectedIDs] = useState<number[]>([])
   const [modal, setModal] = useState<TableModal | null>(null)
   const [batchMessage, setBatchMessage] = useState('')
   const [deleteError, setDeleteError] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const [translating, setTranslating] = useState(false)
+  const [translationMessage, setTranslationMessage] = useState('')
+  const [translationError, setTranslationError] = useState(false)
   const pageIDs = useMemo(() => rows.map((row) => row.id), [rows])
-  const allPageRowsSelected = pageIDs.length > 0 && pageIDs.every((id) => selectedIDs.includes(id))
+  const selectableIDs = rows.filter((row) => !rowBusy(row)).map((row) => row.id)
+  const allPageRowsSelected =
+    selectableIDs.length > 0 && selectableIDs.every((id) => selectedIDs.includes(id))
+  const canSelect = Boolean(selectionEnabled || bulkDeleteURL || bulkTranslateURL)
+  const selectedTranslatableRows = rows.filter(
+    (row) =>
+      selectedIDs.includes(row.id) &&
+      !rowBusy(row) &&
+      (translationFor(row)?.canTranslate ?? row.canTranslate) !== false,
+  )
 
   useEffect(() => {
     setSelectedIDs((previous) => previous.filter((id) => pageIDs.includes(id)))
   }, [pageIDs])
+
+  useEffect(() => {
+    // A save/refresh supplies a new source snapshot; discard cached completion states.
+    setJobViews({})
+  }, [rows])
 
   useEffect(() => {
     if (checkboxRef.current) {
@@ -112,7 +154,121 @@ export function WorkspaceTable({
     setSelectedIDs((previous) =>
       previous.includes(id) ? previous.filter((item) => item !== id) : [...previous, id],
     )
-  const toggleAll = () => setSelectedIDs(allPageRowsSelected ? [] : pageIDs)
+  const toggleAll = () =>
+    setSelectedIDs(
+      allPageRowsSelected ? [] : rows.filter((row) => !rowBusy(row)).map((row) => row.id),
+    )
+  useEffect(() => {
+    if (!asyncTranslation || !bulkTranslateURL || !productIDs) return
+    let disposed = false
+    let timer: ReturnType<typeof setTimeout>
+    const read = async () => {
+      let count = 0
+      try {
+        const response = await fetch(`${bulkTranslateURL}?ids=${productIDs}`, { cache: 'no-store' })
+        if (!response.ok) throw new Error('进度暂时无法读取；后台任务仍会继续，请稍后刷新。')
+        const result = (await response.json()) as {
+          views: ProductTranslationView[]
+          activeCount: number
+        }
+        if (disposed) return
+        setJobViews(Object.fromEntries(result.views.map((view) => [view.productID, view])))
+        count = result.activeCount
+        setProgressReadError('')
+      } catch (error) {
+        if (!disposed)
+          setProgressReadError(error instanceof Error ? error.message : '进度读取失败。')
+      } finally {
+        if (!disposed) timer = setTimeout(() => void read(), count ? 3000 : 12000)
+      }
+    }
+    void read()
+    return () => {
+      disposed = true
+      clearTimeout(timer)
+    }
+  }, [asyncTranslation, bulkTranslateURL, productIDs, translating])
+
+  const translateSelected = async () => {
+    if (!bulkTranslateURL || translating || selectedTranslatableRows.length === 0) return
+    const selectedRows = selectedTranslatableRows
+    const completedIDs: number[] = []
+    const failed: string[] = []
+    setTranslating(true)
+    setTranslationMessage('')
+    setTranslationError(false)
+    if (asyncTranslation) {
+      try {
+        const response = await fetch(bulkTranslateURL, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ ids: selectedRows.map((row) => row.id) }),
+          signal: AbortSignal.timeout(20_000),
+        })
+        const result = (await response.json()) as {
+          message?: string
+          accepted?: Array<{ productID: number; jobID: string }>
+        }
+        if (!response.ok) throw new Error(result.message || '任务提交失败。')
+        setJobViews((previous) => {
+          const next = { ...previous }
+          for (const accepted of result.accepted || []) {
+            const row = rows.find((row) => row.id === accepted.productID)
+            const existing = next[accepted.productID] || row?.translation
+            next[accepted.productID] = {
+              ...existing,
+              productID: accepted.productID,
+              jobID: accepted.jobID,
+              locked: true,
+              canTranslate: false,
+              status: 'queued',
+              completed: existing?.completed || 0,
+              total: existing?.total || 0,
+              languages: existing?.languages || [],
+            }
+          }
+          return next
+        })
+        setSelectedIDs([])
+        router.refresh()
+      } catch (error) {
+        setTranslationError(true)
+        setTranslationMessage(
+          error instanceof Error && error.name === 'TimeoutError'
+            ? '提交响应超时，请刷新确认产品任务状态，避免重复提交。'
+            : error instanceof Error
+              ? error.message
+              : '任务提交失败。',
+        )
+      } finally {
+        setTranslating(false)
+      }
+      return
+    }
+    try {
+      for (const row of selectedRows) {
+        try {
+          const response = await fetch(`${bulkTranslateURL}/${row.id}`, {
+            body: JSON.stringify({}),
+            headers: { 'content-type': 'application/json' },
+            method: 'POST',
+            signal: AbortSignal.timeout(210_000),
+          })
+          const result = (await response.json().catch(() => null)) as { message?: string } | null
+          if (!response.ok) throw new Error(result?.message || '翻译失败。')
+          completedIDs.push(row.id)
+        } catch (error) {
+          failed.push(`${row.label}：${error instanceof Error ? error.message : '翻译失败'}`)
+        }
+      }
+      setSelectedIDs((current) => current.filter((id) => !completedIDs.includes(id)))
+      setTranslationError(failed.length > 0)
+      setTranslationMessage(failed.slice(0, 2).join('；'))
+      if (completedIDs.length) router.refresh()
+    } finally {
+      setTranslating(false)
+    }
+  }
 
   const deleteSelected = async () => {
     if (!bulkDeleteURL || modal?.kind !== 'delete' || requestInProgress.current) return
@@ -152,12 +308,73 @@ export function WorkspaceTable({
 
   return (
     <section aria-label={ariaLabel} className="workspace-table">
+      {(toolbarContent || bulkTranslateURL || selectionEnabled || toolbarActionContent) && (
+        <div className="workspace-table__toolbar">
+          {toolbarContent && (
+            <div className="workspace-table__toolbar-content">{toolbarContent}</div>
+          )}
+          {(bulkDeleteURL || bulkTranslateURL) && (
+            <div aria-label="所选内容操作" className="workspace-table__toolbar-actions">
+              {bulkDeleteURL && (
+                <button
+                  className="workspace-table__toolbar-delete"
+                  disabled={
+                    selectedIDs.length === 0 ||
+                    deleting ||
+                    translating ||
+                    rows.some((row) => selectedIDs.includes(row.id) && rowBusy(row))
+                  }
+                  onClick={() =>
+                    openModal({
+                      kind: 'delete',
+                      rows: rows.filter((row) => selectedIDs.includes(row.id)),
+                    })
+                  }
+                  type="button"
+                >
+                  <Trash2 aria-hidden="true" size={16} />
+                  删除
+                </button>
+              )}
+              {bulkTranslateURL && (
+                <button
+                  className="workspace-table__toolbar-translate"
+                  disabled={selectedTranslatableRows.length === 0 || deleting || translating}
+                  onClick={() => void translateSelected()}
+                  type="button"
+                >
+                  {translating ? (
+                    <Loader2 aria-hidden="true" className="workspace-table__spinner" size={16} />
+                  ) : (
+                    <Languages aria-hidden="true" size={16} />
+                  )}
+                  {translating ? '翻译中…' : '翻译'}
+                </button>
+              )}
+              {toolbarActionContent}
+            </div>
+          )}
+        </div>
+      )}
+      {progressReadError && (
+        <p className="workspace-table__batch-message is-error" role="status">
+          {progressReadError}
+        </p>
+      )}
+      {translationMessage && (
+        <p
+          className={`workspace-table__batch-message${translationError ? ' is-error' : ''}`}
+          role={translationError ? 'alert' : 'status'}
+        >
+          {translationMessage}
+        </p>
+      )}
       {selectedIDs.length > 0 && (
         <div className="workspace-table__selection" role="status">
           <strong>已选择 {selectedIDs.length} 项</strong>
           <span>仅限当前页；翻页或变更筛选会清除选择。</span>
           <div>
-            {bulkDeleteURL && (
+            {bulkDeleteURL && !selectionEnabled && (
               <button
                 className="workspace-table__selection-delete"
                 disabled={deleting}
@@ -195,7 +412,7 @@ export function WorkspaceTable({
           <table>
             <caption className="workspace-table__sr-only">{ariaLabel}</caption>
             <colgroup>
-              {bulkDeleteURL && <col style={{ width: '44px' }} />}
+              {canSelect && <col style={{ width: '44px' }} />}
               {columns.map((column) => (
                 <col key={column.key} style={{ width: column.width }} />
               ))}
@@ -203,12 +420,12 @@ export function WorkspaceTable({
             </colgroup>
             <thead>
               <tr>
-                {bulkDeleteURL && (
+                {canSelect && (
                   <th className="workspace-table__checkbox" scope="col">
                     <input
                       aria-label="选择本页全部内容"
                       checked={allPageRowsSelected}
-                      disabled={deleting}
+                      disabled={deleting || translating}
                       onChange={toggleAll}
                       ref={checkboxRef}
                       type="checkbox"
@@ -228,17 +445,18 @@ export function WorkspaceTable({
             <tbody>
               {rows.map((row) => (
                 <tr
+                  aria-busy={rowBusy(row) || undefined}
                   className={
                     selectedIDs.includes(row.id) ? 'workspace-table__row--selected' : undefined
                   }
                   key={row.id}
                 >
-                  {bulkDeleteURL && (
+                  {canSelect && (
                     <td className="workspace-table__checkbox">
                       <input
                         aria-label={'选择 ' + row.label}
                         checked={selectedIDs.includes(row.id)}
-                        disabled={deleting}
+                        disabled={deleting || rowBusy(row)}
                         onChange={() => toggleRow(row.id)}
                         type="checkbox"
                       />
@@ -252,21 +470,37 @@ export function WorkspaceTable({
                             ? 'workspace-table__cell workspace-table__cell--title'
                             : 'workspace-table__cell'
                         }
-                        title={typeof cell === 'string' ? cell : undefined}
+                        title={
+                          columns[index]?.key !== 'translation' && typeof cell === 'string'
+                            ? cell
+                            : undefined
+                        }
                       >
-                        {cell ?? '—'}
+                        {columns[index]?.key === 'translation' ? (
+                          <span>{translationViewLabel(translationFor(row), cell)}</span>
+                        ) : columns[index]?.key === 'featured' ? (
+                          <fieldset
+                            className="workspace-table__locked-control"
+                            disabled={rowBusy(row)}
+                          >
+                            {cell ?? '—'}
+                          </fieldset>
+                        ) : (
+                          (cell ?? '—')
+                        )}
                       </div>
                     </td>
                   ))}
                   <td className="workspace-table__action-cell">
                     <WorkspaceRowActions
-                      disabled={deleting || selectedIDs.length > 0}
+                      disabled={deleting || rowBusy(row) || selectedIDs.includes(row.id)}
                       editHref={editBaseHref ? editBaseHref + '/' + row.id + '/edit' : undefined}
                       label={row.label}
                       onDelete={
                         bulkDeleteURL ? () => openModal({ kind: 'delete', rows: [row] }) : undefined
                       }
                       onDetails={() => openModal({ kind: 'details', row })}
+                      showDetailsAction={showDetailsAction}
                       translationHref={
                         translationBaseHref
                           ? translationBaseHref + '/' + row.id + '/translations'
@@ -372,7 +606,13 @@ export function WorkspaceTable({
                 ).map((detail, index) => (
                   <div key={detail.label + index}>
                     <dt>{detail.label}</dt>
-                    <dd>{detail.value ?? '—'}</dd>
+                    <dd>{
+                      detail.label === '翻译状态' ||
+                      detail.label === '翻译进度' ||
+                      columns.some((column) => column.key === 'translation' && column.label === detail.label)
+                        ? translationViewLabel(translationFor(modal.row), detail.value)
+                        : detail.value ?? '—'
+                    }</dd>
                   </div>
                 ))}
               </dl>

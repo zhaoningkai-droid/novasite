@@ -1,4 +1,7 @@
 import type { CollectionSlug, GlobalSlug, Payload, PayloadRequest, File } from 'payload'
+import { randomBytes } from 'node:crypto'
+
+import { assertSeedExecutionAllowed } from '@/platform/seed-security'
 
 import { home } from './home'
 import { image1 } from './image-1'
@@ -31,6 +34,9 @@ export const seed = async ({
   payload: Payload
   req: PayloadRequest
 }): Promise<void> => {
+  // Guard the destructive Local API entry too; route-level checks alone are not enough.
+  assertSeedExecutionAllowed(req.user)
+
   payload.logger.info('Seeding database...')
 
   // we need to clear the media directory before seeding
@@ -100,7 +106,8 @@ export const seed = async ({
       data: {
         name: 'Demo Author',
         email: 'demo-author@example.com',
-        password: 'password',
+        // This author is only used to attach demo posts and must not have a fixed login secret.
+        password: randomBytes(32).toString('base64url'),
       },
     }),
     payload.create({

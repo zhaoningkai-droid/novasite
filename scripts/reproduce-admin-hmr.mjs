@@ -4,7 +4,7 @@ const browser = await chromium.launch({ headless: true })
 const page = await browser.newPage({ viewport: { width: 1512, height: 900 } })
 const login = await page.request.post('http://localhost:3100/api/users/login', {
   data: {
-    email: process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local',
+    email: process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid',
     password: process.env.SEED_ADMIN_PASSWORD || '',
   },
 })

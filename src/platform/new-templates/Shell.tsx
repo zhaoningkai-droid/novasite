@@ -5,8 +5,12 @@ import config from '@payload-config'
 import type { Tenant, User } from '@/payload-types'
 import { locales, type SiteLocale } from '@/platform/site'
 import { templateCopy } from './copy'
-import { templateHref } from './links'
+import { templateHref, templateLocaleHref } from './links'
 import type { NewTemplate } from './registry'
+import { isIndustryKey } from '@/platform/industry-templates/model'
+import { IndustryTenantShell } from '@/platform/industry-templates/tenant-shell'
+import { CustomerBrand } from '@/platform/components/CustomerBrand/CustomerBrand'
+import { sortedNavigation } from '@/platform/navigation-model'
 
 export async function TemplateShell({
   site,
@@ -25,6 +29,19 @@ export async function TemplateShell({
   preview?: boolean
   user?: User
 }) {
+  if (isIndustryKey(template.key))
+    return (
+      <IndustryTenantShell
+        site={site}
+        locale={locale}
+        templateKey={template.key}
+        base={base}
+        preview={preview}
+        user={user}
+      >
+        {children}
+      </IndustryTenantShell>
+    )
   const payload = await getPayload({ config })
   const result = await payload.find({
     collection: 'site-navigation',
@@ -38,7 +55,7 @@ export async function TemplateShell({
   const document = result.docs[0]
   const fallback = ['products', 'cases', 'news', 'blog', 'about', 'contact', 'faqs'] as const
   const navigation = document?.items?.length
-    ? document.items
+    ? sortedNavigation(document.items)
     : fallback.map((key) => ({
         label: t[key],
         href: `/${key}`,
@@ -80,7 +97,8 @@ export async function TemplateShell({
         {enabled.map((lang) => (
           <Link
             key={lang}
-            href={base.replace(/\/(en|zh|ru|id)$/, `/${lang}`)}
+            href={templateLocaleHref(base, lang)}
+            hrefLang={lang}
             aria-current={locale === lang ? 'true' : undefined}
           >
             {lang.toUpperCase()}
@@ -93,6 +111,8 @@ export async function TemplateShell({
     <div
       className={`nt-shell nt-${template.tone}`}
       data-template={template.key}
+      lang={locale}
+      dir={locale === 'ar' ? 'rtl' : 'ltr'}
       style={{ '--nt-primary': template.primary, '--nt-accent': template.accent } as CSSProperties}
     >
       <a className="nt-skip" href="#nt-main">
@@ -118,18 +138,7 @@ export async function TemplateShell({
       ) : null}
       <header className="nt-header">
         <div className="nt-wrap nt-header-inner">
-          <Link className="nt-logo" href={base}>
-            {logo?.url ? (
-              <img
-                alt={logo.alt || site.branding.companyName}
-                src={logo.url}
-                width="160"
-                height="60"
-              />
-            ) : (
-              <strong>{site.branding.companyName}</strong>
-            )}
-          </Link>
+          <CustomerBrand className="nt-logo" href={base} companyName={site.branding.companyName} headerText={site.branding.headerText} logo={logo?.url} />
           <nav className="nt-navigation" aria-label={t.menu}>
             {menu}
           </nav>

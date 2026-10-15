@@ -8,12 +8,12 @@ import { userHasRole } from '@/access/roles'
 import type { News } from '@/payload-types'
 import { getAccessibleWorkspaceCompanyBySlug } from './workspace'
 import { getMeUser } from '@/utilities/getMeUser'
+import { revalidateWorkspaceSettings } from './workspace-settings-api'
 
 type Kind = 'news' | 'cases' | 'blog'
 type Collection = 'news' | 'cases' | 'posts'
 const names: Record<Kind, string> = { news: '新闻', cases: '案例', blog: '博客' }
 const text = (value: unknown) => typeof value === 'string' ? value.trim() : ''
-const locales = ['zh', 'en', 'ru', 'id'] as const
 const lexical = (value: string): News['content'] => ({
   root: {
     type: 'root', version: 1, direction: null, format: '', indent: 0,
@@ -40,9 +40,11 @@ export async function saveWorkspaceArticle(
     if (!company || store.get('payload-tenant')?.value !== String(company.id))
       return NextResponse.json({ message: '当前公司无权限或已切换，请刷新后重试。' }, { status: 403 })
     const body = await request.json().catch(() => null) as Record<string, unknown> | null
-    if (!body) return NextResponse.json({ message: '保存内容格式无效，请刷新后重试。' }, { status: 422 })
+    if (!body || typeof body !== 'object' || Array.isArray(body))
+      return NextResponse.json({ message: '保存内容格式无效，请刷新后重试。' }, { status: 422 })
     const name = names[kind]
     const collection: Collection = kind === 'blog' ? 'posts' : kind
+    const publish = body.publish === true
     const title = text(body.title)
     const summary = text(kind === 'blog' ? body.description : body.summary)
     const rawContent = 'bodyText' in body ? body.bodyText : body.content
@@ -66,13 +68,13 @@ export async function saveWorkspaceArticle(
       kind === 'news' ? 'news-categories' : 'case-categories'
     const [categoryCheck, coverCheck, existingResult] = await Promise.all([
       payload.find({ collection: categoryCollection, depth: 0, limit: 1,
-        locale: 'zh', overrideAccess: false, user,
+        locale: company.defaultLocale, overrideAccess: false, user,
         where: { and: [{ id: { equals: category } }, { tenant: { equals: company.id } }] } }),
       cover ? payload.find({ collection: 'media', depth: 0, limit: 1,
         overrideAccess: false, user,
         where: { and: [{ id: { equals: cover } }, { tenant: { equals: company.id } }] } }) : null,
-      !creating ? payload.find({ collection, depth: 0, limit: 1, locale: 'zh',
-        fallbackLocale: 'none', draft: true, overrideAccess: false, user,
+      !creating ? payload.find({ collection, depth: 0, limit: 1, locale: company.defaultLocale,
+        fallbackLocale: false, draft: true, overrideAccess: false, user,
         where: { and: [{ id: { equals: id } }, { tenant: { equals: company.id } }] } }) : null,
     ])
     if (!categoryCheck.docs.length)
@@ -88,9 +90,10 @@ export async function saveWorkspaceArticle(
       return NextResponse.json({ message: `未找到当前公司的${name}。` }, { status: 404 })
     const priorCategories = existing && 'categories' in existing && Array.isArray(existing.categories)
       ? existing.categories.map((item) => typeof item === 'number' ? item : item.id) : []
+    const status: 'draft' | 'published' = publish ? 'published' : 'draft'
     const data = {
       title, tenant: company.id,
-      _status: existing?._status || 'published',
+      _status: status,
       ...(contentProvided ? { content: lexical(content) } : {}),
       ...(kind === 'blog' ? {
         categories: [...new Set([category, ...priorCategories.slice(1)])],
@@ -100,7 +103,7 @@ export async function saveWorkspaceArticle(
       } : { category, summary, cover, sortOrder, featured: body.featured === true }),
       ...(kind === 'cases' ? { country: text(body.country), industry: text(body.industry) } : {}),
     }
-    let result: { id: number }
+    let result: { id: number; _status?: 'draft' | 'published' | null }
     if (creating) {
       const key = text(body.idempotencyKey)
       if (!/^[a-zA-Z0-9_-]{16,128}$/.test(key))
@@ -115,28 +118,32 @@ export async function saveWorkspaceArticle(
         // Serialize creations per company across server processes before deduplicating a retry.
         await transaction.execute(sql`SELECT id FROM tenants WHERE id = ${company.id} FOR UPDATE`)
         const req = { transactionID, user }
-        const prior = await payload.find({ collection, depth: 0, limit: 1, locale: 'zh',
+        const prior = await payload.find({ collection, depth: 0, limit: 1, locale: company.defaultLocale,
           draft: true, overrideAccess: false, user, req,
           where: { and: [{ slug: { equals: stableSlug } }, { tenant: { equals: company.id } }] } })
         result = prior.docs[0] || await payload.create({ collection,
           data: { ...data, slug: stableSlug } as RequiredDataFromCollectionSlug<Collection>,
-          locale: 'zh', overrideAccess: false, user, req })
+          draft: !publish, locale: company.defaultLocale, overrideAccess: false, user, req })
         await payload.db.commitTransaction(transactionID)
       } catch (error) {
         await payload.db.rollbackTransaction(transactionID)
         throw error
       }
     } else {
-      result = await payload.update({ collection, data, id, locale: 'zh',
-        overrideAccess: false, user })
+      result = await payload.update({ collection, data: data as RequiredDataFromCollectionSlug<Collection>, id, locale: company.defaultLocale,
+        draft: !publish, overrideAccess: false, user })
     }
     revalidatePath(`/workspace/${slug}/website/content/${kind}`)
-    for (const locale of locales) revalidatePath(`/s/${slug}/${locale}`, 'layout')
-    return NextResponse.json({ id: result.id,
-      message: existing?._status === 'draft'
-        ? '内容已保存，仍为草稿。' : `保存成功，${name}内容已同步更新。` })
+    const published = result._status === 'published' || (result._status === undefined && publish)
+    if (published) {
+      revalidateWorkspaceSettings(slug, `content/${kind}`)
+    }
+    return NextResponse.json({ id: result.id, published,
+      message: published ? `已发布，客户网站的${name}内容已同步更新。` : `已保存为草稿，客户网站暂未更新。` })
   } catch (error) {
-    console.error('[workspace-article-save]', error)
+    console.error('[workspace-article-save] Content could not be saved.')
+    const status = error && typeof error === 'object' && 'status' in error ? Number(error.status) : 500
+    if (status === 409) return NextResponse.json({ message: error instanceof Error ? error.message : '这条内容正在翻译中，请完成后再保存。' }, { status: 409 })
     return NextResponse.json({ message: '保存未完成，请稍后重试。已填写的内容仍保留。' }, { status: 500 })
   }
 }

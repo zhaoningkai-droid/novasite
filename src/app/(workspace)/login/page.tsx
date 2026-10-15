@@ -1,4 +1,7 @@
 import { LoginForm } from './LoginForm'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = { title: '登录 · NovaSite 独立站管理后台' }
 
 type Props = {
   searchParams: Promise<{ error?: string | string[]; redirect?: string | string[] }>

@@ -31,7 +31,9 @@ import { getServerSideURL } from './utilities/getURL'
 import { applyTemplateEndpoint } from './endpoints/applyTemplate'
 import { submitInquiryEndpoint } from './endpoints/submitInquiry'
 import { createDatabaseAdapter } from './platform/adapters/database'
+import { localeOptions } from './platform/site-locales'
 import { zh } from 'payload/i18n/zh'
+import { withContentTranslations } from './platform/content-translation/hooks'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -103,16 +105,11 @@ export default buildConfig({
     Deployments,
     AuditLogs,
     Users,
-  ],
+  ].map(withContentTranslations),
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
   localization: {
-    locales: [
-      { code: 'en', label: '英语' },
-      { code: 'zh', label: '简体中文' },
-      { code: 'ru', label: '俄语' },
-      { code: 'id', label: '印尼语' },
-    ],
+    locales: localeOptions.map(({ code, label }) => ({ code, label })),
     defaultLocale: 'en',
     fallback: true,
   },

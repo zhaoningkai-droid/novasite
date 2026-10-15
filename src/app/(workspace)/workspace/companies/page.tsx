@@ -3,8 +3,12 @@ import { getPayload } from 'payload'
 
 import config from '@payload-config'
 import { CompanySelection } from '@/platform/components/CompanySelection/CompanySelection'
+import { userHasRole } from '@/access/roles'
+import type { Metadata } from 'next'
 import { getAccessibleWorkspaceCompanies } from '@/platform/workspace'
 import { getMeUser } from '@/utilities/getMeUser'
+
+export const metadata: Metadata = { title: '选择公司 · NovaSite 独立站管理后台' }
 
 export default async function CompaniesPage() {
   const { user } = await getMeUser({ nullUserRedirect: '/admin/login?redirect=/workspace/companies' })
@@ -28,6 +32,7 @@ export default async function CompaniesPage() {
   return <CompanySelection
     companies={companies}
     initialCompanyID={initialCompanyID}
+    canCreateCompanies={userHasRole(user, ['super-admin'])}
     templates={templatesResult.docs.map((template) => ({
       id: template.id,
       key: template.key,

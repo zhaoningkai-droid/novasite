@@ -12,6 +12,7 @@ import { getMeUser } from '@/utilities/getMeUser'
 type Context = { params: Promise<{ company: string }> }
 type HomepageConfig = { banners?: unknown[]; featuredNewsCategoryID?: number | null; inquiryRequiredFields?: Record<string, boolean>; socialLinks?: Record<string, string>; footerIntro?: string; footerLogoMediaID?: number }
 type StrengthItem = { image?: number | null; label: string; sortOrder: number; unit: string; value: string }
+type ExecutiveImageValue = { image?: number | null; alt?: string; caption?: string; label?: string; name?: string; sortOrder: number }
 
 const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '')
 const imageTypes = new Set(['image/jpeg', 'image/png', 'image/webp'])
@@ -49,6 +50,51 @@ const socialLinks = (value: unknown, fallback: Record<string, string> = {}) => {
     result[field] = text(provided[field] ?? fallback[field])
     return result
   }, {})
+}
+
+const optionalMediaID = (value: unknown, label: string): number | null | undefined => {
+  if (value === undefined) return undefined
+  if (value === null || value === '') return null
+  const id = Number(value)
+  if (!Number.isSafeInteger(id) || id < 1) throw new SettingsInputError(`${label}编号无效。`)
+  return id
+}
+
+const boundedNumber = (value: unknown, fallback: number, min: number, max: number, label: string) => {
+  const number = Number(value ?? fallback)
+  if (!Number.isFinite(number)) throw new SettingsInputError(`${label}必须是有效数字。`)
+  return Math.max(min, Math.min(max, number))
+}
+
+const executiveImageItems = (value: unknown, label: string, max: number): ExecutiveImageValue[] => {
+  if (!Array.isArray(value) || value.length > max) throw new SettingsInputError(`${label}最多支持 ${max} 项。`)
+  return value.map((raw, index) => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new SettingsInputError(`${label}第 ${index + 1} 项格式无效。`)
+    const item = raw as Record<string, unknown>
+    const image = optionalMediaID(item.imageID, `${label}图片`)
+    const order = item.sortOrder === undefined || item.sortOrder === null ? index + 1 : Number(item.sortOrder)
+    if (!Number.isFinite(order)) throw new SettingsInputError(`${label}排序无效。`)
+    const result: ExecutiveImageValue = {
+      image: image ?? null,
+      alt: text(item.alt).slice(0, 240),
+      caption: text(item.caption).slice(0, 240),
+      label: text(item.label).slice(0, 160),
+      name: text(item.name).slice(0, 160),
+      sortOrder: order,
+    }
+    return result
+  }).filter((item) => item.image || item.alt || item.caption || item.label || item.name).sort((a, b) => a.sortOrder - b.sortOrder)
+}
+
+const executiveAdvantages = (value: unknown) => {
+  if (!Array.isArray(value) || value.length > 8) throw new SettingsInputError('服务优势最多支持 8 项。')
+  return value.map((raw, index) => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new SettingsInputError(`服务优势第 ${index + 1} 项格式无效。`)
+    const item = raw as Record<string, unknown>
+    const sortOrder = item.sortOrder === undefined || item.sortOrder === null ? index + 1 : Number(item.sortOrder)
+    if (!Number.isFinite(sortOrder)) throw new SettingsInputError('服务优势排序无效。')
+    return { icon: text(item.icon).slice(0, 40), title: text(item.title).slice(0, 160), description: text(item.description).slice(0, 1000), sortOrder }
+  }).filter((item) => item.title || item.description).sort((a, b) => a.sortOrder - b.sortOrder)
 }
 
 const banners = (value: unknown) => Array.isArray(value)
@@ -112,7 +158,7 @@ export async function PATCH(request: Request, { params }: Context) {
   const company = await getAccessibleWorkspaceCompanyBySlug(user, slug)
   if (!company || store.get('payload-tenant')?.value !== String(company.id)) return NextResponse.json({ message: '当前公司无权限或已切换，请刷新后重试。' }, { status: 403 })
 
-  const validModes = ['banner', 'recommendations', 'video', 'intro', 'strength', 'inquiry', 'homepage-config']
+  const validModes = ['banner', 'recommendations', 'video', 'intro', 'strength', 'inquiry', 'homepage-config', 'executive']
   if (typeof body.mode !== 'string' || !validModes.includes(body.mode)) return NextResponse.json({ message: '首页模块无效，请刷新页面后重试。' }, { status: 422 })
   const mode = body.mode
   const heroTitle = text(body.heroTitle)
@@ -131,8 +177,9 @@ export async function PATCH(request: Request, { params }: Context) {
   if (mode === 'strength' && hasIncompleteStrength) return NextResponse.json({ message: '每项企业实力请填写数字和说明，或移除空白项。' }, { status: 422 })
 
   const payload = await getPayload({ config })
-  const tenant = await payload.findByID({ collection: 'tenants', id: company.id, depth: 0, locale: 'zh', overrideAccess: false, user })
+  const tenant = await payload.findByID({ collection: 'tenants', id: company.id, depth: 0, locale: company.defaultLocale, overrideAccess: false, user })
   const existingHomepage = tenant.fixedPages?.homepage
+  const existingExecutiveHome = (existingHomepage as (typeof existingHomepage & { executiveHome?: Record<string, unknown> }) | undefined)?.executiveHome || {}
   const homepageConfig = body.config && typeof body.config === 'object' && !Array.isArray(body.config) ? body.config as HomepageConfig : {}
   const incomingBanners = mode === 'banner' ? body.banners : mode === 'homepage-config' ? homepageConfig.banners : undefined
   const normalizedBanners = incomingBanners === undefined ? undefined : banners(incomingBanners)
@@ -175,6 +222,87 @@ export async function PATCH(request: Request, { params }: Context) {
       if (owned.docs.length !== imageIDs.length) return NextResponse.json({ message: '企业实力图片不属于当前公司。' }, { status: 403 })
     }
   }
+  if (mode === 'executive') {
+    const input = body.executiveHome && typeof body.executiveHome === 'object' && !Array.isArray(body.executiveHome)
+      ? body.executiveHome as Record<string, unknown>
+      : null
+    if (!input) return NextResponse.json({ message: '商务工业首页设置格式无效。' }, { status: 422 })
+    const advantages = executiveAdvantages(input.advantages ?? existingExecutiveHome.advantages ?? [])
+    const marks = executiveImageItems(input.marks ?? existingExecutiveHome.marks ?? [], '资质标志', 8)
+    const certificates = executiveImageItems(input.certificates ?? existingExecutiveHome.certificates ?? [], '证书', 12)
+    const strengthGallery = executiveImageItems(input.strengthGallery ?? existingExecutiveHome.strengthGallery ?? [], '实力展示图片', 12)
+    if (certificates.some((item) => !item.image)) return NextResponse.json({ message: '每张证书都需要上传图片，或删除未完成的证书项。' }, { status: 422 })
+    if (strengthGallery.some((item) => !item.image)) return NextResponse.json({ message: '每张实力展示图都需要上传图片，或删除未完成的图片项。' }, { status: 422 })
+    const idValues = [
+      optionalMediaID(input.introBackgroundMediaID, '简介背景图'),
+      optionalMediaID(input.videoPosterMediaID, '视频封面图'),
+      optionalMediaID(body.footerBackgroundMediaID, '页脚背景图'),
+      ...marks.map((item) => item.image), ...certificates.map((item) => item.image), ...strengthGallery.map((item) => item.image),
+    ].filter((id): id is number => typeof id === 'number')
+    const uniqueIDs = [...new Set(idValues)]
+    if (uniqueIDs.length) {
+      const owned = await payload.find({ collection: 'media', depth: 0, limit: uniqueIDs.length, overrideAccess: false, user,
+        where: { and: [{ id: { in: uniqueIDs } }, { tenant: { equals: company.id } }] } })
+      if (owned.docs.length !== uniqueIDs.length) return NextResponse.json({ message: '首页图片只能使用当前公司的媒体库文件。' }, { status: 403 })
+      if (owned.docs.some((media) => !imageTypes.has(media.mimeType || '') || (media.filesize || 0) > 10 * 1024 * 1024)) {
+        return NextResponse.json({ message: '首页图片仅支持 JPG、PNG 或 WebP，单张不超过 10MB。' }, { status: 422 })
+      }
+    }
+    const optionalMedia = (name: string, existingName: string) => {
+      const requested = optionalMediaID(input[name], name)
+      if (requested !== undefined) return requested
+      return existingExecutiveHome[existingName] as number | { id?: number } | null | undefined
+    }
+    const enabled = (name: string, fallback: unknown) => optionalBoolean(input[name], typeof fallback === 'boolean' ? fallback : false)
+    const setting = {
+      ...existingExecutiveHome,
+      advantagesEnabled: enabled('advantagesEnabled', existingExecutiveHome.advantagesEnabled),
+      advantagesTitle: text(input.advantagesTitle ?? existingExecutiveHome.advantagesTitle).slice(0, 160),
+      advantages,
+      marksEnabled: enabled('marksEnabled', existingExecutiveHome.marksEnabled), marks,
+      certificatesEnabled: enabled('certificatesEnabled', existingExecutiveHome.certificatesEnabled),
+      certificatesTitle: text(input.certificatesTitle ?? existingExecutiveHome.certificatesTitle).slice(0, 160), certificates,
+      introBackground: optionalMedia('introBackgroundMediaID', 'introBackground'),
+      introOverlay: boundedNumber(input.introOverlay, Number(existingExecutiveHome.introOverlay ?? 0.62), 0, 0.85, '简介背景压暗程度'),
+      introButtonLabel: text(input.introButtonLabel ?? existingExecutiveHome.introButtonLabel).slice(0, 80),
+      videoPoster: optionalMedia('videoPosterMediaID', 'videoPoster'),
+      strengthTitle: text(input.strengthTitle ?? existingExecutiveHome.strengthTitle).slice(0, 160), strengthGallery,
+      casesTitle: text(input.casesTitle ?? existingExecutiveHome.casesTitle).slice(0, 160),
+      categoriesTitle: text(input.categoriesTitle ?? existingExecutiveHome.categoriesTitle).slice(0, 160),
+      productsTitle: text(input.productsTitle ?? existingExecutiveHome.productsTitle).slice(0, 160),
+      newsTitle: text(input.newsTitle ?? existingExecutiveHome.newsTitle).slice(0, 160),
+      faqEnabled: enabled('faqEnabled', existingExecutiveHome.faqEnabled),
+      faqTitle: text(input.faqTitle ?? existingExecutiveHome.faqTitle).slice(0, 160),
+      faqLimit: Math.round(boundedNumber(input.faqLimit, Number(existingExecutiveHome.faqLimit ?? 6), 1, 12, '常见问题数量')),
+      caseCTATitle: text(input.caseCTATitle ?? existingExecutiveHome.caseCTATitle).slice(0, 160),
+      caseCTADescription: text(input.caseCTADescription ?? existingExecutiveHome.caseCTADescription).slice(0, 1000),
+      caseCTAButton: text(input.caseCTAButton ?? existingExecutiveHome.caseCTAButton).slice(0, 80),
+      productCTATitle: text(input.productCTATitle ?? existingExecutiveHome.productCTATitle).slice(0, 160),
+      productCTADescription: text(input.productCTADescription ?? existingExecutiveHome.productCTADescription).slice(0, 1000),
+      productCTAButton: text(input.productCTAButton ?? existingExecutiveHome.productCTAButton).slice(0, 80),
+    }
+    const footerBackgroundID = optionalMediaID(body.footerBackgroundMediaID, '页脚背景图')
+    const existingFooterBackground = (tenant.fixedPages?.footer as unknown as { backgroundImage?: number | null } | undefined)?.backgroundImage
+    const existingFooterOverlay = (tenant.fixedPages?.footer as unknown as { backgroundOverlay?: number | null } | undefined)?.backgroundOverlay
+    const footerBackgroundOverlay = boundedNumber(body.footerBackgroundOverlay, Number(existingFooterOverlay ?? 0.65), 0, 0.85, '页脚背景压暗程度')
+    try {
+      await payload.update({
+        collection: 'tenants', id: company.id, locale: company.defaultLocale, overrideAccess: false, user,
+        data: {
+          fixedPages: {
+            ...tenant.fixedPages,
+            homepage: { ...existingHomepage, executiveHome: setting },
+            footer: { ...tenant.fixedPages?.footer, backgroundImage: footerBackgroundID === undefined ? existingFooterBackground : footerBackgroundID, backgroundOverlay: footerBackgroundOverlay },
+          },
+        } as Partial<Tenant>,
+      })
+    } catch (error) {
+      console.error('[workspace-executive-home-save]', error)
+      return settingsAPIError(error, '商务工业首页没有保存，请检查图片和内容后重试。')
+    }
+    revalidateWorkspaceSettings(slug, 'homepage')
+    return NextResponse.json({ message: '商务工业首页模块已保存，网站只会展示当前公司的内容。' })
+  }
   if (body?.mode === 'homepage-config') {
     const config = homepageConfig
     const categoryID = Number.isInteger(config.featuredNewsCategoryID) ? config.featuredNewsCategoryID : null
@@ -189,7 +317,7 @@ export async function PATCH(request: Request, { params }: Context) {
     }
     try {
     await payload.update({
-      collection: 'tenants', id: company.id, locale: 'zh', overrideAccess: false, user,
+      collection: 'tenants', id: company.id, locale: company.defaultLocale, overrideAccess: false, user,
       data: { branding: logoID ? { ...tenant.branding, logo: logoID } : tenant.branding, fixedPages: { ...tenant.fixedPages, homepage: { ...existingHomepage, banners: normalizedBanners ?? existingHomepage?.banners ?? [], featuredNewsCategory: categoryID || null, inquiryRequiredFields: requiredFields(config.inquiryRequiredFields, existingHomepage?.inquiryRequiredFields), showNews: optionalBoolean(body?.showNews, existingHomepage?.showNews) }, footer: { ...tenant.fixedPages?.footer, intro: text(config.footerIntro ?? tenant.fixedPages?.footer?.intro), socialLinks: socialLinks(config.socialLinks, tenant.fixedPages?.footer?.socialLinks as Record<string, string> | undefined) } } } as Partial<Tenant>,
     })
     } catch (error) {
@@ -219,7 +347,7 @@ export async function PATCH(request: Request, { params }: Context) {
   await payload.update({
     collection: 'tenants',
     id: company.id,
-    locale: 'zh',
+    locale: company.defaultLocale,
     overrideAccess: false,
     user,
     data: {

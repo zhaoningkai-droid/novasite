@@ -6,13 +6,15 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { ContentCover, ContentCoverUploader } from '../ContentCoverUploader/ContentCoverUploader'
 import { useWorkspaceUnsaved } from '../WorkspaceEditor/useWorkspaceUnsaved'
 import { useWorkspacePermissions } from '../WorkspaceShell/WorkspacePermissions'
+import { ContentTranslationAction } from '../WorkspaceTranslations/ContentTranslationAction'
+import type { TranslationStatusLabel } from '../../product-translation/job-view'
 import './about-editor.scss'
 
 type Module = { description: string; id?: string; image?: ContentCover; sortOrder: number; title: string }
 type Values = { intro: string; modules: Module[]; title: string }
 const clone = (value: Values): Values => ({ ...value, modules: value.modules.map((item) => ({ ...item })) })
 
-export function AboutEditor({ companySlug, initial }: { companySlug: string; initial: Values }) {
+export function AboutEditor({ companyID, companySlug, initial }: { companyID: number; companySlug: string; initial: Values }) {
   const { canManageSite } = useWorkspacePermissions()
   const [saved, setSaved] = useState<Values>(() => clone(initial))
   const [draft, setDraft] = useState<Values>(() => clone(initial))
@@ -21,7 +23,9 @@ export function AboutEditor({ companySlug, initial }: { companySlug: string; ini
   const [error, setError] = useState(false)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const busy = saving || uploading
+  const [translationLocked, setTranslationLocked] = useState(false)
+  const [translationStatus, setTranslationStatus] = useState<TranslationStatusLabel>('未翻译')
+  const busy = saving || uploading || translationLocked
   const dialog = useRef<HTMLDialogElement>(null)
   const dirty = editing && JSON.stringify(draft) !== JSON.stringify(saved)
   useWorkspaceUnsaved(dirty, busy)
@@ -67,9 +71,21 @@ export function AboutEditor({ companySlug, initial }: { companySlug: string; ini
     } finally { setSaving(false) }
   }
   return <section className="workspace-fixed-editor about-manager">
-    <header><div><p>网站配置 / 关于我们</p><h1>关于我们</h1>
-      <span>{canManageSite ? '维护企业简介与图文模块，按顺序展示在客户网站中。' : '当前账号可查看企业介绍，站点管理员可以修改。'}</span></div>
-      <button disabled={!canManageSite} onClick={open} type="button"><Pencil size={17} aria-hidden="true" />编辑内容</button></header>
+    <header><div><h1>关于我们</h1></div>
+      <div className="content-translation-header-actions">
+        <ContentTranslationAction
+          companySlug={companySlug}
+          resource="about"
+          id={companyID}
+          disabled={editing || saving || uploading || !canManageSite}
+          refreshKey={JSON.stringify(saved)}
+          onLockedChange={setTranslationLocked}
+          onStatusChange={setTranslationStatus}
+        />
+        <button disabled={translationLocked || !canManageSite} onClick={open} type="button">
+          <Pencil size={17} aria-hidden="true" />编辑内容
+        </button>
+      </div></header>
     {status && !editing && <p className="about-manager__status" role={error ? 'alert' : 'status'}>{status}</p>}
     <section className="about-manager__panel">
       <div className="about-manager__toolbar"><div><h2>{saved.title || '企业简介'}</h2>
@@ -80,17 +96,17 @@ export function AboutEditor({ companySlug, initial }: { companySlug: string; ini
           {item.image?.thumbnailURL || item.image?.url ? <Image unoptimized alt={item.title} width={160} height={120}
             src={item.image.thumbnailURL || item.image.url || ''} /> : <Building2 size={26} aria-label="暂无图片" />}
         </div><div className="about-manager__copy"><div><small>模块 {String(index + 1).padStart(2, '0')}</small>
-          <span className={item.title.trim() && item.description.trim() ? 'is-complete' : ''}>
-            {item.title.trim() && item.description.trim() ? '中文内容完整' : '中文待补全'}</span></div>
+          <span className={translationStatus === '已完成' ? 'is-complete' : ''}>
+            {translationStatus}</span></div>
           <h3>{item.title || `模块 ${index + 1}`}</h3><p>{item.description || '暂未填写模块描述。'}</p>
         </div></article>)}</div> : <div className="about-manager__empty"><Building2 size={32} />
         <h3>还没有图文模块</h3><p>已有企业简介会继续保留，编辑后可添加图片和介绍。</p>
-        <button disabled={!canManageSite} onClick={open} type="button">添加图文模块</button></div>}
+        <button disabled={translationLocked || !canManageSite} onClick={open} type="button">添加图文模块</button></div>}
     </section>
     {editing && <dialog aria-labelledby="about-editor-title" className="about-manager__dialog" ref={dialog}
       onCancel={(event) => { event.preventDefault(); close() }}>
       <form onSubmit={(event) => void save(event)}>
-        <header><div><p>中文内容</p><h2 id="about-editor-title">编辑关于我们</h2></div>
+        <header><div><p>默认语言内容</p><h2 id="about-editor-title">编辑关于我们</h2></div>
           <button aria-label="关闭编辑" disabled={busy} onClick={close} type="button"><X size={21} /></button></header>
         <fieldset disabled={busy} className="about-manager__drawer-body">
           <div className="about-manager__page-fields"><label>页面标题<input autoFocus

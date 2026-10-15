@@ -3,7 +3,12 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { Tenant, User } from '@/payload-types'
 
-export type WorkspaceCompany = Pick<Tenant, 'id' | 'name' | 'slug' | 'status' | 'primaryDomain' | 'updatedAt'>
+export type WorkspaceCompany = Pick<Tenant, 'id' | 'name' | 'slug' | 'status' | 'primaryDomain' | 'updatedAt' | 'defaultLocale'> & {
+  selectedTemplateID: number | null
+}
+
+const selectedTemplateID = (value: Tenant['selectedTemplate']): number | null =>
+  typeof value === 'number' ? value : value?.id ?? null
 
 export const getAccessibleWorkspaceCompanies = async (user: User): Promise<WorkspaceCompany[]> => {
   const payload = await getPayload({ config })
@@ -13,7 +18,7 @@ export const getAccessibleWorkspaceCompanies = async (user: User): Promise<Works
     limit: 0,
     pagination: false,
     overrideAccess: false,
-    select: { name: true, slug: true, status: true, primaryDomain: true, updatedAt: true },
+    select: { name: true, slug: true, status: true, primaryDomain: true, updatedAt: true, selectedTemplate: true, defaultLocale: true },
     sort: 'name',
     user,
   })
@@ -24,6 +29,8 @@ export const getAccessibleWorkspaceCompanies = async (user: User): Promise<Works
     slug: company.slug,
     status: company.status,
     primaryDomain: company.primaryDomain,
+    defaultLocale: company.defaultLocale,
+    selectedTemplateID: selectedTemplateID(company.selectedTemplate),
     updatedAt: company.updatedAt,
   }))
 }
@@ -39,7 +46,7 @@ export const getAccessibleWorkspaceCompanyBySlug = async (user: User, slug: stri
     depth: 0,
     limit: 1,
     overrideAccess: false,
-    select: { name: true, slug: true, status: true, primaryDomain: true, updatedAt: true },
+    select: { name: true, slug: true, status: true, primaryDomain: true, updatedAt: true, selectedTemplate: true, defaultLocale: true },
     sort: 'name',
     user,
     where: { slug: { equals: slug } },
@@ -52,6 +59,8 @@ export const getAccessibleWorkspaceCompanyBySlug = async (user: User, slug: stri
     slug: company.slug,
     status: company.status,
     primaryDomain: company.primaryDomain,
+    defaultLocale: company.defaultLocale,
+    selectedTemplateID: selectedTemplateID(company.selectedTemplate),
     updatedAt: company.updatedAt,
   } : null
 }

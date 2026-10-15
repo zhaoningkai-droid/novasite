@@ -8,6 +8,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
+## 当前资料入口（2026-10-15）
+
+下面的后台改造/模板工作步骤是 2026-09 的历史协作约定。它们仍可用于理解当时的授权和验收过程，但不是当前进度表或本次任务授权。阅读 [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md)、[docs/PROJECT_STATUS.md](./docs/PROJECT_STATUS.md) 和对应日期的发布记录，确认实际代码与状态；不要重复已完成的调查，也不要把历史“完成”当成当前 V1 整体验收。
+
 ## 当前项目执行入口（2026-09-07）
 
 - 执行运营后台改造前，先完整阅读 `docs/admin-redesign/IMPLEMENTATION.md` 和 `docs/admin-redesign/EXECUTION.md`，再查看 `docs/admin-redesign/PROGRESS.md`。

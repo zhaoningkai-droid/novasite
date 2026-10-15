@@ -2,10 +2,16 @@ import { createLocalReq, getPayload } from 'payload'
 import { seed } from '@/endpoints/seed'
 import config from '@payload-config'
 import { headers } from 'next/headers'
+import { seedEnvironmentAllowsExecution, userCanRunSeed } from '@/platform/seed-security'
 
 export const maxDuration = 60 // This function can run for a maximum of 60 seconds
 
 export async function POST(): Promise<Response> {
+  // Fail closed before initializing Payload or touching the database.
+  if (!seedEnvironmentAllowsExecution()) {
+    return new Response('Not found.', { status: 404 })
+  }
+
   const payload = await getPayload({ config })
   const requestHeaders = await headers()
 
@@ -13,6 +19,10 @@ export async function POST(): Promise<Response> {
   const { user } = await payload.auth({ headers: requestHeaders })
 
   if (!user) {
+    return new Response('Action forbidden.', { status: 403 })
+  }
+
+  if (!userCanRunSeed(user)) {
     return new Response('Action forbidden.', { status: 403 })
   }
 

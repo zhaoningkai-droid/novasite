@@ -1,6 +1,7 @@
 import type { Payload, PayloadRequest, Where } from 'payload'
 import type { User } from '@/payload-types'
 import { SettingsInputError, settingsText } from './workspace-settings-validation'
+import type { SiteLocale } from './site-locales'
 
 export type WorkspaceCategoryKind = 'cases' | 'news' | 'posts' | 'products'
 export type WorkspaceCategoryRow = {
@@ -53,31 +54,31 @@ export async function getWorkspaceCategoryDependencies(
   return { childCount: children.totalDocs, contentCount: content.totalDocs }
 }
 
-const formatCategory = (doc: Record<string, unknown>, kind: WorkspaceCategoryKind, counts: { childCount: number; contentCount: number }): WorkspaceCategoryRow => {
+const formatCategory = (doc: Record<string, unknown>, kind: WorkspaceCategoryKind, counts: { childCount: number; contentCount: number }, sourceLocale: SiteLocale): WorkspaceCategoryRow => {
   const parentID = categoryRelationshipID(doc.parent)
   const field = workspaceCategoryConfig[kind].field
   return {
     ...counts, id: Number(doc.id), level: parentID ? 2 : 1, parentID,
-    name: categoryLocalizedName(doc, field), slug: String(doc.slug || ''), sortOrder: Number(doc.sortOrder || 0),
+    name: categoryLocalizedName(doc, field, sourceLocale), slug: String(doc.slug || ''), sortOrder: Number(doc.sortOrder || 0),
     translationComplete: ['zh', 'en', 'ru', 'id'].every((locale) => Boolean(categoryLocalizedName(doc, field, locale))),
     updatedAt: String(doc.updatedAt || ''),
   }
 }
 
-export async function getWorkspaceCategoryRow(payload: Payload, kind: WorkspaceCategoryKind, id: number, tenantID: number, user: User) {
+export async function getWorkspaceCategoryRow(payload: Payload, kind: WorkspaceCategoryKind, id: number, tenantID: number, user: User, sourceLocale: SiteLocale = 'zh') {
   const doc = await findOwnedWorkspaceCategory(payload, kind, id, tenantID, user)
   if (!doc) return null
-  return formatCategory(doc, kind, await getWorkspaceCategoryDependencies(payload, kind, id, tenantID, user))
+  return formatCategory(doc, kind, await getWorkspaceCategoryDependencies(payload, kind, id, tenantID, user), sourceLocale)
 }
 
-export async function getWorkspaceCategoryRows(payload: Payload, kind: WorkspaceCategoryKind, tenantID: number, user: User) {
+export async function getWorkspaceCategoryRows(payload: Payload, kind: WorkspaceCategoryKind, tenantID: number, user: User, sourceLocale: SiteLocale = 'zh') {
   const mapping = workspaceCategoryConfig[kind]
   const [categories, content] = await Promise.all([
     payload.find({ collection: mapping.collection, depth: 0, locale: 'all', fallbackLocale: false,
       pagination: false, limit: 0, overrideAccess: false, user, sort: 'sortOrder',
       select: { name: true, title: true, parent: true, slug: true, sortOrder: true, updatedAt: true },
       where: { tenant: { equals: tenantID } } }),
-    payload.find({ collection: mapping.content, depth: 0, locale: 'zh', fallbackLocale: false,
+    payload.find({ collection: mapping.content, depth: 0, locale: sourceLocale, fallbackLocale: false,
       pagination: false, limit: 0, overrideAccess: false, user,
       select: kind === 'posts' ? { categories: true } : { category: true },
       where: { tenant: { equals: tenantID } } }),
@@ -97,7 +98,7 @@ export async function getWorkspaceCategoryRows(payload: Payload, kind: Workspace
   }
   return categories.docs.map((item) => {
     const doc = item as unknown as Record<string, unknown>
-    return formatCategory(doc, kind, { childCount: childCounts.get(Number(doc.id)) || 0, contentCount: contentCounts.get(Number(doc.id)) || 0 })
+    return formatCategory(doc, kind, { childCount: childCounts.get(Number(doc.id)) || 0, contentCount: contentCounts.get(Number(doc.id)) || 0 }, sourceLocale)
   }).sort((a, b) => a.level - b.level || a.sortOrder - b.sortOrder || a.name.localeCompare(b.name, 'zh-CN'))
 }
 

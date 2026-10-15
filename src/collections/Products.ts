@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { authenticatedOrPublished } from '../access/authenticatedOrPublished'
 import { contentEditors, siteAdmins } from '../access/roles'
 import { populatePublishedAt } from '../hooks/populatePublishedAt'
+import { guardProductTranslationChange, guardProductTranslationDelete } from '../platform/product-translation/jobs'
 
 export const requiredUnlessLegacyBaseEdit = (label: string) => (value: unknown, { req }: { req: { context?: { workspaceBaseEdit?: boolean } } }) => {
   if (req.context?.workspaceBaseEdit) return true
@@ -66,6 +67,6 @@ export const Products: CollectionConfig = {
     { name: 'featured', label: '首页推荐', type: 'checkbox', defaultValue: false },
     { name: 'publishedAt', label: '发布时间', type: 'date', admin: { position: 'sidebar' } },
   ],
-  hooks: { beforeChange: [populatePublishedAt] },
+  hooks: { beforeChange: [guardProductTranslationChange, populatePublishedAt], beforeDelete: [guardProductTranslationDelete] },
   versions: { drafts: { autosave: { interval: 800 }, schedulePublish: true }, maxPerDoc: 100 },
 }

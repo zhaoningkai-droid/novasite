@@ -38,7 +38,7 @@ const browser = await chromium.launch({ headless: true })
 const context = await browser.newContext({ viewport: { height: 920, width: 1512 } })
 const page = await context.newPage()
 try {
-  const login = await context.request.post('http://localhost:3100/api/users/login', { data: { email: process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local', password: process.env.SEED_ADMIN_PASSWORD || '' } })
+  const login = await context.request.post('http://localhost:3100/api/users/login', { data: { email: process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid', password: process.env.SEED_ADMIN_PASSWORD || '' } })
   const { token } = (await login.json()) as { token: string }
   await context.addCookies([{ domain: 'localhost', name: 'payload-token', path: '/', value: token }, { domain: 'localhost', name: 'payload-tenant', path: '/', value: '2' }])
   await page.goto('http://localhost:3100/workspace/huadong-fasteners/website/content/news?keyword=%E7%AC%AC13%E6%AD%A5', { waitUntil: 'networkidle' })

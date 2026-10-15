@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 
 import { login } from '../helpers/login'
 
-const adminUser = { email: process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local', password: process.env.SEED_ADMIN_PASSWORD || '' }
+const adminUser = { email: process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid', password: process.env.SEED_ADMIN_PASSWORD || '' }
 
 test('同一产品可分别维护四语，保存一种语言不会改写其它语言', async ({ page }) => {
   await login({ page, user: adminUser })

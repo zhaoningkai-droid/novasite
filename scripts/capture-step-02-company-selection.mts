@@ -1,13 +1,14 @@
 import { chromium } from '@playwright/test'
 import { getPayload } from 'payload'
 import { writeFile, mkdir } from 'node:fs/promises'
+import { randomBytes } from 'node:crypto'
 
 import config from '../src/payload.config'
 
 const baseURL = 'http://localhost:3100'
 const output = 'docs/evidence/admin-redesign/step-02'
-const restrictedEmail = 'step-02-company-access-check@novasite.local'
-const restrictedPassword = 'Step02-Temporary-Check-2026!'
+const restrictedEmail = `restricted-${randomBytes(8).toString('hex')}@example.invalid`
+const restrictedPassword = randomBytes(24).toString('base64url')
 await mkdir(output, { recursive: true })
 
 const payload = await getPayload({ config })
@@ -28,7 +29,7 @@ try {
   const adminContext = await browser.newContext({ viewport: { width: 1512, height: 920 } })
   const adminPage = await adminContext.newPage()
   await adminPage.goto(`${baseURL}/admin/login`, { waitUntil: 'networkidle' })
-  await adminPage.locator('#field-email').fill(process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local')
+  await adminPage.locator('#field-email').fill(process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid')
   await adminPage.locator('#field-password').fill(process.env.SEED_ADMIN_PASSWORD || '')
   await adminPage.locator('button[type="submit"]').click()
   await adminPage.waitForURL(`${baseURL}/workspace/companies`, { waitUntil: 'networkidle' })

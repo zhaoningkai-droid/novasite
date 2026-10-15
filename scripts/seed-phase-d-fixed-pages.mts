@@ -1,8 +1,12 @@
 import { getPayload } from 'payload'
 
 import config from '../src/payload.config'
+import { assertSeedEnvironmentAllowsExecution } from '../src/platform/seed-security'
+import { authorizeSeedScript } from './seed-script-authorization'
 
+assertSeedEnvironmentAllowsExecution()
 const payload = await getPayload({ config })
+await authorizeSeedScript(payload)
 // Payload stores this nested array once; write Chinese last so the Chinese admin workspace
 // always retains complete editable labels while field-level page copy remains multilingual.
 const locales = ['en', 'ru', 'id', 'zh'] as const
@@ -11,8 +15,8 @@ type Text = Record<Locale, string>
 const text = (en: string, zh: string, ru: string, id: string): Text => ({ en, zh, ru, id })
 
 const brands = [
-  { id: 1, company: text('VoltTrans Industrial Fasteners', '沃特工业紧固件', 'VoltTrans Промышленный Крепёж', 'VoltTrans Fastener Industri') },
-  { id: 2, company: text('Huadong Fastener Manufacturing Co., Ltd.', '华东紧固件制造有限公司', 'Huadong Производство Крепежа', 'Huadong Manufaktur Fastener') },
+  { id: 1, company: text('NovaSite Fastener Demo A', 'NovaSite 紧固件演示 A', 'NovaSite Демонстрация крепежа A', 'NovaSite Demo Fastener A') },
+  { id: 2, company: text('NovaSite Fastener Demo B', 'NovaSite 紧固件演示 B', 'NovaSite Демонстрация крепежа B', 'NovaSite Demo Fastener B') },
 ]
 
 for (const brand of brands) {

@@ -2,7 +2,7 @@ import type { GlobalConfig } from 'payload'
 
 import { link } from '@/fields/link'
 import { revalidateHeader } from './hooks/revalidateHeader'
-import { contentEditors } from '@/access/roles'
+import { superAdmins } from '@/access/roles'
 
 export const Header: GlobalConfig = {
   slug: 'header',
@@ -13,8 +13,8 @@ export const Header: GlobalConfig = {
     description: '旧版全局导航，历史数据保留；多站点导航请使用“网站导航”。',
   },
   access: {
-    read: () => true,
-    update: contentEditors,
+    read: superAdmins,
+    update: superAdmins,
   },
   fields: [
     {

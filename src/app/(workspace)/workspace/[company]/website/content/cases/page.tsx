@@ -10,7 +10,6 @@ import { FeaturedNewsToggle } from '@/platform/components/FeaturedNewsToggle/Fea
 import {
   ContentFeaturedStatus,
   ContentListItem,
-  ContentStatus,
   ContentUpdatedAt,
   contentListHref,
   contentListPageSize,
@@ -70,9 +69,10 @@ export default async function CasesManagementPage({
     payload.find({
       collection: 'cases',
       depth: 1,
-      fallbackLocale: 'en',
+      draft: true,
+      fallbackLocale: false,
       limit: contentListPageSize,
-      locale: 'zh',
+      locale: company.defaultLocale,
       overrideAccess: false,
       page,
       sort: '-updatedAt',
@@ -82,9 +82,9 @@ export default async function CasesManagementPage({
     payload.find({
       collection: 'case-categories',
       depth: 0,
-      fallbackLocale: 'en',
+      fallbackLocale: false,
       limit: 0,
-      locale: 'zh',
+      locale: company.defaultLocale,
       overrideAccess: false,
       pagination: false,
       select: { name: true },
@@ -100,16 +100,14 @@ export default async function CasesManagementPage({
     <section className="workspace-content-foundation">
       <header className="workspace-content-foundation__header">
         <div>
-          <p>网站配置 / 内容管理</p>
+
           <h1>
             案例管理
             <small className="workspace-content-foundation__count">
               {records.totalDocs} 项结果
             </small>
           </h1>
-          <span className="workspace-content-foundation__description">
-            维护项目案例、客户行业与关联产品，管理首页案例推荐。
-          </span>
+
         </div>
         <div className="workspace-content-foundation__header-actions">
           {canEdit ? (
@@ -149,6 +147,8 @@ export default async function CasesManagementPage({
         </div>
       </form>
       <WorkspaceTable
+        asyncTranslation
+        bulkTranslateURL={canEdit ? `/api/workspace/${slug}/translations/cases` : undefined}
         bulkDeleteURL={canDelete ? `/api/workspace/${slug}/cases/bulk` : undefined}
         ariaLabel="案例列表"
 
@@ -157,7 +157,7 @@ export default async function CasesManagementPage({
           { key: 'category', label: '分类', width: '120px' },
           { key: 'featured', label: '首页推荐', width: '120px' },
           { key: 'sort', label: '排序', width: '64px' },
-          { key: 'status', label: '发布状态', width: '90px' },
+          { key: 'translation', label: '翻译状态', width: '100px' },
           { key: 'updated', label: '更新时间', width: '132px' },
         ]}
         editBaseHref={canEdit ? base : undefined}
@@ -188,6 +188,7 @@ export default async function CasesManagementPage({
               ? item.category.name || '未分类'
               : '未分类'
           return {
+            canTranslate: canEdit,
             id: item.id,
             label: title,
             cells: [
@@ -212,7 +213,7 @@ export default async function CasesManagementPage({
                 <ContentFeaturedStatus featured={Boolean(item.featured)} />
               ),
               String(item.sortOrder ?? 0),
-              <ContentStatus key="status" published={item._status === 'published'} />,
+              '未翻译',
               <ContentUpdatedAt key="updated" value={item.updatedAt} />,
             ],
             details: [

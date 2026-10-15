@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 import { login } from '../helpers/login'
 
 const adminUser = {
-  email: process.env.SEED_ADMIN_EMAIL || 'admin@novasite.local',
+  email: process.env.SEED_ADMIN_EMAIL || 'demo-admin@example.invalid',
   password: process.env.SEED_ADMIN_PASSWORD || '',
 }
 
@@ -29,18 +29,17 @@ test.describe('通用内容列表基础', () => {
     await expect(page.getByRole('link', { name: '下一页' })).toBeVisible()
 
     await page.getByLabel('搜索产品').fill('DIN 933')
-    await page.getByRole('button', { name: '查询' }).click()
+    await page.getByRole('button', { name: '搜索产品' }).click()
     await expect(page.getByText('DIN 933 六角头螺栓', { exact: true })).toBeVisible()
     await expect(page.getByText('共 1 条', { exact: true })).toBeVisible()
 
     await page.getByLabel('搜索产品').fill('完全不存在的产品')
-    await page.getByRole('button', { name: '查询' }).click()
+    await page.getByRole('button', { name: '搜索产品' }).click()
     await expect(page.getByRole('heading', { name: '没有匹配的产品' })).toBeVisible()
 
-    await page.getByRole('link', { name: '重置' }).click()
-    await page.waitForURL(/\/workspace\/volttrans\/website\/content$/)
+    await page.goto('/workspace/volttrans/website/content')
     await page.getByLabel('产品分类').selectOption({ label: '标准紧固件' })
-    await page.getByRole('button', { name: '查询' }).click()
+    await page.getByRole('button', { name: '搜索产品' }).click()
     await expect(page).toHaveURL(/category=\d+/)
     await expect(page.getByRole('table')).toBeVisible()
     await expect(page.getByTitle('标准紧固件')).toBeVisible()
@@ -59,12 +58,19 @@ test.describe('通用内容列表基础', () => {
     await expect(page.getByText('共 6 条', { exact: true })).toBeVisible()
   })
 
-  test('完整查看弹窗展示被截断列的完整字段', async ({ page }) => {
+  test('翻译和删除需要先选中产品，列表显示翻译状态和更新时间', async ({ page }) => {
     await selectCompany(page, 'VoltTrans')
     await page.goto('/workspace/volttrans/website/content')
-    await page.getByRole('button', { name: '查看完整' }).first().click()
-    await expect(page.getByRole('dialog', { name: '完整内容' })).toBeVisible()
-    await page.getByRole('button', { name: '关闭完整内容' }).click()
-    await expect(page.getByRole('dialog', { name: '完整内容' })).toHaveCount(0)
+    const table = page.getByRole('table')
+    await expect(table.getByRole('columnheader', { name: '翻译状态' })).toBeVisible()
+    await expect(table.getByRole('columnheader', { name: '更新时间' })).toBeVisible()
+    await expect(table.getByRole('columnheader', { name: '发布状态' })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: '翻译', exact: true })).toBeDisabled()
+    await expect(page.getByRole('button', { name: '删除', exact: true })).toBeDisabled()
+    await page.locator('tbody input[type="checkbox"]').first().check()
+    await expect(page.getByRole('button', { name: '翻译', exact: true })).toBeEnabled()
+    await expect(page.getByRole('button', { name: '删除', exact: true })).toBeEnabled()
+    await expect(page.getByRole('button', { name: '查询', exact: true })).toHaveCount(0)
+    await expect(page.getByRole('link', { name: '重置', exact: true })).toHaveCount(0)
   })
 })
