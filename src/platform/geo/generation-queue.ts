@@ -70,7 +70,7 @@ export function createGeoGenerationQueue(pool: Pool) {
         client.release()
       }
     },
-    async dispatch(job: GeoGenerationJob, context: ArticleContext, model: string, limit = 10) {
+    async dispatch(job: GeoGenerationJob, context: ArticleContext, model: string) {
       const client = await pool.connect(),
         attempt = randomUUID()
       try {
@@ -84,19 +84,6 @@ export function createGeoGenerationQueue(pool: Pool) {
           )
         ).rows[0]
         if (!row) throw new GeoError('LEASE_LOST', '生成执行权已失效，未重复调用。', 409)
-        const used = (
-          await client.query(
-            `SELECT count(*)::int AS count FROM platform_geo.generation_attempts WHERE tenant_id=$1
-          AND started_at>=date_trunc('day',now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`,
-            [job.tenant_id],
-          )
-        ).rows[0].count
-        if (used >= limit)
-          throw new GeoError(
-            'ARTICLE_DAILY_LIMIT',
-            '当前客户今日正文调用已达上限，未继续调用。',
-            429,
-          )
         await assertArticleMedia(client, job.tenant_id, context)
         await client.query(
           `INSERT INTO platform_geo.generation_attempts(id,tenant_id,job_id,actor_id,model,state) VALUES($1::uuid,$2,$3::uuid,$4,$5,'running')`,

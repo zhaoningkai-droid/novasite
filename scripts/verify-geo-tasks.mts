@@ -85,7 +85,7 @@ try {
   const claims=await Promise.all([ai.claim(opID,input,'fixture'),ai.claim(opID,input,'fixture')])
   assert.equal(claims.filter(c=>c.claimed).length,1)
   await assert.rejects(()=>ai.claim(opID,{...input,intent:'supplier'},'fixture'),rejectCode('IDEMPOTENCY_CONFLICT'))
-  await assert.rejects(()=>ai.claim(randomUUID(),input,'fixture'),rejectCode('AI_BUSY'))
+  const parallelID=randomUUID();assert.equal((await ai.claim(parallelID,input,'fixture')).claimed,true);await ai.finish(parallelID,'failed',null,'FIXTURE')
   assert.equal((await aiB.recent(configA.id)).length,0)
   await assert.rejects(()=>aiB.claim(randomUUID(),input,'fixture'),rejectCode('CONFIG_CHANGED'))
   const usage={inputTokens:100,outputTokens:20,totalTokens:120,cacheHitInputTokens:null,cacheMissInputTokens:null}
@@ -94,10 +94,10 @@ try {
   await ai.finish(opID,'succeeded',result,null)
   const replay=await ai.claim(opID,input,'fixture')
   assert.equal(replay.claimed,false);assert.equal(replay.operation.state,'succeeded');assert.equal(replay.operation.usage?.totalTokens,120)
-  await assert.rejects(()=>ai.claim(randomUUID(),input,'fixture',1),rejectCode('AI_DAILY_LIMIT'))
-  checks.push('AI并发同键只领取一次；不同内容同键拒绝；客户级串行与日上限生效；用量、结果可取回且不重复调用')
+  for(let call=0;call<25;call++){const extra=randomUUID();assert.equal((await ai.claim(extra,input,'fixture')).claimed,true);await ai.finish(extra,'succeeded',result,null)}
+  checks.push('AI并发同键只领取一次；不同内容同键拒绝；不同请求可并行且每日调用超过20次仍可正常领取；用量、结果可取回且不重复调用')
   const interrupted=randomUUID();await ai.claim(interrupted,input,'fixture')
-  await pool.query("UPDATE platform_geo.ai_operations SET created_at=now()-interval '3 minutes' WHERE tenant_id=101 AND id=$1",[interrupted])
+  await pool.query("UPDATE platform_geo.ai_operations SET created_at=now()-interval '11 minutes' WHERE tenant_id=101 AND id=$1",[interrupted])
   assert.equal((await ai.recent(configA.id)).find(o=>o.id===interrupted)?.state,'unknown')
   const next=randomUUID();await ai.claim(next,input,'fixture')
   assert.equal((await ai.claim(interrupted,input,'fixture')).operation.state,'unknown')

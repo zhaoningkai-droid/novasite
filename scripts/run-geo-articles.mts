@@ -19,8 +19,6 @@ process.on('SIGINT', () => { stopping = true }); process.on('SIGTERM', () => { s
 const heartbeat = async () => { await writeFile(file, String(Date.now()), { mode: 0o600 }) }
 await heartbeat()
 const timer = setInterval(() => { void heartbeat().catch(() => { stopping = true }) }, 10000)
-const limit = Number(process.env.GEO_ARTICLE_DAILY_LIMIT || 10)
-if (!Number.isInteger(limit) || limit < 1 || limit > 100) throw new Error('GEO_ARTICLE_DAILY_LIMIT must be 1-100.')
 const authorize = async (actorID: number, tenantID: number) => {
   try {
     const user = await payload.findByID({ collection: 'users', id: actorID, depth: 0, overrideAccess: true })
@@ -34,7 +32,7 @@ process.stdout.write('GEO article worker ready; only explicitly queued jobs will
 try {
   do {
     try {
-      if (!await runOneGeoArticle(pool, { key: process.env.DEEPSEEK_API_KEY, model: process.env.DEEPSEEK_MODEL || 'deepseek-flash', dailyLimit: limit, authorize })) {
+      if (!await runOneGeoArticle(pool, { key: process.env.DEEPSEEK_API_KEY, model: process.env.DEEPSEEK_MODEL || 'deepseek-flash', authorize })) {
         if (process.argv.includes('--once')) break
         await setTimeout(2000)
       }
@@ -45,3 +43,4 @@ try {
   try { if (Number(await readFile(pidFile, 'utf8')) === process.pid) await unlink(pidFile) } catch { /* unrelated/missing PID file */ }
   await payload.destroy() }
 process.exit(0)
+

@@ -29,14 +29,14 @@ export function createGeoAIStore(pool: Pool, tenantID: number, actorID: number) 
     async recent(configID: string) {
       return (
         await pool.query<GeoAIOperation>(
-          `SELECT id,CASE WHEN state='running' AND created_at<now()-interval '2 minutes'
+          `SELECT id,CASE WHEN state='running' AND created_at<now()-interval '10 minutes'
         THEN 'unknown' ELSE state END AS state,kind,input,input_hash,result,model,usage,error_code,created_at
         FROM platform_geo.ai_operations WHERE tenant_id=$1 AND optimization_id=$2::uuid ORDER BY created_at DESC LIMIT 10`,
           [tenantID, configID],
         )
       ).rows
     },
-    async claim(id: string, input: GeoAIInput, model: string, dailyLimit = 20) {
+    async claim(id: string, input: GeoAIInput, model: string) {
       const hash = createHash('sha256').update(JSON.stringify(input)).digest('hex')
       const client = await pool.connect()
       try {
@@ -44,7 +44,7 @@ export function createGeoAIStore(pool: Pool, tenantID: number, actorID: number) 
         await client.query('SELECT pg_advisory_xact_lock(57297,$1)', [tenantID])
         await client.query(
           `UPDATE platform_geo.ai_operations SET state='unknown',error_code='INTERRUPTED',finished_at=now()
-          WHERE tenant_id=$1 AND state='running' AND created_at<now()-interval '2 minutes'`,
+          WHERE tenant_id=$1 AND state='running' AND created_at<now()-interval '10 minutes'`,
           [tenantID],
         )
         const old = (
@@ -67,23 +67,6 @@ export function createGeoAIStore(pool: Pool, tenantID: number, actorID: number) 
         ).rows[0]
         if (!config || config.version !== input.optimizationVersion)
           throw new GeoError('CONFIG_CHANGED', '优化词配置已更新，请重新选择。', 409)
-        const running = (
-          await client.query(
-            "SELECT id FROM platform_geo.ai_operations WHERE tenant_id=$1 AND state='running' LIMIT 1",
-            [tenantID],
-          )
-        ).rows[0]
-        if (running)
-          throw new GeoError('AI_BUSY', '当前客户已有扩词或翻译正在处理，请先取回结果。', 409)
-        const used = (
-          await client.query<{ count: number }>(
-            `SELECT count(*)::int AS count FROM platform_geo.ai_operations
-          WHERE tenant_id=$1 AND created_at>=date_trunc('day',now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`,
-            [tenantID],
-          )
-        ).rows[0].count
-        if (used >= dailyLimit)
-          throw new GeoError('AI_DAILY_LIMIT', '当前客户今日GEO调用已达上限，请明日重试。', 429)
         const operation = (
           await client.query<GeoAIOperation>(
             `INSERT INTO platform_geo.ai_operations

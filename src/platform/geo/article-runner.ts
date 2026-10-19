@@ -8,7 +8,6 @@ export async function runOneGeoArticle(
   options: {
     key: string
     model: string
-    dailyLimit?: number
     authorize: (actorID: number, tenantID: number) => Promise<boolean>
     refresh?: typeof refreshArticleContext
     generate?: typeof generateGeoArticle
@@ -40,7 +39,7 @@ export async function runOneGeoArticle(
     abort.signal.throwIfAborted()
     if (!(await options.authorize(job.actor_id, job.tenant_id)))
       throw new GeoError('ACTOR_REVOKED', '提交账号已失去本客户编辑权限。', 403)
-    await queue.dispatch(job, context, options.model, options.dailyLimit)
+    await queue.dispatch(job, context, options.model)
     dispatched = true
     const output = await (options.generate || generateGeoArticle)(context, {
       key: options.key,

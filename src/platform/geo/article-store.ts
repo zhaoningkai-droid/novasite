@@ -63,8 +63,8 @@ export async function enqueueGeoArticleJobs(
   count: number,
   allowPartial = false,
 ) {
-  if (!Number.isInteger(count) || count < 1 || count > 10)
-    throw new GeoError('INVALID_COUNT', '每批允许1至10篇，不能超过任务实际问题数。')
+  if (!Number.isSafeInteger(count) || count < 1)
+    throw new GeoError('INVALID_COUNT', '请填写生成篇数，不能超过任务实际问题数。')
   const hash = createHash('sha256').update(JSON.stringify({ taskID, version, count })).digest('hex')
   await client.query('SELECT pg_advisory_xact_lock(57302,$1)', [tenantID])
   const old = (

@@ -21,7 +21,7 @@ export async function handleGeoAI(request: Request, company: string) {
         requestId,
       })
     if (request.method !== 'POST') throw new GeoError('METHOD_NOT_ALLOWED', '不支持此操作。', 405)
-    const body = await readGeoBody(request, 65536),
+    const body = await readGeoBody(request, 2 * 1024 * 1024),
       id = geoID(body.requestId)
     const config = await createGeoKeywordStore(pool, scope.company.id, scope.user.id).find(
       geoID(body.optimizationID),
@@ -31,10 +31,7 @@ export async function handleGeoAI(request: Request, company: string) {
     if (!process.env.DEEPSEEK_API_KEY)
       throw new GeoError('AI_NOT_CONFIGURED', 'GEO扩词和翻译服务尚未配置，请联系管理员。', 503)
     const model = process.env.DEEPSEEK_MODEL || 'deepseek-flash'
-    const configured = Number(process.env.GEO_AI_DAILY_LIMIT || 20)
-    const limit =
-      Number.isInteger(configured) && configured >= 1 && configured <= 200 ? configured : 20
-    const claim = await store.claim(id, input, model, limit)
+    const claim = await store.claim(id, input, model)
     if (!claim.claimed)
       return geoReply(
         { operation: claim.operation, replayed: true, requestId },

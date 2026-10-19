@@ -556,8 +556,8 @@ export function GeoCreation({
     action(async (signal) => {
       if (item.status !== 'ready') throw new Error('请先保存完整的创作任务。')
       if (!item.available_count) throw new Error('没有可生成的问题。')
-      if (!Number.isInteger(count) || count < 1 || count > Math.min(10, item.available_count))
-        throw new Error(`本次可生成1至${Math.min(10, item.available_count)}篇文章。`)
+      if (!Number.isInteger(count) || count < 1 || count > item.available_count)
+        throw new Error(`本次可生成1至${item.available_count}篇文章。`)
       const requestKey = `${item.id}:${item.version}:${count}`
       const requestId = generationRequests.current.get(requestKey) || crypto.randomUUID()
       generationRequests.current.set(requestKey, requestId)
@@ -581,7 +581,6 @@ export function GeoCreation({
     action(async (signal) => {
       if (!draft || !selectedConfig || !selectedTerms.length)
         throw new Error('请先选择优化词与关键词。')
-      let characters = 0
       const questions =
         kind === 'translate'
           ? draft.questions
@@ -591,12 +590,6 @@ export function GeoCreation({
                   q.translatedFrom !== q.original ||
                   q.translatedLocale !== draft.locale,
               )
-              .slice(0, 30)
-              .filter((q) => {
-                if (characters + q.original.length > 1800) return false
-                characters += q.original.length
-                return true
-              })
           : []
       if (kind === 'translate' && !questions.length) throw new Error('当前没有需要翻译的问题。')
       const input = {
@@ -1607,7 +1600,7 @@ export function GeoCreation({
               id="geo-generation-count"
               type="number"
               min={1}
-              max={Math.min(10, generationTarget.available_count || 1)}
+              max={generationTarget.available_count || 1}
               step={1}
               required
               disabled={busy}

@@ -304,3 +304,29 @@ describe('GEO provider with injected responses only, no network', () => {
     expect(fetcher).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('GEO full-selection generation regression', () => {
+  it('accepts more than twenty useful questions without rejecting the entire result', async () => {
+    const questions = Array.from({length:40},(_,i)=>({term:'配电柜',text:`采购场景${i+1}的配电柜有哪些厂家可以了解？`}))
+    const result=await runGeoQuestionAI(input(),config,{key:'fixture',model:'fixture',fetcher:provider({questions})})
+    expect(result.questions).toHaveLength(40)
+  })
+  it('normalizes omitted spaces in a selected term without accepting unrelated products', async () => {
+    const custom={...config,core:'T 型螺栓'}
+    const result=await runGeoQuestionAI({...input(),terms:['T 型螺栓']},custom,{key:'fixture',model:'fixture',fetcher:provider({questions:[{term:'T型螺栓',text:'T型螺栓批量采购有哪些厂家可以比较？'}]})})
+    expect(result.questions[0].term).toBe('T 型螺栓')
+    expect(result.questions[0].original).toContain('T 型螺栓')
+  })
+  it('covers core plus all ten subterms and returns about forty questions across automatic batches', async () => {
+    const terms=[config.core,...config.terms]
+    const fetcher=vi.fn(async (_url:unknown,init?:RequestInit)=>{
+      const body=JSON.parse(String(init?.body))
+      const selected=JSON.parse(body.messages[1].content).terms as string[]
+      const perTerm=Number(body.messages[0].content.match(/exactly (\d+)/)[1])
+      return provider({questions:selected.flatMap(term=>Array.from({length:perTerm},(_,i)=>({term,text:`采购场景${i+1}的${term}有哪些厂家？`})))})()
+    })
+    const result=await runGeoQuestionAI({...input(),terms},config,{key:'fixture',model:'fixture',fetcher})
+    expect(result.questions).toHaveLength(44)
+    expect(new Set(result.questions.map(q=>q.term))).toEqual(new Set(terms))
+  })
+})
