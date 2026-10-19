@@ -1,3 +1,4 @@
+import { assertGeoRequestOrigin } from './request-origin'
 import { randomUUID } from 'node:crypto'
 import type { PostgresAdapter } from '@payloadcms/db-postgres'
 import { NextResponse } from 'next/server'
@@ -18,12 +19,7 @@ export const geoReply = (data: Record<string, unknown>, status = 200) =>
     headers: { 'Cache-Control': 'private, no-store', Vary: 'Cookie' },
   })
 export function assertGeoWriteRequest(request: Request) {
-  const origin = request.headers.get('origin')
-  if (
-    request.headers.get('sec-fetch-site') === 'cross-site' ||
-    (origin && origin !== new URL(request.url).origin)
-  )
-    throw new GeoError('INVALID_ORIGIN', '请求来源无效，请在当前后台重试。', 403)
+  assertGeoRequestOrigin(request)
   if (request.headers.get('content-type')?.split(';')[0].trim() !== 'application/json')
     throw new GeoError('INVALID_CONTENT_TYPE', '请使用JSON格式提交配置。', 415)
 }
