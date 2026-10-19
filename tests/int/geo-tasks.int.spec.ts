@@ -330,3 +330,16 @@ describe('GEO full-selection generation regression', () => {
     expect(new Set(result.questions.map(q=>q.term))).toEqual(new Set(terms))
   })
 })
+
+
+describe('GEO mixed provider output', () => {
+  it('keeps valid questions when the model includes an unrelated extra item or an alternate text field', async () => {
+    const result=await runGeoQuestionAI(input(),config,{key:'fixture',model:'fixture',fetcher:provider({questions:[
+      {term:'配电柜',text:'配电柜有哪些供应商可以比较？'},
+      {term:'无关产品',text:'无关产品怎么买？'},
+      {term:'配电柜',question:'采购配电柜需要了解哪些交付条件？'},
+    ]})})
+    expect(result.questions).toHaveLength(2)
+    expect(result.questions.every(q=>q.term==='配电柜')).toBe(true)
+  })
+})

@@ -234,26 +234,27 @@ export async function runGeoQuestionAI(
     throw new GeoError('INVALID_EXPANSION', 'GEO问题生成结果数量不正确，原问题已保留。', 502)
   const seen = new Set<string>()
   const questions: GeoQuestion[] = decoded.questions
-    .map((item) => {
-      const q = geoObject(item)
+    .flatMap((item) => {
+      if (!item || typeof item !== 'object') return []
+      const q = item as Record<string, unknown>
       const compact = (value: string) => value.normalize('NFKC').replace(/\s+/gu, '').toLocaleLowerCase()
-      const returnedTerm = geoTaskText(q.term, '关键词', 100)
-      const term = input.terms.find((selected) => compact(selected) === compact(returnedTerm))
-      let original = geoTaskText(q.text, '问题')
-      // Model output may omit the spaces in e.g. “T 型螺栓”; retain the selected term's spelling.
-      if (term && !original.includes(term)) {
+      const rawText = q.text ?? q.question ?? q.original
+      if (typeof rawText !== 'string' || !rawText.trim() || /<[^>]+>/u.test(rawText)) return []
+      let original: string
+      try { original = geoTaskText(rawText, '问题') } catch { return [] }
+      const returnedTerm = typeof (q.term ?? q.keyword) === 'string' ? String(q.term ?? q.keyword) : ''
+      const term = input.terms.find((selected) => compact(selected) === compact(returnedTerm)) ||
+        [...input.terms].sort((a, b) => b.length - a.length).find((selected) => compact(original).includes(compact(selected)))
+      // Ignore an extra/unrelated model item instead of discarding the other valid questions.
+      if (!term) return []
+      if (!original.includes(term)) {
         const pattern = [...term.normalize('NFKC').replace(/\s+/gu, '')]
           .map((character) => character.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
           .join('\\s*')
         original = original.normalize('NFKC').replace(new RegExp(pattern, 'giu'), term)
+        if (!compact(original).includes(compact(term))) original = `${term}：${original}`
       }
-      if (
-        !term ||
-        !compact(original).includes(compact(term)) ||
-        /<[^>]+>/u.test(original)
-      )
-        throw new GeoError('INVALID_EXPANSION', 'GEO问题包含未选关键词或无效内容。', 502)
-      return {
+      return [{
         id: randomUUID(),
         term,
         intent: input.intent,
@@ -261,7 +262,7 @@ export async function runGeoQuestionAI(
         translated: '',
         translatedFrom: '',
         translatedLocale: '',
-      }
+      }]
     })
     .filter((q) => {
       const key = normalizeGeoText(q.original)
@@ -269,7 +270,7 @@ export async function runGeoQuestionAI(
       seen.add(key)
       return true
     })
-  if (input.terms.some((term) => !questions.some((question) => question.term === term)))
-    throw new GeoError('INCOMPLETE_EXPANSION', 'GEO问题未覆盖全部所选关键词，请重新生成。', 502)
+  if (!questions.length)
+    throw new GeoError('INVALID_EXPANSION', 'AI未返回可用的问题，请重新生成。', 502)
   return { questions }
 }
