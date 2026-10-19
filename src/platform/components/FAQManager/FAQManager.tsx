@@ -65,7 +65,6 @@ export function FAQManager({
   }
   const close = () => {
     if (busy) return
-    if (dirty && !window.confirm('放弃这条问题的未保存修改？')) return
     setEditing(null)
     setBaseline(null)
   }

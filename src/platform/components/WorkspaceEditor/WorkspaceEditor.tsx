@@ -36,7 +36,6 @@ function WorkspaceBasicForm({ fields, returnHref, saveURL, title }: Props) {
   const isDirty = fields.some((field) => values[field.name] !== savedValues[field.name])
   useWorkspaceUnsaved(isDirty, isSaving)
   const cancel = () => {
-    if (isDirty && !window.confirm('确定放弃当前修改，并恢复上次保存的内容吗？')) return
     setValues(savedValues)
     setErrors({})
     setHasError(false)

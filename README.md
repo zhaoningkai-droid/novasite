@@ -65,3 +65,7 @@ npm run local:stop
 ## 许可
 
 项目自有代码和文档按 MIT License 发布。依赖项、Payload 上游模板、Pexels 图片及其他第三方材料各自遵守其许可和权利范围，详见 [第三方声明](./THIRD_PARTY_NOTICES.md)。
+
+## v1.2.0 — GEO optimization
+
+Multi-customer GEO creation, materials, publishing plans and publication records. See [release notes](docs/RELEASES/v1.2.0.md). Database installation and worker startup are explicit operator steps; uploading this source does not migrate or deploy a running site.

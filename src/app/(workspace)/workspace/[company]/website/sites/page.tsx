@@ -8,6 +8,7 @@ import { SiteManager } from '@/platform/components/SiteManager/SiteManager'
 import { getAccessibleWorkspaceCompanyBySlug } from '@/platform/workspace'
 import { getMeUser } from '@/utilities/getMeUser'
 import { getServerSideURL } from '@/utilities/getURL'
+import { userHasRole } from '@/access/roles'
 
 const templateDisplayName = (template: { key?: string; name?: string; version?: string } | null | undefined) => {
   if (!template) return '默认工业模板'
@@ -51,6 +52,7 @@ export default async function SitesPage({ params }: { params: Promise<{ company:
   const previewDomain = new URL(`/s/${slug}/${site.defaultLocale || 'zh'}`, previewOrigin).href
 
   return <SiteManager
+    canManageGa4={userHasRole(user, ['super-admin'])}
     companyID={company.id}
     companySlug={slug}
     createdAt={site.createdAt}
@@ -91,6 +93,8 @@ export default async function SitesPage({ params }: { params: Promise<{ company:
       titleSuffix: site.seo?.titleSuffix || '',
       defaultDescription: site.seo?.defaultDescription || '',
       indexingEnabled: site.seo?.indexingEnabled === true,
+      googleAnalyticsId: site.seo?.googleAnalyticsId || '',
+      googleAnalyticsPropertyId: site.seo?.googleAnalyticsPropertyId || '',
       templateRevision: revision,
     }}
   />

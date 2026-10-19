@@ -9,15 +9,47 @@ import { WorkspacePermissionsProvider } from './WorkspacePermissions'
 import { WorkspaceCompanySwitcher } from './WorkspaceCompanySwitcher'
 import { WorkspaceSideNavigation } from './WorkspaceSideNavigation'
 import { WorkspaceTopNavigation } from './WorkspaceTopNavigation'
+import { isGeoWorkspace } from '@/platform/geo/navigation'
+import '../GeoWorkspace/geo-reference.scss'
 
 const pageName = (pathname: string) => {
+  if (isGeoWorkspace(pathname)) {
+    if (pathname.includes('/geo/plans')) return 'GEO发布计划'
+    if (pathname.includes('/geo/publish')) return 'GEO文章发布'
+    if (pathname.includes('/geo/records/')) return 'GEO发布记录详情'
+    if (pathname.endsWith('/geo/records')) return 'GEO发布记录'
+    if (pathname.includes('/geo/articles/')) return 'GEO文章编辑'
+    if (pathname.endsWith('/geo/articles')) return 'GEO创作记录'
+    if (pathname.includes('/geo/creation/')) return 'GEO创作任务配置'
+    if (pathname.endsWith('/geo/creation')) return 'GEO文章创作'
+    if (pathname.includes('/geo/materials/')) return 'GEO素材组配置'
+    if (pathname.endsWith('/geo/materials')) return 'GEO素材库'
+    return pathname.includes('/geo/keywords/') ? 'GEO优化词配置' : 'GEO优化词'
+  }
   const route = pathname.split('/website/')[1] || 'analytics'
-  const base = route.startsWith('content/news') ? '新闻文章'
-    : route.startsWith('content/cases') ? '案例'
-      : route.startsWith('content/blog') ? '博客'
-        : route.startsWith('content/') ? '产品'
-          : route === 'content' ? '产品'
-            : ({ analytics: '网站数据', inquiries: '询盘收件箱', homepage: '首页', categories: '分类管理', about: '关于我们', faqs: '常见问题', contact: '联系我们', navigation: '网站导航', sites: '站点与模板' } as Record<string, string>)[route] || '独立站工作台'
+  const base = route.startsWith('content/news')
+    ? '新闻文章'
+    : route.startsWith('content/cases')
+      ? '案例'
+      : route.startsWith('content/blog')
+        ? '博客'
+        : route.startsWith('content/')
+          ? '产品'
+          : route === 'content'
+            ? '产品'
+            : (
+                {
+                  analytics: '网站数据',
+                  inquiries: '询盘收件箱',
+                  homepage: '首页',
+                  categories: '分类管理',
+                  about: '关于我们',
+                  faqs: '常见问题',
+                  contact: '联系我们',
+                  navigation: '网站导航',
+                  sites: '站点与模板',
+                } as Record<string, string>
+              )[route] || '独立站工作台'
   if (route.endsWith('/edit')) return `编辑${base}`
   if (route.endsWith('/new')) return `新增${base}`
   if (route.endsWith('/translations')) return `${base}语言管理`
@@ -33,17 +65,28 @@ type Props = {
   canManageInquiries?: boolean
 }
 
-export function WorkspaceFrame({ children, companies, currentCompany, canEditContent, canManageSite, canManageInquiries = false }: Props) {
+export function WorkspaceFrame({
+  children,
+  companies,
+  currentCompany,
+  canEditContent,
+  canManageSite,
+  canManageInquiries = false,
+}: Props) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const menuRef = useRef<HTMLButtonElement>(null)
   const sidebarRef = useRef<HTMLDivElement>(null)
   const currentPageName = pageName(pathname)
-  const closeSidebar = () => { setMobileOpen(false); menuRef.current?.focus() }
+  const moduleName = isGeoWorkspace(pathname) ? 'GEO优化' : '独立站管理'
+  const closeSidebar = () => {
+    setMobileOpen(false)
+    menuRef.current?.focus()
+  }
 
   useEffect(() => {
-    document.title = `${currentPageName} · ${currentCompany.name} | NovaSite 独立站管理`
-  }, [currentCompany.name, currentPageName])
+    document.title = `${currentPageName} · ${currentCompany.name} | NovaSite ${moduleName}`
+  }, [currentCompany.name, currentPageName, moduleName])
 
   useEffect(() => {
     if (!mobileOpen) return
@@ -51,7 +94,10 @@ export function WorkspaceFrame({ children, companies, currentCompany, canEditCon
     document.body.style.overflow = 'hidden'
     sidebarRef.current?.querySelector<HTMLAnchorElement>('a[aria-current="page"], a')?.focus()
     const keydown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') { setMobileOpen(false); menuRef.current?.focus() }
+      if (event.key === 'Escape') {
+        setMobileOpen(false)
+        menuRef.current?.focus()
+      }
       if (event.key !== 'Tab') return
       const focusable = sidebarRef.current?.querySelectorAll<HTMLElement>(
         'a[href], button:not(:disabled)',
@@ -60,9 +106,11 @@ export function WorkspaceFrame({ children, companies, currentCompany, canEditCon
       const first = focusable[0]
       const last = focusable[focusable.length - 1]
       if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault(); last.focus()
+        event.preventDefault()
+        last.focus()
       } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault(); first.focus()
+        event.preventDefault()
+        first.focus()
       }
     }
     document.addEventListener('keydown', keydown)
@@ -74,49 +122,97 @@ export function WorkspaceFrame({ children, companies, currentCompany, canEditCon
 
   return (
     <WorkspacePermissionsProvider canEditContent={canEditContent} canManageSite={canManageSite}>
-    <div className="workspace-shell" data-workspace-company={currentCompany.slug}>
-      <a className="workspace-shell__skip" href="#workspace-main">跳到页面内容</a>
-      <header className="workspace-shell__header">
-        <Link aria-label="NovaSite 公司列表" className="workspace-shell__brand"
-          href="/workspace/companies">
-          <span className="workspace-shell__brand-mark"><Globe2 size={21} aria-hidden="true" /></span>
-          <span><strong>NovaSite</strong></span>
-        </Link>
-        <WorkspaceTopNavigation companySlug={currentCompany.slug} />
-        <div className="workspace-shell__company">
-          <WorkspaceCompanySwitcher companies={companies} currentCompany={currentCompany} />
-        </div>
-      </header>
-      <div className="workspace-shell__body">
-        {mobileOpen && <button className="workspace-shell__scrim" onClick={closeSidebar}
-          aria-label="关闭功能导航" type="button" />}
-        <div className={mobileOpen ? 'workspace-shell__sidebar is-open' : 'workspace-shell__sidebar'}
-          id="workspace-navigation" ref={sidebarRef}
-          role={mobileOpen ? 'dialog' : undefined} aria-modal={mobileOpen || undefined}
-          aria-label={mobileOpen ? '独立站功能导航' : undefined}>
-          <button className="workspace-shell__mobile-close" onClick={closeSidebar}
-            aria-label="关闭功能导航" type="button"><X size={20} /></button>
-          <WorkspaceSideNavigation canEditContent={canEditContent} canManageSite={canManageSite}
-            canManageInquiries={canManageInquiries}
-            companySlug={currentCompany.slug} companyName={currentCompany.name}
-            onNavigate={() => setMobileOpen(false)} />
-        </div>
-        <div className="workspace-shell__workarea">
-          <div className="workspace-shell__context">
-            <button aria-controls="workspace-navigation" aria-expanded={mobileOpen}
-              aria-label="打开功能导航" className="workspace-shell__mobile-menu"
-              onClick={() => setMobileOpen(true)} ref={menuRef} type="button"><Menu size={20} /></button>
-            <a className="workspace-shell__preview" href={`/s/${currentCompany.slug}/zh`}
-              target="_blank" rel="noopener noreferrer">
-              <Globe2 size={15} aria-hidden="true" />预览网站<ArrowUpRight size={14} aria-hidden="true" />
-            </a>
+      <div
+        className={`workspace-shell${isGeoWorkspace(pathname) ? ' workspace-shell--geo' : ''}`}
+        data-workspace-company={currentCompany.slug}
+      >
+        <a className="workspace-shell__skip" href="#workspace-main">
+          跳到页面内容
+        </a>
+        <header className="workspace-shell__header">
+          <Link
+            aria-label="NovaSite 公司列表"
+            className="workspace-shell__brand"
+            href="/workspace/companies"
+          >
+            <span className="workspace-shell__brand-mark">
+              <Globe2 size={21} aria-hidden="true" />
+            </span>
+            <span>
+              <strong>NovaSite</strong>
+            </span>
+          </Link>
+          <WorkspaceTopNavigation companySlug={currentCompany.slug} canUseGeo={canEditContent} />
+          <div className="workspace-shell__company">
+            <WorkspaceCompanySwitcher companies={companies} currentCompany={currentCompany} />
           </div>
-          <main className="workspace-shell__content" id="workspace-main" tabIndex={-1}>
-            <div className="workspace-shell__page" key={pathname}>{children}</div>
-          </main>
+        </header>
+        <div className="workspace-shell__body">
+          {mobileOpen && (
+            <button
+              className="workspace-shell__scrim"
+              onClick={closeSidebar}
+              aria-label="关闭功能导航"
+              type="button"
+            />
+          )}
+          <div
+            className={mobileOpen ? 'workspace-shell__sidebar is-open' : 'workspace-shell__sidebar'}
+            id="workspace-navigation"
+            ref={sidebarRef}
+            role={mobileOpen ? 'dialog' : undefined}
+            aria-modal={mobileOpen || undefined}
+            aria-label={mobileOpen ? `${moduleName}功能导航` : undefined}
+          >
+            <button
+              className="workspace-shell__mobile-close"
+              onClick={closeSidebar}
+              aria-label="关闭功能导航"
+              type="button"
+            >
+              <X size={20} />
+            </button>
+            <WorkspaceSideNavigation
+              canEditContent={canEditContent}
+              canManageSite={canManageSite}
+              canManageInquiries={canManageInquiries}
+              companySlug={currentCompany.slug}
+              companyName={currentCompany.name}
+              onNavigate={() => setMobileOpen(false)}
+            />
+          </div>
+          <div className="workspace-shell__workarea">
+            <div className="workspace-shell__context">
+              <button
+                aria-controls="workspace-navigation"
+                aria-expanded={mobileOpen}
+                aria-label="打开功能导航"
+                className="workspace-shell__mobile-menu"
+                onClick={() => setMobileOpen(true)}
+                ref={menuRef}
+                type="button"
+              >
+                <Menu size={20} />
+              </button>
+              <a
+                className="workspace-shell__preview"
+                href={`/s/${currentCompany.slug}/zh`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Globe2 size={15} aria-hidden="true" />
+                预览网站
+                <ArrowUpRight size={14} aria-hidden="true" />
+              </a>
+            </div>
+            <main className="workspace-shell__content" id="workspace-main" tabIndex={-1}>
+              <div className="workspace-shell__page" key={pathname}>
+                {children}
+              </div>
+            </main>
+          </div>
         </div>
       </div>
-    </div>
     </WorkspacePermissionsProvider>
   )
 }

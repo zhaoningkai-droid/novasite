@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import {
+  EXPERIMENTAL_TableFeature,
   FixedToolbarFeature,
   HeadingFeature,
   InlineToolbarFeature,
@@ -46,7 +47,8 @@ export const News: CollectionConfig = {
       editor: lexicalEditor({
         features: ({ rootFeatures }) => [
           ...rootFeatures,
-          HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
+          HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4', 'h5'] }),
+          EXPERIMENTAL_TableFeature(),
           FixedToolbarFeature(),
           InlineToolbarFeature(),
         ],

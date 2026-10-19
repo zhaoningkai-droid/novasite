@@ -1,0 +1,7 @@
+.novasite-analytics-consent { position: fixed; z-index: 9999; inset-inline-start: 18px; bottom: 18px; width: min(390px, calc(100vw - 36px)); border: 1px solid #dce1e7; border-radius: 10px; background: #fff; color: #27313d; padding: 18px; box-shadow: 0 5px 25px #0002; font: 14px/1.6 Arial, sans-serif; }
+.novasite-analytics-consent p { margin: 0 0 12px; }
+.novasite-analytics-consent div { display: flex; flex-wrap: wrap; gap: 9px; }
+.novasite-analytics-consent button { border: 1px solid #dce1e7; border-radius: 6px; padding: 8px 15px; background: #fff; color: #27313d; cursor: pointer; font: inherit; }
+.novasite-analytics-consent button:first-child { background: #225ae5; color: #fff; border-color: #225ae5; }
+.novasite-analytics-settings { position: fixed; z-index: 99; inset-inline-start: 12px; bottom: 8px; border: 1px solid #dce1e7; border-radius: 5px; padding: 4px 8px; background: #fff; color: #586372; font: 11px/1.5 Arial, sans-serif; cursor: pointer; }
+.novasite-analytics-consent button:focus-visible, .novasite-analytics-settings:focus-visible { outline: 3px solid #94b4ff; outline-offset: 3px; }

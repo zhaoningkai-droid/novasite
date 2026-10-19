@@ -18,6 +18,9 @@ import { ExecutiveTenantQuoteDialog } from '@/platform/legacy-templates/Executiv
 import { CustomerBrand } from '@/platform/components/CustomerBrand/CustomerBrand'
 import { sortedNavigation } from '@/platform/navigation-model'
 import { GeistSans } from 'geist/font/sans'
+import { headers } from 'next/headers'
+import { Ga4Collector } from '@/platform/analytics/Ga4Collector'
+import { ga4TrackingTarget } from '@/platform/analytics/ga4-config'
 
 import '../../../../(frontend)/globals.css'
 import './site.css'
@@ -68,6 +71,9 @@ export default async function SiteLayout({ children, params }: Props) {
   if (!site) notFound()
   const enabledLocales = [...(site.enabledLocales?.length ? site.enabledLocales : locales)]
   if (!enabledLocales.includes(lang)) notFound()
+  const ga4 = ga4TrackingTarget(site, (await headers()).get('host'))
+  // Only public tracking configuration reaches the browser; the report property and key stay server-side.
+  const tracking = ga4 ? { slug: ga4.slug, measurementId: ga4.measurementId, origin: ga4.origin, mode: ga4.mode, pathPrefix: ga4.pathPrefix } : null
   const newTemplate = selectedNewTemplate(site)
   if (newTemplate)
     return (
@@ -79,6 +85,7 @@ export default async function SiteLayout({ children, params }: Props) {
         suppressHydrationWarning
       >
         <body>
+          {tracking && <Ga4Collector target={tracking} locale={lang} />}
           <TemplateShell
             site={site}
             locale={lang}
@@ -508,6 +515,7 @@ export default async function SiteLayout({ children, params }: Props) {
             </footer>
           )}
         </div>
+        {tracking && <Ga4Collector target={tracking} locale={lang} />}
         <script
           dangerouslySetInnerHTML={{ __html: jsonLD(organization) }}
           type="application/ld+json"

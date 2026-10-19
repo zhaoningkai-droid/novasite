@@ -1,0 +1,33 @@
+[data-workspace-error-source='true'] {
+  display: none !important;
+}
+.workspace-feedback {
+  position: fixed;
+  inset: 28px auto auto 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  max-width: min(580px, calc(100vw - 32px));
+  margin: 0;
+  padding: 13px 20px;
+  border: 1px solid #f4c7c7;
+  border-radius: 7px;
+  background: #fff;
+  color: #b42318;
+  box-shadow: 0 5px 24px rgb(0 0 0 / 14%);
+  font-size: 14px;
+  line-height: 1.6;
+  z-index: 10000;
+  pointer-events: none;
+  > span {
+    flex: 0 0 18px;
+    border-radius: 50%;
+    background: #e85b5b;
+    color: #fff;
+    text-align: center;
+    line-height: 18px;
+    font-weight: 700;
+  }
+}

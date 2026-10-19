@@ -9,6 +9,8 @@ import { getAccessibleWorkspaceCompanyBySlug } from '@/platform/workspace'
 import { locales } from '@/platform/site-locales'
 import { getMeUser } from '@/utilities/getMeUser'
 import { revalidateWorkspaceSettings } from '@/platform/workspace-settings-api'
+import { userHasRole } from '@/access/roles'
+import { ga4MeasurementId, ga4PropertyId } from '@/platform/analytics/ga4-config'
 
 type Context = { params: Promise<{ company: string }> }
 const text = (value: unknown) => typeof value === 'string' ? value.trim() : ''
@@ -35,6 +37,15 @@ export async function PATCH(request: Request, { params }: Context) {
   }
   if (Object.prototype.hasOwnProperty.call(body, 'selectedTemplate')) {
     return NextResponse.json({ message: '模板请在模板库中单独选择并保存，以便记录和恢复版本。' }, { status: 409 })
+  }
+  const hasGa4 = Object.hasOwn(body, 'googleAnalyticsId') || Object.hasOwn(body, 'googleAnalyticsPropertyId')
+  if (hasGa4 && !userHasRole(user, ['super-admin'])) {
+    return NextResponse.json({ message: 'GA4 配置仅允许平台管理员修改。' }, { status: 403 })
+  }
+  const measurementId = ga4MeasurementId(body.googleAnalyticsId)
+  const propertyId = ga4PropertyId(body.googleAnalyticsPropertyId)
+  if (hasGa4 && ((text(body.googleAnalyticsId) && !measurementId) || (text(body.googleAnalyticsPropertyId) && !propertyId) || Boolean(measurementId) !== Boolean(propertyId))) {
+    return NextResponse.json({ message: '请同时填写 G- 开头的衡量 ID 和纯数字媒体资源 ID，或同时留空。' }, { status: 422 })
   }
 
   const enabled = Array.isArray(body.enabledLocales)
@@ -92,6 +103,7 @@ export async function PATCH(request: Request, { params }: Context) {
         titleSuffix: text(body.titleSuffix),
         defaultDescription: text(body.defaultDescription),
         indexingEnabled: body.indexingEnabled === true,
+        ...(hasGa4 ? { googleAnalyticsId: measurementId, googleAnalyticsPropertyId: propertyId } : {}),
       },
     } as Partial<Tenant>,
   })

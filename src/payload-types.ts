@@ -192,7 +192,7 @@ export interface Tenant {
   slug: string;
   status: 'building' | 'published' | 'suspended';
   /**
-   * 不含协议，例如 www.volttrans.com。未绑定域名时可留空。
+   * 选填，可填写域名或完整网址。
    */
   primaryDomain?: string | null;
   /**
@@ -250,6 +250,7 @@ export interface Tenant {
     defaultDescription?: string | null;
     googleSiteVerification?: string | null;
     googleAnalyticsId?: string | null;
+    googleAnalyticsPropertyId?: string | null;
     indexingEnabled?: boolean | null;
   };
   /**
@@ -1657,6 +1658,7 @@ export interface TenantsSelect<T extends boolean = true> {
         defaultDescription?: T;
         googleSiteVerification?: T;
         googleAnalyticsId?: T;
+        googleAnalyticsPropertyId?: T;
         indexingEnabled?: T;
       };
   siteNavigation?:

@@ -34,7 +34,6 @@ export function AboutEditor({ companyID, companySlug, initial }: { companyID: nu
   const open = () => { setDraft(clone(saved)); setStatus(''); setEditing(true) }
   const close = () => {
     if (busy || !canManageSite) return
-    if (dirty && !window.confirm('放弃关于我们的未保存修改？已保存的内容会保留。')) return
     setDraft(clone(saved)); setEditing(false)
   }
   const updateModule = (index: number, patch: Partial<Module>) => setDraft((current) => ({

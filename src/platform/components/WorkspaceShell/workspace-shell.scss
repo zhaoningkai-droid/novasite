@@ -139,3 +139,23 @@
 .workspace-side-navigation__link { min-height: 46px; font-size: 14px; }
 .workspace-side-navigation nav { gap: 6px; }
 .workspace-shell__context { height: 42px; border: 0; background: transparent; }
+
+/* Existing customer workspace, with GEO as a sibling module. */
+.workspace-top-navigation { gap: 6px; }
+.workspace-top-navigation__item { background: transparent; color: var(--ws-muted);
+  text-decoration: none; }
+.workspace-top-navigation__item.is-active { background: var(--ws-primary-soft);
+  color: var(--ws-primary); }
+.workspace-top-navigation__item:hover { color: var(--ws-primary); }
+.workspace-top-navigation__item:focus-visible { outline: 2px solid var(--ws-primary);
+  outline-offset: 3px; }
+.workspace-side-navigation--geo .workspace-side-navigation__caption { font-size: 11px;
+  font-weight: 500; margin-top: 16px; }
+.workspace-side-navigation--geo button.workspace-side-navigation__link {
+  background: none; cursor: not-allowed; font-family: inherit; text-align: left;
+  color: #939cab; width: 100%; }
+@media (max-width: 600px) {
+  .workspace-top-navigation { gap: 2px; }
+  .workspace-top-navigation__item { font-size: 11px; gap: 4px; padding: 8px 6px; }
+  .workspace-top-navigation__item > svg { display: none; }
+}

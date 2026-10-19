@@ -5,6 +5,8 @@ import { getAccessibleWorkspaceCompanyBySlug } from '@/platform/workspace'
 import { getMeUser } from '@/utilities/getMeUser'
 import { userHasRole } from '@/access/roles'
 import { analyticsWindow, parseAnalyticsRange, summarizeLeads, type LeadAnalytics, type LeadSample } from '@/platform/components/WorkspaceAnalytics/analytics-data'
+import { readGa4Traffic } from '@/platform/analytics/ga4-reports.server'
+import { ga4Unavailable, type Ga4Traffic } from '@/platform/analytics/ga4-types'
 
 type Props = { params: Promise<{ company: string }>; searchParams: Promise<{ range?: string | string[] }> }
 
@@ -46,12 +48,20 @@ export default async function CompanyWorkspacePage({ params, searchParams }: Pro
       return { status: 'unavailable', count: null, daily: [], sources: [] }
     }
   }
-  const [products, news, cases, blog, leads] = await Promise.all([
+  const readTraffic = async (): Promise<Ga4Traffic> => {
+    try {
+      const site = await payload.findByID({ collection: 'tenants', id: company.id, depth: 0, overrideAccess: false, user,
+        select: { slug: true, status: true, primaryDomain: true, seo: true } })
+      return readGa4Traffic(site, range, now)
+    } catch { return ga4Unavailable('unavailable', '访问统计暂时无法读取，请稍后刷新。') }
+  }
+  const [products, news, cases, blog, leads, traffic] = await Promise.all([
     payload.find({ collection: 'products', draft: true, limit: 1, locale: 'zh', overrideAccess: false, user, where: { tenant: { equals: company.id } } }),
     payload.find({ collection: 'news', draft: true, limit: 1, locale: 'zh', overrideAccess: false, user, where: { tenant: { equals: company.id } } }),
     payload.find({ collection: 'cases', draft: true, limit: 1, locale: 'zh', overrideAccess: false, user, where: { tenant: { equals: company.id } } }),
     payload.find({ collection: 'posts', draft: true, limit: 1, locale: 'zh', overrideAccess: false, user, where: { tenant: { equals: company.id } } }),
     readLeadStats(),
+    readTraffic(),
   ])
-  return <WorkspaceAnalytics company={company} counts={{ blog: blog.totalDocs, cases: cases.totalDocs, news: news.totalDocs, products: products.totalDocs }} range={range} leads={leads} refreshedAt={now.toISOString()} />
+  return <WorkspaceAnalytics company={company} counts={{ blog: blog.totalDocs, cases: cases.totalDocs, news: news.totalDocs, products: products.totalDocs }} range={range} leads={leads} traffic={traffic} refreshedAt={now.toISOString()} />
 }

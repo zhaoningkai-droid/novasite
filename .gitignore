@@ -68,3 +68,8 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# GEO review evidence stays local
+docs/geo/evidence/
+.next*/
+output/

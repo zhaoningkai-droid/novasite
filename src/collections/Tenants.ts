@@ -1,6 +1,7 @@
 import { type CollectionConfig, type CollectionBeforeChangeHook } from 'payload'
 
-import { assignedTenants, siteAdmins, superAdmins } from '../access/roles'
+import { assignedTenants, siteAdmins, superAdmins, superAdminField } from '../access/roles'
+import { ga4MeasurementId, ga4PropertyId } from '../platform/analytics/ga4-config'
 import { localeOptions } from '../platform/site-locales'
 
 const guardTemplateSelection: CollectionBeforeChangeHook = ({ data, operation, originalDoc, req }) => {
@@ -180,7 +181,8 @@ export const Tenants: CollectionConfig = {
         { name: 'titleSuffix', label: '标题后缀', type: 'text', localized: true },
         { name: 'defaultDescription', label: '默认描述', type: 'textarea', localized: true },
         { name: 'googleSiteVerification', label: 'Google Search Console 验证码', type: 'text' },
-        { name: 'googleAnalyticsId', label: 'Google Analytics ID', type: 'text' },
+        { name: 'googleAnalyticsId', label: 'GA4 衡量 ID', type: 'text', access: { create: superAdminField, update: superAdminField }, validate: (value: unknown) => !value || Boolean(ga4MeasurementId(value)) || '请填写 G- 开头的 GA4 衡量 ID。' },
+        { name: 'googleAnalyticsPropertyId', label: 'GA4 媒体资源 ID', type: 'text', access: { create: superAdminField, update: superAdminField }, validate: (value: unknown) => !value || Boolean(ga4PropertyId(value)) || '请填写纯数字的 GA4 媒体资源 ID。' },
         { name: 'indexingEnabled', label: '允许搜索引擎收录', type: 'checkbox', defaultValue: false },
       ],
     },

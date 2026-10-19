@@ -111,7 +111,7 @@ describe('配置页客户端交互回归（不写客户记录）', () => {
     expect(screen.getByText('第一问')).toBeTruthy()
   })
   test('联系必填字段和3图位不回退；大于500KB的二维码不发送上传', async () => {
-    render(h(ContactEditor, { companySlug: 'test', initial: { address: '地址', email: 'demo@example.invalid',
+    render(h(ContactEditor, { companySlug: 'test', initial: { address: '地址', email: 'a@test.com',
       phone: '123', whatsapp: '', title: '', intro: '', showInquiryForm: true } }))
     for (const label of ['地址', '邮箱', '电话']) expect((screen.getByLabelText(new RegExp(label)) as HTMLInputElement).required).toBe(true)
     expect((screen.getByLabelText('WhatsApp') as HTMLInputElement).required).toBe(false)
@@ -166,7 +166,7 @@ describe('配置页客户端交互回归（不写客户记录）', () => {
   })
   test('只读账号可查看，但不能保存/上传联系和选择新模板', () => {
     state.canEditContent = false; state.canManageSite = false
-    const first = render(h(ContactEditor, { companySlug: 'test', initial: { address: '地址', email: 'demo@example.invalid',
+    const first = render(h(ContactEditor, { companySlug: 'test', initial: { address: '地址', email: 'a@test.com',
       phone: '123', whatsapp: '', title: '', intro: '', showInquiryForm: true } }))
     expect((screen.getByRole('button', { name: '保存联系信息' }) as HTMLButtonElement).disabled).toBe(true)
     expect((screen.getByLabelText('上传 WhatsApp 二维码') as HTMLInputElement).matches(':disabled')).toBe(true)

@@ -177,14 +177,12 @@ export function WorkspaceInquiryInbox(props: Props) {
   }
   const close = () => {
     if (writeBusy.current) return
-    if (dirty && !window.confirm('跟进信息尚未保存，关闭会放弃本次修改。确定关闭吗？')) return
     readController.current?.abort(); readGeneration.current++
     notificationController.current?.abort(); notificationGeneration.current++
     setOpenID(null); setDetail(null); setNotification(null); setFeedback('')
   }
   const reload = () => {
     if (!openID || writeBusy.current) return
-    if (dirty && !window.confirm('重新载入会放弃本次未保存修改。确定继续吗？')) return
     void loadDetail(openID)
   }
   const save = async (event: FormEvent<HTMLFormElement>) => {

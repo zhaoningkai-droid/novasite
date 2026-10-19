@@ -335,22 +335,22 @@ describe('离开保护与媒体检索', () => {
     useWorkspaceUnsaved(dirty, busy)
     return h('a', { href: '/another-page' }, '离开')
   }
-  test('取消离开保留草稿，刷新会触发浏览器保护', () => {
+  test('未保存时导航与刷新直接离开，不再出现确认弹窗', () => {
     render(h(Flag, { dirty: true }))
     const click = new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 })
     screen.getByRole('link').dispatchEvent(click)
-    expect(click.defaultPrevented).toBe(true)
-    expect(window.confirm).toHaveBeenCalled()
+    expect(click.defaultPrevented).toBe(false)
+    expect(window.confirm).not.toHaveBeenCalled()
     const leave = new Event('beforeunload', { cancelable: true })
     window.dispatchEvent(leave)
-    expect(leave.defaultPrevented).toBe(true)
+    expect(leave.defaultPrevented).toBe(false)
   })
-  test('保存中阻止站内离开，不用放弃确认掩盖进行中的请求', () => {
+  test('保存中的导航也不弹出阻止提醒', () => {
     render(h(Flag, { busy: true }))
     const click = new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 })
     screen.getByRole('link').dispatchEvent(click)
-    expect(click.defaultPrevented).toBe(true)
-    expect(window.alert).toHaveBeenCalledWith('正在保存或上传，请完成后再离开页面。')
+    expect(click.defaultPrevented).toBe(false)
+    expect(window.alert).not.toHaveBeenCalled()
     expect(window.confirm).not.toHaveBeenCalled()
   })
   test('媒体库旧搜索晚返回不会覆盖最新结果，Esc后焦点回触发按钮', async () => {

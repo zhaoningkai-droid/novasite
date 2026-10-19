@@ -1,4 +1,17 @@
+import * as migration_geo_publishing from './20261017_040000_geo_publishing'
+import * as migration_geo_articles from './20261017_030000_geo_articles'
+import * as migration_geo_creation_tasks from './20261017_020000_geo_creation_tasks'
+import * as migration_geo_material_hierarchy from './20261017_050000_geo_material_hierarchy'
+import * as migration_geo_publish_plans from './20261017_060000_geo_publish_plans'
+import * as migration_geo_visibility from './20261017_070000_geo_visibility'
+import * as migration_geo_manual_articles from './20261017_080000_geo_manual_articles'
+import * as migration_geo_task_archive from './20261017_090000_geo_task_archive'
+import * as migration_geo_plan_archive from './20261017_100000_geo_plan_archive'
+import * as migration_geo_term_source_links from './20261018_010000_geo_term_source_links'
+import * as migration_20261017_010000_geo_materials_sources from './20261017_010000_geo_materials_sources'
+import * as migration_20261016_020000_geo_optimizations from './20261016_020000_geo_optimizations'
 import * as migration_20261004_010000_navigation_branding from './20261004_010000_navigation_branding'
+import * as migration_20261016_010000_ga4_property_id from './20261016_010000_ga4_property_id'
 import * as migration_contact_third_qr from './20260927_020000_contact_third_qr'
 import * as migration_20260929_010000_executive_homepage_settings from './20260929_010000_executive_homepage_settings'
 import * as migration_20260929_020000_lead_address from './20260929_020000_lead_address'
@@ -169,5 +182,74 @@ export const migrations = [
     down: migration_20261003_010000_runtime_schema_gaps.down,
     name: '20261003_010000_runtime_schema_gaps',
   },
-  { up: migration_20261004_010000_navigation_branding.up, down: migration_20261004_010000_navigation_branding.down, name: '20261004_010000_navigation_branding' },
+  {
+    up: migration_20261004_010000_navigation_branding.up,
+    down: migration_20261004_010000_navigation_branding.down,
+    name: '20261004_010000_navigation_branding',
+  },
+  {
+    up: migration_20261016_010000_ga4_property_id.up,
+    down: migration_20261016_010000_ga4_property_id.down,
+    name: '20261016_010000_ga4_property_id',
+  },
+  {
+    up: migration_20261016_020000_geo_optimizations.up,
+    down: migration_20261016_020000_geo_optimizations.down,
+    name: '20261016_020000_geo_optimizations',
+  },
+  {
+    up: migration_20261017_010000_geo_materials_sources.up,
+    down: migration_20261017_010000_geo_materials_sources.down,
+    name: '20261017_010000_geo_materials_sources',
+  },
+  {
+    up: migration_geo_creation_tasks.up,
+    down: migration_geo_creation_tasks.down,
+    name: '20261017_020000_geo_creation_tasks',
+  },
+  {
+    up: migration_geo_articles.up,
+    down: migration_geo_articles.down,
+    name: '20261017_030000_geo_articles',
+  },
+  {
+    up: migration_geo_publishing.up,
+    down: migration_geo_publishing.down,
+    name: '20261017_040000_geo_publishing',
+  },
+  {
+    up: migration_geo_material_hierarchy.up,
+    down: migration_geo_material_hierarchy.down,
+    name: '20261017_050000_geo_material_hierarchy',
+  },
+  {
+    up: migration_geo_publish_plans.up,
+    down: migration_geo_publish_plans.down,
+    name: '20261017_060000_geo_publish_plans',
+  },
+  {
+    up: migration_geo_visibility.up,
+    down: migration_geo_visibility.down,
+    name: '20261017_070000_geo_visibility',
+  },
+  {
+    up: migration_geo_manual_articles.up,
+    down: migration_geo_manual_articles.down,
+    name: '20261017_080000_geo_manual_articles',
+  },
+  {
+    up: migration_geo_task_archive.up,
+    down: migration_geo_task_archive.down,
+    name: '20261017_090000_geo_task_archive',
+  },
+  {
+    up: migration_geo_plan_archive.up,
+    down: migration_geo_plan_archive.down,
+    name: '20261017_100000_geo_plan_archive',
+  },
+  {
+    up: migration_geo_term_source_links.up,
+    down: migration_geo_term_source_links.down,
+    name: '20261018_010000_geo_term_source_links',
+  },
 ]

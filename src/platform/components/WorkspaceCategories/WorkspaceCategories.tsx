@@ -66,7 +66,6 @@ export function WorkspaceCategories({ categories, companyName, companySlug, endp
   const notify = (message: string, failed = false) => { setFeedback(message); setError(failed) }
   const close = () => {
     if (busy) return
-    if (dirty && !window.confirm('放弃分类的未保存修改？')) return
     setEditing(null); setTranslating(null); setFeedback('')
   }
   const open = (draft: typeof blank) => { if (draft.id && translation.locked(draft.id)) return; setEditBaseline({ ...draft }); setEditing({ ...draft }); setFeedback('') }

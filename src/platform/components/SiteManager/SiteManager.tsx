@@ -21,6 +21,8 @@ type Value = {
   favicon?: number
   faviconURL?: string
   indexingEnabled: boolean
+  googleAnalyticsId?: string
+  googleAnalyticsPropertyId?: string
   headerText?: string
   logo?: number
   logoURL?: string
@@ -42,6 +44,7 @@ type TemplateOption = {
 }
 
 type Props = {
+  canManageGa4?: boolean
   companyID: number
   companySlug: string
   createdAt: string
@@ -87,7 +90,7 @@ const parseUploadResponse = async (response: Response) => {
   }
 }
 
-export function SiteManager({ companyID, companySlug, initial, createdAt, templateName, templates, templateHistory }: Props) {
+export function SiteManager({ companyID, companySlug, initial, createdAt, templateName, templates, templateHistory, canManageGa4 = false }: Props) {
   const { canManageSite } = useWorkspacePermissions()
   const [value, setValue] = useState(initial)
   const [savedValue, setSavedValue] = useState(initial)
@@ -159,7 +162,8 @@ export function SiteManager({ companyID, companySlug, initial, createdAt, templa
     setStatus('')
     setError(false)
     try {
-      const { selectedTemplate: nextTemplateID, ...siteSettings } = value
+      const { selectedTemplate: nextTemplateID, googleAnalyticsId, googleAnalyticsPropertyId, ...otherSettings } = value
+      const siteSettings = { ...otherSettings, ...(canManageGa4 ? { googleAnalyticsId, googleAnalyticsPropertyId } : {}) }
       const res = await fetch(`/api/workspace/${companySlug}/site-settings`, {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
@@ -326,6 +330,16 @@ export function SiteManager({ companyID, companySlug, initial, createdAt, templa
                 type="file" /></label>
           })}</div>
         </section>
+        <details className="site-manager__settings-panel"><summary>Google Analytics 4 访问统计</summary>
+          <p>每家公司单独配置。正式统计仅在已发布的客户主域名上启用；后台预览、本地和演示页不计入。</p>
+          <label>衡量 ID（G- 开头）<input disabled={!canManageGa4} value={value.googleAnalyticsId || ''}
+            placeholder="G-XXXXXXXXXX" autoComplete="off" maxLength={22}
+            onChange={(event) => setValue({ ...value, googleAnalyticsId: event.target.value.toUpperCase() })} /></label>
+          <label>媒体资源 ID（纯数字，不是数据流 ID）<input disabled={!canManageGa4} value={value.googleAnalyticsPropertyId || ''}
+            placeholder="例如 123456789" inputMode="numeric" autoComplete="off" maxLength={20}
+            onChange={(event) => setValue({ ...value, googleAnalyticsPropertyId: event.target.value })} /></label>
+          <p>{canManageGa4 ? '填写后点击上方“保存站点设置”。请将 GA4 数据流的增强型衡量关闭，由网站统一记录浏览、询盘成功与 WhatsApp 点击。报表读取凭据由平台私有配置管理。' : '统计编号由平台管理员配置，防止不同公司的报表串用。'}</p>
+        </details>
         <details className="site-manager__settings-panel"><summary>搜索优化</summary>
           <label>SEO 标题后缀<input onChange={(event) => setValue({ ...value, titleSuffix: event.target.value })}
             value={value.titleSuffix} /></label><label>默认 SEO 描述<textarea

@@ -10,6 +10,7 @@ import {
 
 import type { WorkspaceCompany } from '@/platform/workspace'
 import { csvCell, type AnalyticsCounts, type AnalyticsRange, type LeadAnalytics } from './analytics-data'
+import { ga4Unavailable, type Ga4Traffic } from '../../analytics/ga4-types'
 
 import './workspace-analytics.scss'
 
@@ -19,6 +20,7 @@ type Props = {
   range: AnalyticsRange
   leads: LeadAnalytics
   refreshedAt: string
+  traffic?: Ga4Traffic
 }
 
 const statusLabel = (status: WorkspaceCompany['status']) => {
@@ -27,7 +29,7 @@ const statusLabel = (status: WorkspaceCompany['status']) => {
   return '网站搭建中'
 }
 
-export function WorkspaceAnalytics({ company, counts, range, leads, refreshedAt }: Props) {
+export function WorkspaceAnalytics({ company, counts, range, leads, refreshedAt, traffic = ga4Unavailable('not_configured', '尚未接入 GA4 访问统计。') }: Props) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [exportNotice, setExportNotice] = useState('')
@@ -40,18 +42,26 @@ export function WorkspaceAnalytics({ company, counts, range, leads, refreshedAt 
     { label: '博客', count: counts.blog, href: `/workspace/${company.slug}/website/content/blog`, hint: '专业文章', icon: BookOpenText },
   ]
   const metrics = [
-    { label: '累计浏览量（PV）', value: '—', hint: '访问统计尚未接入', icon: Globe2 },
-    { label: `近 ${range} 天访客数（UV）`, value: '—', hint: '访问统计尚未接入', icon: Users },
-    { label: `近 ${range} 天浏览量（PV）`, value: '—', hint: '访问统计尚未接入', icon: BarChart3 },
+    { label: '累计浏览量（PV）', value: traffic.totalViews?.toLocaleString('zh-CN') ?? '—', hint: traffic.status === 'ready' ? '当前 GA4 资源可查询的累计浏览量' : traffic.message, icon: Globe2 },
+    { label: `近 ${range} 天访客数（UV）`, value: traffic.users?.toLocaleString('zh-CN') ?? '—', hint: traffic.status === 'ready' ? 'GA4 总用户数，不是独立 IP 数' : traffic.message, icon: Users },
+    { label: `近 ${range} 天浏览量（PV）`, value: traffic.views?.toLocaleString('zh-CN') ?? '—', hint: traffic.status === 'ready' ? 'GA4 页面浏览事件' : traffic.message, icon: BarChart3 },
     { label: `近 ${range} 天询盘量`, value: leads.count?.toLocaleString('zh-CN') ?? '—', hint: leads.status === 'ready' ? '来自当前公司真实询盘记录' : leadMessage, icon: MessageSquare },
   ]
   const maxDaily = Math.max(1, ...leads.daily.map((day) => day.count))
+  const maxTraffic = Math.max(1, ...traffic.daily.flatMap((day) => [day.views, day.users]))
   const dateLabel = new Intl.DateTimeFormat('zh-CN', { timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date(refreshedAt))
 
   const exportData = () => {
     const rows: (string | number)[][] = [
       ['公司', '统计范围', '数据类型', '项目', '数值', '说明'],
-      [company.name, `近${range}天`, '访问统计', 'PV/UV', '', '尚未接入访问统计，不代表访问量为0'],
+      [company.name, '累计', 'GA4', '累计PV', traffic.totalViews ?? '', traffic.message],
+      [company.name, `近${range}天`, 'GA4', 'PV', traffic.views ?? '', traffic.message],
+      [company.name, `近${range}天`, 'GA4', '用户数', traffic.users ?? '', 'GA4 用户口径，不是独立 IP 数'],
+      [company.name, `近${range}天`, 'GA4', '询盘转化', traffic.conversions ?? '', '仅统计授权访客成功提交后上报的事件，与数据库询盘数口径不同'],
+      [company.name, `近${range}天`, 'GA4', 'WhatsApp点击', traffic.whatsappClicks ?? '', '点击次数，不表示已发送消息'],
+      ...traffic.daily.map((day) => [company.name, day.date, 'GA4每日', 'PV / 用户数', `${day.views} / ${day.users}`, traffic.timeZone || '']),
+      ...traffic.sources.map((source) => [company.name, `近${range}天`, 'GA4来源', source.label, source.sessions, '会话数']),
+      ...traffic.pages.map((page) => [company.name, `近${range}天`, 'GA4页面', page.path, page.views, 'PV']),
       [company.name, `近${range}天`, '询盘统计', '询盘总数', leads.count ?? '', leads.status === 'ready' ? '当前公司真实记录；包含今天；北京时间' : leadMessage],
       ...leads.daily.map((day) => [company.name, `近${range}天`, '每日询盘', day.date, day.count, '北京时间']),
       ...leads.sources.map((source) => [company.name, `近${range}天`, '询盘来源', source.label, source.count, '按询盘UTM Source汇总']),
@@ -89,7 +99,7 @@ export function WorkspaceAnalytics({ company, counts, range, leads, refreshedAt 
         <button type="button" disabled={pending} onClick={exportData}><Download size={15} aria-hidden="true" />导出数据</button>
       </div>
     </div>
-    <p className="workspace-analytics__notice"><Info size={16} aria-hidden="true" /><span>访问统计尚未接入，PV / UV 显示“—”。询盘数据来自当前公司，按北京时间统计，范围包含今天。</span></p>
+    <p className="workspace-analytics__notice"><Info size={16} aria-hidden="true" /><span>{traffic.message} {traffic.status === 'ready' ? `GA4 报表缓存约 2 分钟，统计时区 ${traffic.timeZone}。` : '不可用的访问数据以“—”显示，不代表访问量为零。'} 询盘量来自当前公司数据库，按北京时间统计。</span></p>
     {exportNotice && <p className="workspace-analytics__export-notice" role="status">{exportNotice}</p>}
 
     <div className="workspace-analytics__grid workspace-analytics__metrics">
@@ -101,8 +111,13 @@ export function WorkspaceAnalytics({ company, counts, range, leads, refreshedAt 
 
     <div className="workspace-analytics__charts">
       <section className="workspace-analytics__panel" aria-labelledby="workspace-traffic-title">
-        <div className="workspace-analytics__section-heading"><div><h2 id="workspace-traffic-title">访问趋势</h2><p>浏览量 PV · 独立访客 UV</p></div><span className="workspace-analytics__unconnected">尚未接入</span></div>
-        <div className="workspace-analytics__empty"><BarChart3 size={30} aria-hidden="true" /><h3>暂无可用的访问统计</h3><p>接入访问采集后，这里将展示网站的每日 PV 和 UV 趋势。</p></div>
+        <div className="workspace-analytics__section-heading"><div><h2 id="workspace-traffic-title">访问趋势</h2><p>浏览量 PV · GA4 用户数 UV</p></div><span className="workspace-analytics__unconnected">{traffic.status === 'ready' ? (traffic.mode === 'test_preview' ? 'GA4 测试' : 'GA4') : '尚未连接'}</span></div>
+        {traffic.status !== 'ready' ? <div className="workspace-analytics__empty"><BarChart3 size={30} aria-hidden="true" /><h3>暂无可用的访问统计</h3><p>{traffic.message}</p><Link href={`/workspace/${company.slug}/website/sites`}>配置 GA4</Link></div>
+          : traffic.views === 0 ? <div className="workspace-analytics__empty"><BarChart3 size={30} aria-hidden="true" /><h3>所选范围暂无 GA4 访问记录</h3><p>授权已连接；请确认采集代码已发布、访客允许统计，并等待 GA4 处理数据。</p></div>
+          : <div className="workspace-analytics__trend"><p className="workspace-analytics__ga4-legend"><i />PV <i />用户数</p><div className="workspace-analytics__bars" aria-label={`近 ${range} 天访问趋势`}>
+            {traffic.daily.map((day) => <div className="workspace-analytics__bar-slot workspace-analytics__ga4-pair" key={day.date} title={`${day.date}：${day.views} PV，${day.users} 用户`}><span style={{ height: `${day.views / maxTraffic * 100}%` }} /><span style={{ height: `${day.users / maxTraffic * 100}%` }} /></div>)}
+          </div><div className="workspace-analytics__axis"><span>{traffic.daily[0]?.date}</span><span>{traffic.daily.at(-1)?.date}</span></div>
+          <details className="workspace-analytics__daily"><summary>查看每日访问数据</summary><div><table><thead><tr><th>日期</th><th>PV</th><th>用户数</th></tr></thead><tbody>{traffic.daily.map((day) => <tr key={day.date}><td>{day.date}</td><td>{day.views}</td><td>{day.users}</td></tr>)}</tbody></table></div></details></div>}
       </section>
       <section className="workspace-analytics__panel" aria-labelledby="workspace-lead-title">
         <div className="workspace-analytics__section-heading">
@@ -125,6 +140,16 @@ export function WorkspaceAnalytics({ company, counts, range, leads, refreshedAt 
             </div>}
       </section>
     </div>
+
+    <div className="workspace-analytics__charts">
+      <section className="workspace-analytics__panel"><div className="workspace-analytics__section-heading"><div><h2>访客来源</h2><p>GA4 来源 / 媒介，按会话数排序，展示前 10 项。</p></div></div>
+        {traffic.status !== 'ready' || !traffic.sources.length ? <p className="workspace-analytics__source-empty">{traffic.status === 'ready' ? '暂无访客来源数据。' : traffic.message}</p> : <ul className="workspace-analytics__source-list">{traffic.sources.map((source) => <li key={source.label}><span>{source.label}</span><meter min={0} max={Math.max(1, ...traffic.sources.map((x) => x.sessions))} value={source.sessions} /><strong>{source.sessions}<small> 次会话</small></strong></li>)}</ul>}
+      </section>
+      <section className="workspace-analytics__panel"><div className="workspace-analytics__section-heading"><div><h2>热门页面</h2><p>按 GA4 浏览量排序，展示前 10 项。</p></div></div>
+        {traffic.status !== 'ready' || !traffic.pages.length ? <p className="workspace-analytics__source-empty">{traffic.status === 'ready' ? '暂无页面访问数据。' : traffic.message}</p> : <div className="workspace-analytics__daily"><table><thead><tr><th>页面路径</th><th>PV</th></tr></thead><tbody>{traffic.pages.map((page) => <tr key={page.path}><td className="workspace-analytics__page-path" title={page.path}>{page.path}</td><td>{page.views}</td></tr>)}</tbody></table></div>}
+      </section>
+    </div>
+    <section className="workspace-analytics__panel workspace-analytics__sources"><div className="workspace-analytics__section-heading"><div><h2>GA4 转化</h2><p>受访客授权、广告拦截与报表处理延迟影响；以询盘收件箱的实际入库记录为准。</p></div></div><div className="workspace-analytics__ga4-conversions"><p>成功询盘事件 <strong>{traffic.conversions?.toLocaleString('zh-CN') ?? '—'}</strong></p><p>WhatsApp 点击 <strong>{traffic.whatsappClicks?.toLocaleString('zh-CN') ?? '—'}</strong><small>点击不代表访客已发送消息</small></p></div></section>
 
     <section className="workspace-analytics__panel workspace-analytics__sources" aria-labelledby="workspace-source-title">
       <div className="workspace-analytics__section-heading"><div><h2 id="workspace-source-title">询盘来源分布</h2><p>按询盘记录的推广来源（UTM Source）汇总；未记录来源的询盘单独列出。</p></div><TrendingUp size={19} aria-hidden="true" /></div>
