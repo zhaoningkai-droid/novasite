@@ -57,7 +57,7 @@ export function ExecutiveTenantQuoteDialog({
   const [request, setRequest] = useState<QuoteRequest>({})
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const labels = templateCopy(locale)
-  const required = inquiryRequiredFields(requiredFields, 'executive-industrial-pro-v1')
+  const required = inquiryRequiredFields(requiredFields)
   const submitInquiry = useInquirySubmission()
 
   useEffect(() => {

@@ -8,14 +8,14 @@ import { useInquirySubmission } from '@/platform/inquiry/useInquirySubmission'
 import { templateCopy } from '@/platform/new-templates/copy'
 import type { SiteLocale } from '@/platform/site-locales'
 
-const fieldCopy: Record<SiteLocale, { name: string; message: string; optional: string }> = {
-  zh: { name: '称呼', message: '项目需求', optional: '（选填）' },
-  en: { name: 'Name', message: 'Project requirements', optional: ' (optional)' },
-  es: { name: 'Nombre', message: 'Requisitos del proyecto', optional: ' (opcional)' },
-  ar: { name: 'الاسم', message: 'متطلبات المشروع', optional: ' (اختياري)' },
-  id: { name: 'Nama', message: 'Kebutuhan proyek', optional: ' (opsional)' },
-  de: { name: 'Name', message: 'Projektanforderungen', optional: ' (optional)' },
-  ru: { name: 'Имя', message: 'Требования к проекту', optional: ' (необязательно)' },
+const fieldCopy: Record<SiteLocale, { name: string; message: string }> = {
+  zh: { name: '称呼', message: '项目需求' },
+  en: { name: 'Name', message: 'Project requirements' },
+  es: { name: 'Nombre', message: 'Requisitos del proyecto' },
+  ar: { name: 'الاسم', message: 'متطلبات المشروع' },
+  id: { name: 'Nama', message: 'Kebutuhan proyek' },
+  de: { name: 'Name', message: 'Projektanforderungen' },
+  ru: { name: 'Имя', message: 'Требования к проекту' },
 }
 
 /** The live homepage uses the demo's form layout, with the real tenant submission endpoint. */
@@ -30,7 +30,7 @@ export function ExecutiveTenantInquiryForm({
 }) {
   const labels = templateCopy(locale)
   const fields = fieldCopy[locale]
-  const required = inquiryRequiredFields(requiredFields, 'executive-industrial-pro-v1')
+  const required = inquiryRequiredFields(requiredFields)
   const submitInquiry = useInquirySubmission()
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
 
@@ -71,7 +71,7 @@ export function ExecutiveTenantInquiryForm({
       </div>
       <label>
         {labels.phone}
-        {required.phone ? ' *' : fields.optional}
+        {required.phone ? ' *' : ''}
         <input
           autoComplete="tel"
           maxLength={inquiryTextLimits.phone}

@@ -7,6 +7,7 @@ import {
 } from '@/platform/inquiry/persist'
 import { inquiryRequiredFields, inquiryTextLimits } from '@/platform/inquiry/required-fields'
 import { inquiryProductID, inquiryText, readInquiryRequest } from '@/platform/inquiry/request'
+import { isPublishedPreviewInquiry } from '@/platform/inquiry/preview-origin'
 
 const recentSubmissions = new Map<string, number[]>()
 const RATE_WINDOW_MS = 10 * 60 * 1000
@@ -48,7 +49,11 @@ export const submitInquiryEndpoint: Endpoint = {
     const clientKey = forwarded || req.headers.get('x-real-ip') || 'local'
     const siteSlug = input.site
     const host = platformDomainsEnabled() ? classifyPlatformHost(req.headers.get('host')) : null
-    if (host && (host.kind !== 'tenant' || host.slug !== siteSlug))
+    if (
+      host &&
+      !(host.kind === 'tenant' && host.slug === siteSlug) &&
+      !isPublishedPreviewInquiry(host, req.headers, input.sourcePage, siteSlug)
+    )
       return Response.json({ error: 'Site not found.' }, { status: 404 })
     const name = input.name
     const email = input.email.toLowerCase()
@@ -77,24 +82,7 @@ export const submitInquiryEndpoint: Endpoint = {
     const configured =
       (site.fixedPages?.homepage as { inquiryRequiredFields?: Record<string, boolean> } | undefined)
         ?.inquiryRequiredFields || {}
-    // Resolve the selected template on the server; never trust a browser-supplied template key.
-    let templateKey =
-      typeof site.selectedTemplate === 'object' && site.selectedTemplate
-        ? site.selectedTemplate.key
-        : undefined
-    if (typeof site.selectedTemplate === 'number') {
-      const templates = await req.payload.find({
-        collection: 'templates',
-        depth: 0,
-        limit: 1,
-        overrideAccess: true,
-        req,
-        select: { key: true },
-        where: { id: { equals: site.selectedTemplate } },
-      })
-      templateKey = templates.docs[0]?.key
-    }
-    const required = inquiryRequiredFields(configured, templateKey)
+    const required = inquiryRequiredFields(configured)
     if (
       (required.name && !name) ||
       (required.company && !company) ||

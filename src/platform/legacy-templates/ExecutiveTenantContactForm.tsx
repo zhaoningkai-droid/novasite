@@ -28,7 +28,7 @@ export function ExecutiveTenantContactForm({
 }) {
   const t = templateCopy(locale)
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
-  const required = inquiryRequiredFields(requiredFields, 'executive-industrial-pro-v1')
+  const required = inquiryRequiredFields(requiredFields)
   const submitInquiry = useInquirySubmission()
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()

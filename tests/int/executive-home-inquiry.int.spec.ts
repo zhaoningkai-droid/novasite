@@ -10,19 +10,19 @@ afterEach(() => vi.unstubAllEnvs())
 
 // Scenarios come from the user's demo/live screenshots and optional-phone confirmation.
 describe('executive live homepage inquiry matches the selected template', () => {
-  it('renders the template panel, four business fields and optional telephone in Chinese', () => {
+  it('renders the template panel, four business fields and configured telephone rule in Chinese', () => {
     const html = renderToStaticMarkup(
       createElement(ExecutiveTenantInquiryForm, {
         locale: 'zh',
         site: 'tenant-a',
-        requiredFields: { phone: true },
+        requiredFields: { phone: false },
       }),
     )
     expect(html).toContain('class="ed-inquiry-form"')
     expect(html).toContain('class="ed-inquiry-form__row"')
     expect(html).toContain('称呼')
     expect(html).toContain('项目需求')
-    expect(html).toContain('（选填）')
+    expect(html).not.toContain('选填')
     expect(html).toContain('ed-button ed-button--blue')
     const dom = document.createElement('div')
     dom.innerHTML = html
@@ -43,32 +43,31 @@ describe('executive live homepage inquiry matches the selected template', () => 
       }),
     )
     expect(html).toContain('Project requirements')
-    expect(html).toContain('(optional)')
+    expect(html).not.toContain('(optional)')
     const dom = document.createElement('div')
     dom.innerHTML = html
     expect(dom.querySelector('input[name="company"]')?.hasAttribute('required')).toBe(true)
     expect(html).not.toContain('项目需求')
   })
 
-  async function send(templateKey: string, clientTemplate?: string) {
+  async function send(templateKey: string, clientTemplate?: string, phoneRequired = true) {
     vi.stubEnv('INQUIRY_PERSISTENCE_ENABLED', 'false')
     vi.stubEnv('PLATFORM_ROOT_DOMAIN', '')
+    vi.stubEnv('PLATFORM_DOMAINS_ENABLED', 'false')
     const create = vi.fn().mockResolvedValue({ id: 1 })
-    const find = vi
-      .fn()
-      .mockImplementation(async ({ collection }) =>
-        collection === 'templates'
-          ? { docs: [{ id: 3, key: templateKey }] }
-          : {
-              docs: [
-                {
-                  id: 42,
-                  selectedTemplate: 3,
-                  fixedPages: { homepage: { inquiryRequiredFields: { phone: true } } },
-                },
-              ],
-            },
-      )
+    const find = vi.fn().mockImplementation(async ({ collection }) =>
+      collection === 'templates'
+        ? { docs: [{ id: 3, key: templateKey }] }
+        : {
+            docs: [
+              {
+                id: 42,
+                selectedTemplate: 3,
+                fixedPages: { homepage: { inquiryRequiredFields: { phone: phoneRequired } } },
+              },
+            ],
+          },
+    )
     const req = {
       headers: new Headers(),
       json: async () => ({
@@ -83,8 +82,8 @@ describe('executive live homepage inquiry matches the selected template', () => 
     return { response: await submitInquiryEndpoint.handler?.(req), create }
   }
 
-  it('accepts a real executive-template inquiry without phone and preserves tenant attribution', async () => {
-    const { response, create } = await send('executive-industrial-pro-v1')
+  it('honors the customer’s optional-phone setting and preserves tenant attribution', async () => {
+    const { response, create } = await send('executive-industrial-pro-v1', undefined, false)
     expect(response?.status).toBe(201)
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -94,8 +93,12 @@ describe('executive live homepage inquiry matches the selected template', () => 
     )
   })
 
-  it('does not let the browser change another template’s required telephone rule', async () => {
-    const { response, create } = await send('power-engineering-v1', 'executive-industrial-pro-v1')
+  it('does not let the template or browser override the customer’s required phone setting', async () => {
+    const { response, create } = await send(
+      'executive-industrial-pro-v1',
+      'executive-industrial-pro-v1',
+      true,
+    )
     expect(response?.status).toBe(400)
     expect(create).not.toHaveBeenCalled()
   })

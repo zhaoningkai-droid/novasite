@@ -1,13 +1,9 @@
-/** Keep the live executive template aligned with its optional-phone inquiry form. */
-export function inquiryRequiredFields(
-  configured: Record<string, boolean> = {},
-  templateKey?: string,
-) {
+/** Resolve the customer's configured required fields consistently on client and server. */
+export function inquiryRequiredFields(configured: Record<string, boolean> = {}) {
   return {
     phone: true,
     company: false,
     ...configured,
-    ...(templateKey === 'executive-industrial-pro-v1' ? { phone: false } : {}),
     name: true,
     email: true,
     message: true,
