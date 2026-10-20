@@ -114,7 +114,6 @@ export function WorkspaceAnalytics({ company, counts, range, leads, refreshedAt,
       <div><h2>实时访问</h2><p>近 30 分钟 · 仅统计当前公司网站</p></div>
       <dl>
         <div><dt>浏览量（PV）</dt><dd>{realtime.views?.toLocaleString('zh-CN') ?? '—'}</dd></div>
-        <div><dt>活跃用户</dt><dd>{realtime.users?.toLocaleString('zh-CN') ?? '—'}</dd></div>
       </dl>
       <p>{realtime.status === 'ready' ? '实时访问按近 30 分钟统计，与下方报表的时间范围不同。' : '实时数据暂时无法读取，将自动重试。'}</p>
     </section>}

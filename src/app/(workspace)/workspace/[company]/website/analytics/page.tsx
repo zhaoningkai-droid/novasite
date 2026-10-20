@@ -59,7 +59,7 @@ export default async function CompanyWorkspacePage({ params, searchParams }: Pro
       return { traffic, realtime }
     } catch { return {
       traffic: ga4Unavailable('unavailable', '访问统计暂时无法读取，请稍后刷新。'),
-      realtime: { status: 'unavailable' as const, views: null, users: null },
+      realtime: { status: 'unavailable' as const, views: null },
     } }
   }
   const [products, news, cases, blog, leads, { traffic, realtime }] = await Promise.all([

@@ -24,16 +24,16 @@ const site = (slug: string) => ({
   slug, status: 'published', primaryDomain: `https://${slug}.example.com`,
   seo: { googleAnalyticsId: 'G-EXAMPLE1', googleAnalyticsPropertyId: '123456' },
 })
-const report = (views: number, users: number) => ({
-  metricHeaders: [{ name: 'eventCount' }, { name: 'activeUsers' }],
-  rows: [{ metricValues: [{ value: String(views) }, { value: String(users) }] }],
+const report = (views: number) => ({
+  metricHeaders: [{ name: 'eventCount' }],
+  rows: [{ metricValues: [{ value: String(views) }] }],
 })
 
 describe('company-scoped realtime analytics', () => {
   it('separates companies even with the same property and expires cached results', async () => {
-    api.post.mockResolvedValue(report(5, 2))
+    api.post.mockResolvedValue(report(5))
     expect(await readGa4Realtime(site('alpha'))).toMatchObject({
-      status: 'ready', views: 5, users: 2,
+      status: 'ready', views: 5,
     })
     await readGa4Realtime(site('alpha'))
     expect(api.post).toHaveBeenCalledTimes(1)
@@ -42,20 +42,21 @@ describe('company-scoped realtime analytics', () => {
     expect(filters[0]).not.toEqual(filters[1])
     expect(filters[0].filter.fieldName).toBe('eventName')
     expect(filters[0].filter.stringFilter.matchType).toBe('EXACT')
+    expect(api.post.mock.calls[0][1].metrics).toEqual([{ name: 'eventCount' }])
     vi.advanceTimersByTime(30_001)
-    api.post.mockResolvedValue(report(6, 3))
-    expect(await readGa4Realtime(site('alpha'))).toMatchObject({ views: 6, users: 3 })
+    api.post.mockResolvedValue(report(6))
+    expect(await readGa4Realtime(site('alpha'))).toMatchObject({ views: 6 })
   })
   it('keeps denied/malformed realtime data distinct from an authorized zero', async () => {
     api.post.mockRejectedValueOnce(new Error('denied'))
     expect(await readGa4Realtime(site('denied'))).toMatchObject({
-      status: 'unavailable', views: null, users: null,
+      status: 'unavailable', views: null,
     })
     api.post.mockResolvedValueOnce({})
     expect((await readGa4Realtime(site('malformed'))).status).toBe('unavailable')
-    api.post.mockResolvedValueOnce({ metricHeaders: [{}, {}] })
+    api.post.mockResolvedValueOnce({ kind: 'analyticsData#runRealtimeReport' })
     expect(await readGa4Realtime(site('empty'))).toMatchObject({
-      status: 'ready', views: 0, users: 0,
+      status: 'ready', views: 0,
     })
   })
   it('never queries Google for an unconfigured company', async () => {
