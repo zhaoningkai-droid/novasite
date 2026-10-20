@@ -25,6 +25,11 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 // User-selected event ownership and test-site boundary, plus consent and persisted-inquiry semantics.
 // Next Script is mocked: no requests are sent to Google or a database.
 describe('GA4 visitor/event flow', () => {
+  it('counts the scoped realtime view once per page alongside the standard page_view', async () => {
+    render(h(Ga4Collector, { target: { ...target, realtimeEventName: 'ns_pv_alpha' }, locale: 'zh' }))
+    fireEvent.click(await screen.findByRole('button', { name: '允许统计' }))
+    await waitFor(() => expect(events()).toEqual(['page_view', 'ns_pv_alpha']))
+  })
   it('loads no Google tag before consent; deduplicates page/inquiry events and revokes tracking', async () => {
     const page = render(h(Ga4Collector, { target, locale: 'zh' }))
     await screen.findByRole('button', { name: '允许统计' })

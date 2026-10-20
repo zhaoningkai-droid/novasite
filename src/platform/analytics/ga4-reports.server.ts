@@ -41,7 +41,7 @@ async function query(target: Ga4Target, range: AnalyticsRange, now: Date): Promi
   const events = new Map(conversions.rows?.map((row) => [dimension(row), number(row, 0)]))
   return {
     status: 'ready', mode: target.mode, fetchedAt: now.toISOString(), timeZone: totals.metadata?.timeZone || 'Asia/Shanghai',
-    message: target.mode === 'test_preview' ? 'GA4 测试资源：仅统计指定公司的管理域预览，与正式客户统计分开。' : '来自当前公司 GA4。报表有处理延迟，访客数按 GA4 用户口径统计。',
+    message: '来自当前公司 GA4。',
     views: number(totals.rows?.[0], 0), users: number(totals.rows?.[0], 1), totalViews: number(lifetime.rows?.[0], 0),
     conversions: events.get('generate_lead') || 0, whatsappClicks: events.get('whatsapp_click') || 0,
     daily: dates.map((date) => ({ date, views: number(byDate.get(date.replaceAll('-', '')), 0), users: number(byDate.get(date.replaceAll('-', '')), 1) })),
@@ -58,7 +58,7 @@ export async function readGa4Traffic(site: Ga4Site, range: AnalyticsRange, now =
   const key = JSON.stringify([target, range, analyticsWindow(range, now).dates[0], analyticsWindow(range, now).dates.at(-1)])
   const existing = cache.get(key)
   if (existing && existing.until > Date.now()) return existing.result
-  const entry = { until: Date.now() + 120_000, result: Promise.resolve<Ga4Traffic>(ga4Unavailable('unavailable', 'GA4 暂不可用。')) }
+  const entry = { until: Date.now() + 60_000, result: Promise.resolve<Ga4Traffic>(ga4Unavailable('unavailable', 'GA4 暂不可用。')) }
   entry.result = query(target, range, now).catch((error) => {
     entry.until = Date.now() + 15_000
     const category = error instanceof Ga4ApiError ? error.category : 'unavailable'

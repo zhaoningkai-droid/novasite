@@ -1,7 +1,7 @@
 import { isCustomerPagePath } from '../platform-hosts'
 import type { Ga4Target } from './ga4-config'
 
-export type Ga4BrowserTarget = Omit<Ga4Target, 'propertyId'>
+export type Ga4BrowserTarget = Omit<Ga4Target, 'propertyId'> & { realtimeEventName?: string }
 declare global {
   interface Window {
     dataLayer?: unknown[]

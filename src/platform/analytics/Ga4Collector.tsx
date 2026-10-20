@@ -62,7 +62,11 @@ export function Ga4Collector({ target, locale }: { target: Ga4BrowserTarget; loc
       })
     }
     const page = ga4PageLocation(window.location.href)
-    if (lastPage.current !== page) { lastPage.current = page; send('page_view') }
+    if (lastPage.current !== page) {
+      lastPage.current = page
+      send('page_view')
+      if (target.realtimeEventName) send(target.realtimeEventName)
+    }
     const bridge = { slug: target.slug, lead: (identity: string) => {
       const key = `${storageKey}:lead:${identity}`
       try { if (sessionStorage.getItem(key)) return } catch { /* In-memory submission guard remains. */ }

@@ -21,6 +21,7 @@ import { GeistSans } from 'geist/font/sans'
 import { headers } from 'next/headers'
 import { Ga4Collector } from '@/platform/analytics/Ga4Collector'
 import { ga4TrackingTarget } from '@/platform/analytics/ga4-config'
+import { ga4RealtimeEvent } from '@/platform/analytics/ga4-realtime-key.server'
 
 import '../../../../(frontend)/globals.css'
 import './site.css'
@@ -73,7 +74,7 @@ export default async function SiteLayout({ children, params }: Props) {
   if (!enabledLocales.includes(lang)) notFound()
   const ga4 = ga4TrackingTarget(site, (await headers()).get('host'))
   // Only public tracking configuration reaches the browser; the report property and key stay server-side.
-  const tracking = ga4 ? { slug: ga4.slug, measurementId: ga4.measurementId, origin: ga4.origin, mode: ga4.mode, pathPrefix: ga4.pathPrefix } : null
+  const tracking = ga4 ? { slug: ga4.slug, measurementId: ga4.measurementId, origin: ga4.origin, mode: ga4.mode, pathPrefix: ga4.pathPrefix, realtimeEventName: ga4RealtimeEvent(ga4) } : null
   const newTemplate = selectedNewTemplate(site)
   if (newTemplate)
     return (

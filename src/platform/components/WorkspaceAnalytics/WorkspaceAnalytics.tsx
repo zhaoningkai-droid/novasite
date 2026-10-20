@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useCallback, useState, useTransition } from 'react'
 import {
   ArrowRight, BarChart3, BookOpenText, BriefcaseBusiness, Download, Globe2,
   Info, MessageSquare, Newspaper, Package, RefreshCw, TrendingUp, Users,
@@ -11,6 +11,8 @@ import {
 import type { WorkspaceCompany } from '@/platform/workspace'
 import { csvCell, type AnalyticsCounts, type AnalyticsRange, type LeadAnalytics } from './analytics-data'
 import { ga4Unavailable, type Ga4Traffic } from '../../analytics/ga4-types'
+import type { Ga4Realtime } from '../../analytics/ga4-realtime.server'
+import { useAnalyticsRefresh } from './useAnalyticsRefresh'
 
 import './workspace-analytics.scss'
 
@@ -21,6 +23,7 @@ type Props = {
   leads: LeadAnalytics
   refreshedAt: string
   traffic?: Ga4Traffic
+  realtime?: Ga4Realtime
 }
 
 const statusLabel = (status: WorkspaceCompany['status']) => {
@@ -29,10 +32,12 @@ const statusLabel = (status: WorkspaceCompany['status']) => {
   return '网站搭建中'
 }
 
-export function WorkspaceAnalytics({ company, counts, range, leads, refreshedAt, traffic = ga4Unavailable('not_configured', '尚未接入 GA4 访问统计。') }: Props) {
+export function WorkspaceAnalytics({ company, counts, range, leads, refreshedAt, realtime, traffic = ga4Unavailable('not_configured', '尚未接入 GA4 访问统计。') }: Props) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [exportNotice, setExportNotice] = useState('')
+  const refresh = useCallback(() => startTransition(() => router.refresh()), [router])
+  useAnalyticsRefresh(refresh, pending, `${company.slug}:${range}`)
   const currentPath = `/workspace/${company.slug}/website/analytics`
   const leadMessage = leads.status === 'forbidden' ? '当前账号无询盘查看权限' : '询盘数据暂时读取失败，请刷新重试'
   const content = [
@@ -94,13 +99,25 @@ export function WorkspaceAnalytics({ company, counts, range, leads, refreshedAt,
         {([7, 30, 90] as const).map((days) => <button key={days} type="button" aria-pressed={range === days} disabled={pending} onClick={() => startTransition(() => router.replace(`${currentPath}?range=${days}`, { scroll: false }))}>近 {days} 天</button>)}
       </div>
       <div className="workspace-analytics__toolbar-actions">
-        <span className="workspace-analytics__updated" role="status">{pending ? '正在更新数据…' : `${dateLabel} 更新`}</span>
-        <button type="button" disabled={pending} onClick={() => startTransition(() => router.refresh())}><RefreshCw size={15} aria-hidden="true" className={pending ? 'workspace-analytics__spinning' : undefined} />刷新</button>
+        <span className="workspace-analytics__updated" role="status">{pending ? '正在更新数据…' : `每分钟自动更新 · ${dateLabel} 更新`}</span>
+        <button type="button" disabled={pending} onClick={refresh}><RefreshCw size={15} aria-hidden="true" className={pending ? 'workspace-analytics__spinning' : undefined} />刷新</button>
         <button type="button" disabled={pending} onClick={exportData}><Download size={15} aria-hidden="true" />导出数据</button>
       </div>
     </div>
-    <p className="workspace-analytics__notice"><Info size={16} aria-hidden="true" /><span>{traffic.message} {traffic.status === 'ready' ? `GA4 报表缓存约 2 分钟，统计时区 ${traffic.timeZone}。` : '不可用的访问数据以“—”显示，不代表访问量为零。'} 询盘量来自当前公司数据库，按北京时间统计。</span></p>
+    <p className="workspace-analytics__notice"><Info size={16} aria-hidden="true" /><span>{traffic.message} {traffic.status === 'ready' ? `统计时区 ${traffic.timeZone}。累计和趋势等待 Google 处理完成后自动更新。` : '不可用的访问数据以“—”显示，不代表访问量为零。'} 询盘量来自当前公司数据库。</span></p>
     {exportNotice && <p className="workspace-analytics__export-notice" role="status">{exportNotice}</p>}
+
+    {realtime && realtime.status !== 'not_configured' && <section
+      className="workspace-analytics__panel workspace-analytics__realtime"
+      aria-label="近30分钟实时访问"
+    >
+      <div><h2>实时访问</h2><p>近 30 分钟 · 仅统计当前公司网站</p></div>
+      <dl>
+        <div><dt>浏览量（PV）</dt><dd>{realtime.views?.toLocaleString('zh-CN') ?? '—'}</dd></div>
+        <div><dt>活跃用户</dt><dd>{realtime.users?.toLocaleString('zh-CN') ?? '—'}</dd></div>
+      </dl>
+      <p>{realtime.status === 'ready' ? '实时访问按近 30 分钟统计，与下方报表的时间范围不同。' : '实时数据暂时无法读取，将自动重试。'}</p>
+    </section>}
 
     <div className="workspace-analytics__grid workspace-analytics__metrics">
       {metrics.map(({ label, value, hint, icon: Icon }) => <article className="workspace-analytics__card" key={label}>
@@ -111,9 +128,9 @@ export function WorkspaceAnalytics({ company, counts, range, leads, refreshedAt,
 
     <div className="workspace-analytics__charts">
       <section className="workspace-analytics__panel" aria-labelledby="workspace-traffic-title">
-        <div className="workspace-analytics__section-heading"><div><h2 id="workspace-traffic-title">访问趋势</h2><p>浏览量 PV · GA4 用户数 UV</p></div><span className="workspace-analytics__unconnected">{traffic.status === 'ready' ? (traffic.mode === 'test_preview' ? 'GA4 测试' : 'GA4') : '尚未连接'}</span></div>
+        <div className="workspace-analytics__section-heading"><div><h2 id="workspace-traffic-title">访问趋势</h2><p>浏览量 PV · GA4 用户数 UV</p></div><span className="workspace-analytics__unconnected">{traffic.status === 'ready' ? 'GA4' : '尚未连接'}</span></div>
         {traffic.status !== 'ready' ? <div className="workspace-analytics__empty"><BarChart3 size={30} aria-hidden="true" /><h3>暂无可用的访问统计</h3><p>{traffic.message}</p><Link href={`/workspace/${company.slug}/website/sites`}>配置 GA4</Link></div>
-          : traffic.views === 0 ? <div className="workspace-analytics__empty"><BarChart3 size={30} aria-hidden="true" /><h3>所选范围暂无 GA4 访问记录</h3><p>授权已连接；请确认采集代码已发布、访客允许统计，并等待 GA4 处理数据。</p></div>
+          : traffic.views === 0 ? <div className="workspace-analytics__empty"><BarChart3 size={30} aria-hidden="true" /><h3>{realtime?.views ? '实时已收到访问，趋势待 Google 处理' : '所选范围暂无已处理的访问记录'}</h3><p>标准报表存在处理延迟；有新数据后自动显示，无需反复点击刷新。</p></div>
           : <div className="workspace-analytics__trend"><p className="workspace-analytics__ga4-legend"><i />PV <i />用户数</p><div className="workspace-analytics__bars" aria-label={`近 ${range} 天访问趋势`}>
             {traffic.daily.map((day) => <div className="workspace-analytics__bar-slot workspace-analytics__ga4-pair" key={day.date} title={`${day.date}：${day.views} PV，${day.users} 用户`}><span style={{ height: `${day.views / maxTraffic * 100}%` }} /><span style={{ height: `${day.users / maxTraffic * 100}%` }} /></div>)}
           </div><div className="workspace-analytics__axis"><span>{traffic.daily[0]?.date}</span><span>{traffic.daily.at(-1)?.date}</span></div>
