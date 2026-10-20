@@ -13,19 +13,24 @@ describe('published website inquiries from the admin preview', () => {
     site = 'company-a',
     published = true,
     host = 'admin.o669.com',
+  }: {
+    source?: string
+    origin?: string
+    referer?: string
+    site?: string
+    published?: boolean
+    host?: string
   } = {}) {
     vi.stubEnv('PLATFORM_DOMAINS_ENABLED', 'true')
     vi.stubEnv('PLATFORM_ROOT_DOMAIN', 'o669.com')
     vi.stubEnv('PLATFORM_ADMIN_HOST', 'admin.o669.com')
     vi.stubEnv('INQUIRY_PERSISTENCE_ENABLED', 'false')
     const create = vi.fn().mockResolvedValue({ id: 71 })
-    const find = vi
-      .fn()
-      .mockResolvedValue({
-        docs: published
-          ? [{ id: 42, fixedPages: { homepage: { inquiryRequiredFields: { phone: false } } } }]
-          : [],
-      })
+    const find = vi.fn().mockResolvedValue({
+      docs: published
+        ? [{ id: 42, fixedPages: { homepage: { inquiryRequiredFields: { phone: false } } } }]
+        : [],
+    })
     const req = {
       headers: new Headers({ host, origin, referer }),
       json: async () => ({
