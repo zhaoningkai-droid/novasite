@@ -1,0 +1,64 @@
+{
+  email {$TLS_CONTACT_EMAIL}
+  acme_ca {$ACME_CA:https://acme-v02.api.letsencrypt.org/directory}
+  servers {
+    timeouts {
+      read_header 10s
+      read_body 5m
+      write 10m
+      idle 1m
+    }
+  }
+  on_demand_tls {
+    ask http://app:3000/api/platform/tls-authorization
+  }
+}
+
+:80 {
+  @platform host {$PLATFORM_ROOT_DOMAIN} *.{$PLATFORM_ROOT_DOMAIN}
+  handle @platform {
+    redir https://{host}{uri} 308
+  }
+  respond "Not found" 404
+}
+
+https:// {
+  tls {
+    on_demand
+  }
+  encode zstd gzip
+  header {
+    Strict-Transport-Security "max-age=31536000"
+    X-Content-Type-Options "nosniff"
+    Referrer-Policy "strict-origin-when-cross-origin"
+  }
+  @workspaceMediaUpload {
+    method POST
+    path /api/workspace/*/media
+  }
+  @otherRequests {
+    not {
+      method POST
+      path /api/workspace/*/media
+    }
+  }
+  # 256MiB media file plus 1MiB multipart overhead; keep other routes unchanged.
+  request_body @workspaceMediaUpload {
+    max_size 269484032
+  }
+  request_body @otherRequests {
+    max_size 256MB
+  }
+  reverse_proxy app:3000 {
+    # Do not accept browser-supplied forwarded identity or tenant headers.
+    header_up Host {host}
+    header_up X-Forwarded-Host {host}
+    header_up X-Forwarded-Proto {scheme}
+    header_up X-Forwarded-For {remote_host}
+    header_up -X-NovaSite-Site-Slug
+    transport http {
+      dial_timeout 5s
+      response_header_timeout 300s
+    }
+  }
+}

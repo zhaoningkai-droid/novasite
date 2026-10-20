@@ -70,7 +70,7 @@ export async function POST(request: Request, { params }: Context) {
   if ('error' in access) return access.error
   if (!userHasRole(access.user, ['super-admin', 'site-admin', 'editor']))
     return NextResponse.json({ message: '当前账号只有查看权限，不能上传文件。' }, { status: 403 })
-  if (Number(request.headers.get('content-length') || 0) > 513 * 1024 * 1024)
+  if (Number(request.headers.get('content-length') || 0) > 257 * 1024 * 1024)
     return NextResponse.json({ message: '上传内容过大。' }, { status: 413 })
   const form = await request.formData().catch(() => null)
   const file = form?.get('file')
@@ -90,12 +90,12 @@ export async function POST(request: Request, { params }: Context) {
       !['', PRODUCT_DATASHEET_MIME, 'application/octet-stream'].includes(file.type)))
     return NextResponse.json({ message: '产品资料仅支持 PDF 文件。' }, { status: 422 })
   if (!productDatasheet && (homepageVideo ? !isVideo : !imageTypes.has(file.type) || ((productImage || homepageBanner) && file.type === 'image/svg+xml'))) return NextResponse.json({ message: homepageVideo ? '请选择视频文件。推荐 MP4 或 WebM，其他常见视频格式也可上传。' : productImage || homepageBanner ? '图片仅支持 JPG、PNG 或 WebP。' : '仅支持 JPG、PNG、WebP 或 SVG 图片。' }, { status: 422 })
-  const limit = productDatasheet ? MAX_PRODUCT_DATASHEET_BYTES : homepageVideo ? 512 * 1024 * 1024 : maxImageSize
+  const limit = productDatasheet ? MAX_PRODUCT_DATASHEET_BYTES : homepageVideo ? 256 * 1024 * 1024 : maxImageSize
   if (file.size === 0 || file.size > limit) return NextResponse.json({
     message: productDatasheet
       ? 'PDF 文件须大于 0 且不超过 10MB。'
       : homepageVideo
-      ? '本地视频大小须大于 0 且不超过 512MB。'
+      ? '本地视频大小须大于 0 且不超过 256MB。'
       : file.size === 0
         ? '图片文件为空，请重新选择。'
         : `图片大小为 ${formatSize(file.size)}，超过单张 500KB 限制，请压缩后重新上传。`,
@@ -119,6 +119,6 @@ export async function POST(request: Request, { params }: Context) {
     return NextResponse.json({ media, message: productDatasheet ? 'PDF 已上传，保存产品后应用。' : homepageVideo ? '视频已上传成功。' : '图片已上传成功。' }, { status: 201 })
   } catch (error) {
     console.error('[workspace-media-upload]', error)
-    return NextResponse.json({ message: productDatasheet ? 'PDF 上传失败，请稍后重试。' : homepageVideo ? '视频上传失败，请确认文件为常见视频格式且不超过 512MB。' : '图片上传失败，请稍后重试。' }, { status: 500 })
+    return NextResponse.json({ message: productDatasheet ? 'PDF 上传失败，请稍后重试。' : homepageVideo ? '视频上传失败，请确认文件为常见视频格式且不超过 256MB。' : '图片上传失败，请稍后重试。' }, { status: 500 })
   }
 }
