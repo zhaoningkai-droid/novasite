@@ -52,7 +52,7 @@ describe('executive template route isolation', () => {
     const html = renderToStaticMarkup(createElement(() => page))
 
     expect(html).toContain('模板演示')
-    expect(html).toContain('匠境古建')
+    expect(html).toContain('NovaSite 古建演示')
     expect(mocks.getPayload).not.toHaveBeenCalled()
   })
 

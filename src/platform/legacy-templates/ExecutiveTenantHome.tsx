@@ -16,7 +16,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 
 import type { SiteLocale } from '@/platform/site-locales'
 import { siteHref } from '@/platform/site-url'
-import { RFQForm } from '@/app/(sites)/s/[site]/[lang]/RFQForm'
+import { ExecutiveTenantInquiryForm } from './ExecutiveTenantInquiryForm'
 
 import type { ExecutiveHomeSlide, ExecutiveImageItem, ExecutiveTenantHomeData } from './executive-home-model'
 import { useExecutiveCarousel } from './useExecutiveCarousel'
@@ -311,7 +311,7 @@ export function ExecutiveTenantHome({ data }: { data: ExecutiveTenantHomeData })
     {data.showInquiry ? <section aria-label={text.inquiry} className="ed-inquiry" id="inquiry"><div className="ed-inquiry__texture" />
       <div className="ed-container ed-inquiry__grid"><div className="ed-inquiry__copy"><span className="ed-eyebrow">{text.inquiry}</span><h2>{data.inquiry.title || text.inquiry}</h2>
         {data.inquiry.description ? <p>{data.inquiry.description}</p> : null}</div>
-        <RFQForm labels={{ send: text.send, sending: text.sending, sent: text.sent, error: text.error }} requiredFields={data.inquiry.requiredFields} site={data.siteSlug} />
+        <ExecutiveTenantInquiryForm locale={locale} requiredFields={data.inquiry.requiredFields} site={data.siteSlug} />
       </div>
     </section> : null}
 
