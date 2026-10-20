@@ -8,6 +8,7 @@ import { useWorkspaceUnsaved } from '../WorkspaceEditor/useWorkspaceUnsaved'
 import { useWorkspacePermissions } from '../WorkspaceShell/WorkspacePermissions'
 import { ExecutiveHomePanel, type ExecutiveEditorSettings } from './ExecutiveHomePanel'
 import { ContentTranslationAction } from '../WorkspaceTranslations/ContentTranslationAction'
+import { uploadVideoChunks } from '@/platform/storage/video-chunks'
 import './homepage-banner-editor.scss'
 
 type ModuleName = 'banner' | 'video' | 'products' | 'cases' | 'news' | 'intro' | 'strength' | 'inquiry' | 'footer' | 'executive'
@@ -235,7 +236,10 @@ export function HomepageBannerEditor({ aboutPreview = [], companyID, companySlug
     const form = new FormData(); form.set('file', file); form.set('alt', '首页官方视频'); form.set('homepageVideo', 'true')
     setSaving(true); setUploadProgress(0); setMessage('视频开始上传，请不要关闭页面。')
     try {
-      const result = await uploadWithProgress(`/api/workspace/${companySlug}/media`, form, setUploadProgress)
+      const url = `/api/workspace/${companySlug}/media`
+      const result = file.size > 64 * 1024 * 1024
+        ? await uploadVideoChunks(file, (part, progress) => uploadWithProgress(url, part, progress), setUploadProgress)
+        : await uploadWithProgress(url, form, setUploadProgress)
       if (!result.media?.id) throw new Error(result.message || '视频上传失败。')
       update({ showVideo: true, videoMediaID: result.media.id, videoMediaURL: result.media.url || '', videoURL: '' })
       setUploadProgress(100)

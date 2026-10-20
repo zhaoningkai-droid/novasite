@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers'
+import { readFile } from 'node:fs/promises'
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 
@@ -7,6 +8,7 @@ import { getAccessibleWorkspaceCompanyBySlug } from '@/platform/workspace'
 import { getMeUser } from '@/utilities/getMeUser'
 import { userHasRole } from '@/access/roles'
 import { MAX_PRODUCT_DATASHEET_BYTES, PRODUCT_DATASHEET_MIME } from '@/platform/storage/file-policy'
+import { stageVideoChunk, VideoChunkError } from '@/platform/storage/video-chunks.server'
 
 type Context = { params: Promise<{ company: string }> }
 
@@ -101,7 +103,28 @@ export async function POST(request: Request, { params }: Context) {
         : `图片大小为 ${formatSize(file.size)}，超过单张 500KB 限制，请压缩后重新上传。`,
   }, { status: 422 })
 
-  const buffer = Buffer.from(await file.arrayBuffer())
+  let buffer = Buffer.from(await file.arrayBuffer())
+  let uploadName = file.name, uploadSize = file.size
+  let cleanup: (() => Promise<void>) | undefined
+  if (form?.has('videoUploadId')) {
+    if (!homepageVideo) return NextResponse.json({ message: '仅视频支持分段上传。' }, { status: 422 })
+    try {
+      const staged = await stageVideoChunk({
+        company: access.company.id, user: access.user.id,
+        id: String(form.get('videoUploadId') || ''), index: String(form.get('chunkIndex') || ''),
+        count: String(form.get('chunkCount') || ''), total: String(form.get('totalSize') || ''),
+        name: file.name, mime: resolvedMimeType, data: buffer,
+      })
+      if (!staged.complete) return NextResponse.json({ message: '视频分段已接收。' }, { status: 202 })
+      cleanup = staged.cleanup
+      buffer = await readFile(staged.assembled)
+      uploadName = staged.name
+      uploadSize = staged.size
+    } catch (error) {
+      await cleanup?.()
+      return NextResponse.json({ message: error instanceof VideoChunkError ? error.message : '视频合并失败，请重新上传。' }, { status: error instanceof VideoChunkError ? error.status : 500 })
+    }
+  }
   if (productDatasheet && buffer.subarray(0, 5).toString('ascii') !== '%PDF-')
     return NextResponse.json({ message: '文件内容不是有效的 PDF，请重新选择。' }, { status: 422 })
 
@@ -110,7 +133,7 @@ export async function POST(request: Request, { params }: Context) {
     const media = await payload.create({
       collection: 'media',
       data: { alt, tenant: access.company.id },
-      file: { data: buffer, mimetype: productDatasheet ? PRODUCT_DATASHEET_MIME : resolvedMimeType || file.type, name: file.name, size: file.size },
+      file: { data: buffer, mimetype: productDatasheet ? PRODUCT_DATASHEET_MIME : resolvedMimeType || file.type, name: uploadName, size: uploadSize },
       depth: 0,
       locale: 'zh',
       overrideAccess: false,
@@ -120,5 +143,5 @@ export async function POST(request: Request, { params }: Context) {
   } catch (error) {
     console.error('[workspace-media-upload]', error)
     return NextResponse.json({ message: productDatasheet ? 'PDF 上传失败，请稍后重试。' : homepageVideo ? '视频上传失败，请确认文件为常见视频格式且不超过 256MB。' : '图片上传失败，请稍后重试。' }, { status: 500 })
-  }
+  } finally { await cleanup?.() }
 }
