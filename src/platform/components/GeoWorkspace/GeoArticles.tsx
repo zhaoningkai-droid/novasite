@@ -1,13 +1,15 @@
 'use client'
 import Link from 'next/link'
+import { Copy, Search, X } from 'lucide-react'
 import { useEffect, useRef, useState, type ClipboardEvent, type FormEvent } from 'react'
 import type { WorkspaceCompany } from '@/platform/workspace'
 import type { GeoArticleListItem, GeoArticleUseFilter } from '@/platform/geo/article-store'
 import { cleanGeoArticleHTML, escapeGeoHTML, type GeoArticle } from '@/platform/geo/articles'
-import { localeOptions } from '@/platform/site-locales'
 import { useWorkspaceUnsaved } from '../WorkspaceEditor/useWorkspaceUnsaved'
 import { GeoRichTextToolbar } from './GeoRichTextToolbar'
 import './geo-workspace.scss'
+import './geo-published-preview.scss'
+import { KnowledgeEvidence } from '../KnowledgeWorkspace/KnowledgeEvidence'
 const formValue = (item: Pick<GeoArticle, 'title' | 'summary' | 'html'>) => ({
   title: item.title,
   summary: item.summary,
@@ -35,9 +37,11 @@ export function GeoArticles({
   const [taskName, setTaskName] = useState(''),
     [use, setUse] = useState<GeoArticleUseFilter>('all')
   const [previewArticle, setPreviewArticle] = useState<GeoArticle | null>(null),
-    [previewLoading, setPreviewLoading] = useState(false)
+    [previewLoading, setPreviewLoading] = useState(false),
+    [copied, setCopied] = useState(false)
   const previewDialog = useRef<HTMLDialogElement | null>(null),
-    previewRequest = useRef<AbortController | null>(null)
+    previewRequest = useRef<AbortController | null>(null),
+    previewContent = useRef<HTMLElement | null>(null)
   const [revisions, setRevisions] = useState<{ version: number; created_at: string }[]>([])
   const [loading, setLoading] = useState(true),
     [busy, setBusy] = useState(false),
@@ -106,6 +110,7 @@ export function GeoArticles({
     const controller = new AbortController()
     previewRequest.current = controller
     setPreviewArticle(null)
+    setCopied(false)
     setPreviewLoading(true)
     setError('')
     previewDialog.current?.showModal()
@@ -124,6 +129,22 @@ export function GeoArticles({
       }
     } finally {
       if (!controller.signal.aborted) setPreviewLoading(false)
+    }
+  }
+  useEffect(() => {
+    if (!copied) return
+    const timer = setTimeout(() => setCopied(false), 2000)
+    return () => clearTimeout(timer)
+  }, [copied])
+  const copyPreview = async () => {
+    if (!previewArticle || !previewContent.current) return
+    try {
+      await navigator.clipboard.writeText(
+        `${previewArticle.title}\n\n${previewContent.current.innerText}`,
+      )
+      setCopied(true)
+    } catch {
+      setError('复制失败，请重试。')
     }
   }
   useEffect(() => {
@@ -252,13 +273,16 @@ export function GeoArticles({
     <section className="geo-workspace geo-records-page">
       <header className="geo-workspace__heading">
         <div>
-          {recordId && (
-            <Link className="geo-workspace__back" aria-label="返回创作记录" href={base}>
-              ‹
-            </Link>
-          )}
+          <Link
+            className="geo-workspace__back"
+            aria-label={recordId ? '返回创作记录' : '返回文章创作'}
+            href={recordId ? base : `/workspace/${company.slug}/geo/creation`}
+          >
+            ‹
+          </Link>
           <h1>{recordId ? '文章编辑' : '创作记录'}</h1>
         </div>
+        {!recordId && taskFilter && <Link href={base}>查看全部创作记录</Link>}
         {article && (
           <button
             type="button"
@@ -271,43 +295,6 @@ export function GeoArticles({
             读取最新版本
           </button>
         )}
-        {!recordId && (
-          <div className="geo-workspace__toolbar geo-records__filters">
-            <input
-              aria-label="搜索文章标题"
-              placeholder="请输入文章标题"
-              value={q}
-              maxLength={100}
-              onChange={(event) => {
-                setQ(event.target.value)
-                setPage(1)
-              }}
-            />
-            <input
-              aria-label="搜索创作任务名称"
-              placeholder="请输入创作任务名称"
-              value={taskName}
-              maxLength={100}
-              onChange={(event) => {
-                setTaskName(event.target.value)
-                setPage(1)
-              }}
-            />
-            <select
-              aria-label="发布状态"
-              value={use}
-              onChange={(event) => {
-                setUse(event.target.value as GeoArticleUseFilter)
-                setPage(1)
-              }}
-            >
-              <option value="all">请选择状态</option>
-              <option value="unused">未发布</option>
-              <option value="published">已发布</option>
-              <option value="occupied">已占用</option>
-            </select>
-          </div>
-        )}
       </header>
       {error && (
         <p role="alert" className="geo-workspace__error">
@@ -319,7 +306,7 @@ export function GeoArticles({
           {notice}
         </p>
       )}
-      {loading ? (
+      {loading && recordId ? (
         <p role="status">正在读取…</p>
       ) : article ? (
         <form
@@ -399,6 +386,7 @@ export function GeoArticles({
             {!!article.review_note && (
               <p className="geo-workspace__hint">当前修订核查说明：{article.review_note}</p>
             )}
+            <KnowledgeEvidence context={article.context} companySlug={company.slug} />
             {!article.context.writingMode && (
               <details>
                 <summary>来源依据</summary>
@@ -456,12 +444,55 @@ export function GeoArticles({
       ) : (
         !recordId && (
           <div className="geo-workspace__panel geo-records">
-            {taskFilter && (
-              <p className="geo-records__scope">
-                当前仅显示所选任务的文章。 <Link href={base}>查看全部创作记录</Link>
-              </p>
-            )}
-            <div className="geo-workspace__table-scroll">
+            <div className="geo-workspace__toolbar geo-records__filters">
+              <label className="geo-records__search">
+                <input
+                  aria-label="搜索文章标题"
+                  placeholder="请输入文章标题"
+                  value={q}
+                  maxLength={100}
+                  onChange={(event) => {
+                    setQ(event.target.value)
+                    setPage(1)
+                  }}
+                />
+                <Search size={16} aria-hidden="true" />
+              </label>
+              <label className="geo-records__search">
+                <input
+                  aria-label="搜索创作任务名称"
+                  placeholder="请输入创作任务名称"
+                  value={taskName}
+                  maxLength={100}
+                  onChange={(event) => {
+                    setTaskName(event.target.value)
+                    setPage(1)
+                  }}
+                />
+                <Search size={16} aria-hidden="true" />
+              </label>
+              <select
+                aria-label="发布状态"
+                value={use}
+                onChange={(event) => {
+                  setUse(event.target.value as GeoArticleUseFilter)
+                  setPage(1)
+                }}
+              >
+                <option value="all">请选择状态</option>
+                <option value="unused">未发布</option>
+                <option value="published">已发布</option>
+                <option value="occupied">已占用</option>
+              </select>
+            </div>
+            {loading && <p role="status">正在读取…</p>}
+
+            <div
+              className="geo-workspace__table-scroll"
+              role="region"
+              aria-label="创作记录列表，可横向滚动查看全部字段"
+              tabIndex={0}
+            >
               <table className="geo-records__table">
                 <thead>
                   <tr>
@@ -479,25 +510,59 @@ export function GeoArticles({
                   {items.map((item, index) => (
                     <tr key={item.id}>
                       <td>{(page - 1) * pageSize + index + 1}</td>
-                      <td>{item.question}</td>
-                      <td>{item.direction}</td>
-                      <td>{item.title}</td>
                       <td>
-                        {
-                          { unused: '未发布', occupied: '已占用', published: '已发布' }[
-                            item.publication_status
-                          ]
-                        }
+                        <span className="geo-records__cell-text" title={item.question}>
+                          {item.question}
+                        </span>
                       </td>
                       <td>
-                        {item.task_name}
-                        <small>
-                          {localeOptions.find((language) => language.code === item.locale)?.label}
-                        </small>
+                        <span className="geo-records__cell-text" title={item.direction}>
+                          {item.direction}
+                        </span>
                       </td>
-                      <td>{new Date(item.created_at).toLocaleString()}</td>
                       <td>
-                        <div className="geo-creation__row-actions">
+                        <span className="geo-records__cell-text" title={item.title}>
+                          {item.title}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`geo-records__status is-${item.publication_status}`}>
+                          {
+                            { unused: '未发布', occupied: '已占用', published: '已发布' }[
+                              item.publication_status
+                            ]
+                          }
+                        </span>
+                      </td>
+                      <td>
+                        {item.task_id ? (
+                          <Link
+                            className="geo-records__cell-text"
+                            title={item.task_name}
+                            href={`/workspace/${company.slug}/geo/creation/${item.task_id}`}
+                          >
+                            {item.task_name}
+                          </Link>
+                        ) : (
+                          <span className="geo-records__cell-text">
+                            {item.task_name || '直接创作'}
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        <time dateTime={item.created_at}>
+                          {new Date(item.created_at).toLocaleString('zh-CN', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false,
+                          })}
+                        </time>
+                      </td>
+                      <td>
+                        <div className="geo-creation__row-actions geo-records__actions">
                           <button
                             type="button"
                             className="geo-workspace__link"
@@ -537,7 +602,7 @@ export function GeoArticles({
                 </tbody>
               </table>
             </div>
-            {!items.length && (
+            {!loading && !items.length && (
               <div className="geo-workspace__empty">
                 <strong>暂无创作记录</strong>
               </div>
@@ -602,53 +667,63 @@ export function GeoArticles({
       )}
       <dialog
         ref={previewDialog}
-        className="geo-workspace__dialog geo-records__preview"
+        className="geo-published-preview geo-records__drawer"
+        aria-labelledby="geo-creation-preview-title"
         onClose={() => previewRequest.current?.abort()}
+        onClick={(event) => {
+          if (event.target === event.currentTarget) event.currentTarget.close()
+        }}
       >
-        <header>
-          <h2>文章详情</h2>
-          <button
-            type="button"
-            aria-label="关闭文章详情"
-            onClick={() => previewDialog.current?.close()}
-          >
-            ×
-          </button>
-        </header>
-        {previewLoading ? (
-          <p role="status">正在读取文章…</p>
-        ) : (
-          previewArticle && (
-            <>
-              <h2>{previewArticle.title}</h2>
-              <p className="geo-workspace__hint">
-                {previewArticle.context.direction} ·{' '}
-                {
-                  localeOptions.find(
-                    (language) => language.code === previewArticle.context.settings.locale,
-                  )?.label
-                }
-              </p>
-              <article
-                className="geo-records__article"
-                dir="auto"
-                dangerouslySetInnerHTML={{
-                  __html: cleanGeoArticleHTML(
-                    previewArticle.html,
-                    previewArticle.context.sources,
-                    previewArticle.context.materialGroup.images,
-                    previewArticle.context.publicationLinks,
-                  ).html,
-                }}
-              />
-              <footer>
-                <Link className="geo-workspace__button" href={`${base}/${previewArticle.id}`}>
-                  修改文章
-                </Link>
-              </footer>
-            </>
-          )
-        )}
+        <div className="geo-published-preview__surface">
+          <header className="geo-published-preview__header">
+            <h2 id="geo-creation-preview-title">查看文章</h2>
+            <button
+              type="button"
+              aria-label="关闭查看文章"
+              onClick={() => previewDialog.current?.close()}
+            >
+              <X size={22} />
+            </button>
+          </header>
+          <div className="geo-published-preview__body">
+            {previewLoading ? (
+              <p role="status">正在读取文章…</p>
+            ) : (
+              previewArticle && (
+                <>
+                  <div className="geo-published-preview__title">
+                    <h2>{previewArticle.title}</h2>
+                    <button type="button" onClick={() => void copyPreview()}>
+                      <Copy size={16} /> {copied ? '已复制' : '复制'}
+                    </button>
+                  </div>
+                  <article
+                    ref={previewContent}
+                    className="geo-published-preview__content"
+                    dir="auto"
+                    dangerouslySetInnerHTML={{
+                      __html: cleanGeoArticleHTML(
+                        previewArticle.html,
+                        previewArticle.context.sources,
+                        previewArticle.context.materialGroup.images,
+                        previewArticle.context.publicationLinks,
+                      ).html,
+                    }}
+                  />
+                  <KnowledgeEvidence context={previewArticle.context} companySlug={company.slug} />
+                </>
+              )
+            )}
+          </div>
+          {previewArticle && (
+            <footer className="geo-records__drawer-count">
+              <strong>
+                {previewArticle.html.replace(/<[^>]*>/gu, '').replace(/\s/gu, '').length}
+              </strong>{' '}
+              字
+            </footer>
+          )}
+        </div>
       </dialog>
     </section>
   )

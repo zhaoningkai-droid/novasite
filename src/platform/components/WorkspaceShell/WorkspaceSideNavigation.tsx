@@ -19,7 +19,7 @@ import {
   UsersRound,
 } from 'lucide-react'
 import { usePathname } from 'next/navigation'
-import { geoKeywordPath, isGeoWorkspace } from '@/platform/geo/navigation'
+import { geoKeywordPath, isGeoWorkspace, isKnowledgeWorkspace } from '@/platform/geo/navigation'
 
 type Props = {
   canEditContent: boolean
@@ -38,6 +38,24 @@ export function WorkspaceSideNavigation({
   onNavigate,
 }: Props) {
   const pathname = usePathname()
+  if (isKnowledgeWorkspace(pathname))
+    return (
+      <aside className="workspace-side-navigation" aria-label="企业知识库功能导航">
+        <nav>
+          {canEditContent && (
+            <Link
+              className="workspace-side-navigation__link"
+              aria-current="page"
+              href={`/workspace/${encodeURIComponent(companySlug)}/knowledge`}
+              onClick={onNavigate}
+            >
+              <FolderOpen size={16} aria-hidden="true" />
+              <span>企业知识库</span>
+            </Link>
+          )}
+        </nav>
+      </aside>
+    )
   if (isGeoWorkspace(pathname)) {
     const geoBase = `/workspace/${companySlug}/geo`
     const creationActive = pathname.includes('/geo/creation') || pathname.includes('/geo/articles')

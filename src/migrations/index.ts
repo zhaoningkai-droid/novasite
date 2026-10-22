@@ -1,3 +1,4 @@
+import * as migration_enterprise_knowledge from './20261022_010000_enterprise_knowledge'
 import * as migration_geo_publishing from './20261017_040000_geo_publishing'
 import * as migration_geo_articles from './20261017_030000_geo_articles'
 import * as migration_geo_creation_tasks from './20261017_020000_geo_creation_tasks'
@@ -251,5 +252,10 @@ export const migrations = [
     up: migration_geo_term_source_links.up,
     down: migration_geo_term_source_links.down,
     name: '20261018_010000_geo_term_source_links',
+  },
+  {
+    up: migration_enterprise_knowledge.up,
+    down: migration_enterprise_knowledge.down,
+    name: '20261022_010000_enterprise_knowledge',
   },
 ]

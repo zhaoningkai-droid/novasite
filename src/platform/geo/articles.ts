@@ -54,7 +54,18 @@ export type ArticleContext = {
   sources: ArticleSource[]
   direction: string
   writingMode?: 'keyword' | 'knowledge'
-  knowledge?: { id: string; title: string; text: string }[]
+  knowledge?: {
+    id: string
+    title: string
+    text: string
+    documentID?: string
+    chunkID?: string
+    documentVersion?: number
+    heading?: string
+    score?: number
+    filename?: string
+  }[]
+  knowledgeRetrieval?: { strategy: string; queries: string[]; retrievedAt: string }
   publicationLinks?: ArticlePublicationLink[]
 }
 /** Publication URLs are tenant-owned configuration, never factual writing evidence. */
@@ -88,13 +99,8 @@ export function appendGeoPublicationLinks(
   return `${html}<p>相关链接：${links}</p>`
 }
 export function geoWritingDirection(settings: ArticleContext['settings'], question: GeoQuestion) {
-  return settings.direction === 'AI匹配'
-    ? /技术|原理|参数|technical|parameter/iu.test(question.original)
-      ? '技术解读'
-      : /场景|工地|户外|scenario/iu.test(question.original)
-        ? '场景化问题解答'
-        : '产品介绍'
-    : settings.direction
+  void question
+  return settings.direction
 }
 export type ArticleContent = { title: string; summary: string; html: string }
 export type GeoArticle = {
@@ -336,7 +342,7 @@ export function validateGeoArticle(content: ArticleContent, context: ArticleCont
             clean.plain,
           ),
         ].filter((s) => s.isWordLike).length
-  if (context.settings.name !== '手动创作') {
+  if (!context.writingMode && context.settings.name !== '手动创作') {
     const maximum = context.settings.length === 'short' ? 1000 : 2000
     const minimum =
       context.settings.length === 'short'

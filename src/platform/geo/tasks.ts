@@ -2,12 +2,12 @@ import { GeoError, geoID, geoObject, geoVersion, normalizeGeoText } from './keyw
 import { isSiteLocale, type SiteLocale } from '../site-locales'
 
 export const geoIntents = [
-  ['default', '常见问题'],
-  ['supplier', '找供应商'],
-  ['manufacturer', '找产品厂家'],
-  ['wholesale', '批量采购'],
-  ['industry', '行业场景'],
-  ['comparison', '产品比较'],
+  ['default', '默认随机'],
+  ['supplier', '供应商或服务商'],
+  ['manufacturer', '产品厂家寻找'],
+  ['wholesale', '批发与代理+厂家推荐'],
+  ['industry', '产品+行业后缀+厂家推荐'],
+  ['comparison', 'Top厂商或服务商推荐'],
 ] as const
 export const geoDirections = [
   'AI匹配',
@@ -182,7 +182,9 @@ export function parseGeoTask(value: unknown): GeoTaskValues {
   if (b.locale !== 'zh' && questionSource === 'translated')
     for (const q of questions) assertGeoQuestionTranslation(q.original, q.translated, b.locale)
   const usable = questions.map((q) =>
-    normalizeGeoText(b.locale === 'zh' || questionSource === 'original' ? q.original : q.translated),
+    normalizeGeoText(
+      b.locale === 'zh' || questionSource === 'original' ? q.original : q.translated,
+    ),
   )
   if (new Set(usable).size !== usable.length)
     throw new GeoError('DUPLICATE_TRANSLATIONS', '目标语言问题有重复，请修改后保存。')

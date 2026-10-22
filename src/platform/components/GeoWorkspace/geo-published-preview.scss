@@ -157,3 +157,58 @@ dialog.geo-published-preview {
     padding: 24px 20px;
   }
 }
+
+// Creation records share the published-article reading layout.
+dialog.geo-records__drawer {
+  width: min(52vw, 1160px);
+  .geo-published-preview__header {
+    flex-basis: 54px;
+    padding: 0 24px;
+  }
+  .geo-published-preview__body {
+    padding: 26px 36px;
+    background: linear-gradient(#f5f7ff 0, #fff 260px);
+  }
+  .geo-published-preview__title {
+    margin-bottom: 26px;
+    h2 {
+      font-size: 18px;
+    }
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+  }
+  .geo-published-preview__content {
+    img {
+      max-width: min(100%, 520px);
+      max-height: 420px;
+      width: auto;
+      object-fit: contain;
+    }
+    table {
+      min-width: 0;
+    }
+  }
+}
+.geo-records__drawer-count {
+  flex-shrink: 0;
+  padding: 14px 36px;
+  background: #fff;
+  color: #909399;
+  text-align: right;
+  font-size: 12px;
+  strong {
+    color: #3265ff;
+    font-weight: 500;
+  }
+}
+@media (max-width: 760px) {
+  dialog.geo-records__drawer {
+    width: 100vw;
+    .geo-published-preview__body {
+      padding: 24px 20px;
+    }
+  }
+}

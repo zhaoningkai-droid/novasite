@@ -104,6 +104,13 @@ export function createGeoGenerationQueue(pool: Pool) {
         client.release()
       }
     },
+    async execution(job: GeoGenerationJob, context: ArticleContext) {
+      const r = await pool.query(
+        `UPDATE platform_geo.generation_jobs SET execution=$4::jsonb WHERE tenant_id=$1 AND id=$2::uuid AND lease_owner=$3::uuid AND state='running' AND lease_until>clock_timestamp() RETURNING id`,
+        [job.tenant_id, job.id, job.lease_owner, JSON.stringify(context)],
+      )
+      if (!r.rows[0]) throw new GeoError('LEASE_LOST', '生成任务已失效，请刷新查看。', 503)
+    },
     async usage(job: GeoGenerationJob, usage?: TranslationRequestUsage) {
       const r = await pool.query(
         `UPDATE platform_geo.generation_attempts a SET usage=$4::jsonb FROM platform_geo.generation_jobs j

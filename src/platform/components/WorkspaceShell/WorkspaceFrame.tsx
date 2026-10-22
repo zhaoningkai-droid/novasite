@@ -9,10 +9,11 @@ import { WorkspacePermissionsProvider } from './WorkspacePermissions'
 import { WorkspaceCompanySwitcher } from './WorkspaceCompanySwitcher'
 import { WorkspaceSideNavigation } from './WorkspaceSideNavigation'
 import { WorkspaceTopNavigation } from './WorkspaceTopNavigation'
-import { isGeoWorkspace } from '@/platform/geo/navigation'
+import { isGeoWorkspace, isKnowledgeWorkspace } from '@/platform/geo/navigation'
 import '../GeoWorkspace/geo-reference.scss'
 
 const pageName = (pathname: string) => {
+  if (isKnowledgeWorkspace(pathname)) return '企业知识库'
   if (isGeoWorkspace(pathname)) {
     if (pathname.includes('/geo/plans')) return 'GEO发布计划'
     if (pathname.includes('/geo/publish')) return 'GEO文章发布'
@@ -78,7 +79,11 @@ export function WorkspaceFrame({
   const menuRef = useRef<HTMLButtonElement>(null)
   const sidebarRef = useRef<HTMLDivElement>(null)
   const currentPageName = pageName(pathname)
-  const moduleName = isGeoWorkspace(pathname) ? 'GEO优化' : '独立站管理'
+  const moduleName = isKnowledgeWorkspace(pathname)
+    ? '企业知识库'
+    : isGeoWorkspace(pathname)
+      ? 'GEO优化'
+      : '独立站管理'
   const closeSidebar = () => {
     setMobileOpen(false)
     menuRef.current?.focus()

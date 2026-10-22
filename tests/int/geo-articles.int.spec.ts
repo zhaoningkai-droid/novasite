@@ -264,41 +264,36 @@ describe('GEO structured article provider, injected responses only', () => {
 
 describe('GEO article templates', () => {
   it.each([
-    ['企业推荐', '供应商评估指南'],
-    ['企业榜单', '禁止编造榜单与名次'],
-    ['产品介绍', '产品类别和采购方需要核实的参数'],
-    ['技术解读', '工作原理和关键部件'],
-    ['场景化问题解答', '排查/解决步骤'],
-    ['行业问题解答', '可重复使用的实践清单'],
-    ['行业百科', '分类体系'],
-    ['体验分享', '测试者和测试条件'],
-    ['新闻报道', '倒金字塔导语'],
+    ['企业推荐', '企业愿景'],
+    ['企业榜单', '榜单评选规则'],
+    ['产品介绍', '客户案例'],
+    ['技术解读', '技术参数与规格标准'],
+    ['场景化问题解答', '场景化问题深度解答'],
+    ['行业问题解答', '行业问题调研'],
+    ['行业百科', '行业发展与关键节点'],
+    ['体验分享', '实测性能数据对比'],
+    ['新闻报道', '权威引述'],
     ['知识科普', '常见认知误区'],
-  ])('applies the supplied %s structure and its evidence boundary', (direction, expected) => {
-    const prompt = geoArticleWritingTemplate(direction, 'Chinese', 'long')
-    expect(prompt).toContain(expected)
-    expect(prompt).toContain(
-      'very first sentence of the first body paragraph must state an actionable answer',
-    )
-    expect(prompt).toContain(
-      'the very first sentence of the first body paragraph must state an actionable answer',
-    )
-    expect(prompt).toContain('do not start with a definition, background, or preamble')
-    expect(prompt).toContain('Do not fetch or treat the website/Blog publication links as evidence')
-  })
+  ])(
+    'preserves the complete supplied %s template without a knowledge prerequisite',
+    (direction, expected) => {
+      const prompt = geoArticleWritingTemplate(direction, 'Chinese', 'long')
+      expect(prompt).toContain(expected)
+      expect(prompt).toContain('顺序不变，不合并、不省略、不换成其他创作方向')
+      expect(prompt).toContain('没有知识库也直接生成完整文章')
+      expect(prompt).not.toContain('Use 3–4 focused sections')
+      expect(prompt).not.toContain('改为中立的供应商评估指南')
+      expect(prompt).toContain('官网和Blog仅为发文链接')
+    },
+  )
 
-  it('keeps length and title guidance aligned with the article language and task settings', () => {
-    const shortEnglish = geoArticleWritingTemplate('产品介绍', 'English', 'short')
-    expect(shortEnglish).toContain('50–70 characters')
-    expect(shortEnglish).toContain('150–200 word core summary')
-    expect(shortEnglish).toContain('3–4 focused sections and 4–7 body paragraphs')
-    expect(shortEnglish).toContain('Target 180–350 words')
-
-    const longChinese = geoArticleWritingTemplate('知识科普', 'Chinese', 'long')
-    expect(longChinese).toContain('150–250 Chinese-character core summary')
-    expect(longChinese).toContain('4–6 focused sections and 7–12 body paragraphs')
-    expect(longChinese).toContain('Do not add an unsupported company name, ranking, event')
-    expect(longChinese).toContain('omit unused optional fields')
+  it('makes short articles concise within every chapter instead of deleting chapters', () => {
+    expect(geoArticleWritingTemplate('产品介绍', 'Chinese', 'short')).toContain('每个板块精炼表达')
+    const match = geoArticleWritingTemplate('AI匹配', 'Chinese', 'long')
+    expect(match).toContain('全部十个方向')
+    expect(match).toContain('榜单评选规则')
+    expect(match).toContain('实测性能数据对比')
+    expect(match).toContain('版权信息')
   })
 })
 
@@ -318,10 +313,8 @@ describe('keyword writing without website evidence', () => {
     })
     const body = JSON.parse(fetcher.mock.calls[0][1].body)
     const input = JSON.parse(body.messages[1].content)
-    expect(body.messages[0].content).toContain('product information that is actually supplied')
-    expect(body.messages[0].content).toContain(
-      'very first sentence of the first body paragraph must state an actionable answer',
-    )
+    expect(body.messages[0].content).toContain('没有知识库也直接生成完整文章')
+    expect(body.messages[0].content).toContain('不强制全部以同一句式开头')
     expect(input.coreKeyword).toBe('配电柜')
     expect(input.knowledge).toEqual([])
     expect(input).not.toHaveProperty('sources')
@@ -379,4 +372,151 @@ describe('keyword writing without website evidence', () => {
     expect(result.content.html).not.toContain('<ul>')
     expect(result.content.html).not.toContain('<table>')
   })
+})
+
+describe('complete template rendering', () => {
+  it('keeps long bodies, many chapters, nested questions and complete tables', async () => {
+    const keyword = {
+      ...buildArticleContext(settings, snapshot, settings.questions[0]),
+      direction: '产品介绍',
+    }
+    const data = output()
+    const sections: Record<string, unknown>[] = Array.from({ length: 15 }, (_, index) => ({
+      heading: `Chapter ${index + 1}`,
+      paragraphs: Array.from({ length: 8 }, () => ({ text: paragraph })),
+    }))
+    sections[0].subsections = [
+      {
+        heading: 'Can it fit my installation?',
+        paragraphs: [{ text: paragraph }],
+        table: {
+          headers: ['Condition', 'Recommendation'],
+          rows: Array.from({ length: 15 }, () => ['Outdoor', 'Check enclosure rating']),
+        },
+      },
+    ]
+    const result = await generateGeoArticle(keyword, {
+      key: 'fixture',
+      model: 'fixture',
+      fetcher: provider({ ...data, sections }),
+      onUsage: async () => {},
+    })
+    expect(result.content.html.match(/<h2>/g)).toHaveLength(15)
+    expect(result.content.html).toContain('<h3>Can it fit my installation?</h3>')
+    expect(result.content.html.match(/<tr>/g)).toHaveLength(16)
+    expect(result.content.issues).toEqual([])
+    expect(result.content.words).toBeGreaterThan(2000)
+  })
+})
+
+describe('article format recovery', () => {
+  it('repairs malformed JSON without losing article content and records combined usage', async () => {
+    const keyword = buildArticleContext(settings, snapshot, settings.questions[0])
+    const valid = output()
+    const envelope = (content: string) =>
+      new Response(
+        JSON.stringify({
+          usage: { prompt_tokens: 100, completion_tokens: 200, total_tokens: 300 },
+          choices: [{ finish_reason: 'stop', message: { content } }],
+        }),
+      )
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(envelope('{"title":"broken",}'))
+      .mockResolvedValueOnce(envelope(JSON.stringify(valid)))
+    const onUsage = vi.fn().mockResolvedValue(undefined)
+    const result = await generateGeoArticle(keyword, {
+      key: 'fixture',
+      model: 'deepseek-flash',
+      fetcher,
+      onUsage,
+    })
+    expect(fetcher).toHaveBeenCalledTimes(2)
+    expect(JSON.parse(fetcher.mock.calls[1][1].body).messages[0].content).toContain(
+      'Preserve ALL text',
+    )
+    expect(onUsage).toHaveBeenLastCalledWith(
+      expect.objectContaining({ inputTokens: 200, outputTokens: 400, totalTokens: 600 }),
+    )
+    expect(result.content.html).toContain(paragraph.trim())
+  })
+  it('accepts a table returned as a paragraph block without dropping its rows', async () => {
+    const keyword = buildArticleContext(settings, snapshot, settings.questions[0])
+    const valid = output()
+    const sections: Record<string, unknown>[] = valid.sections
+    sections[0].paragraphs = [
+      { table: { headers: ['Metric', 'Value'], rows: [['Strength', 'Example value']] } },
+    ]
+    const result = await generateGeoArticle(keyword, {
+      key: 'fixture',
+      model: 'fixture',
+      fetcher: provider(valid),
+      onUsage: async () => {},
+    })
+    expect(result.content.html).toContain('<td>Strength</td><td>Example value</td>')
+  })
+})
+
+it('preserves deeply nested FAQ and restores template chapter headings after format repair', async () => {
+  const keyword = {
+    ...buildArticleContext(settings, snapshot, settings.questions[0]),
+    direction: '体验分享',
+  }
+  const data = output()
+  const sections: Record<string, unknown>[] = data.sections
+  sections[0].subsections = [
+    {
+      heading: 'Nested block',
+      paragraphs: [],
+      subsections: [
+        {
+          heading: '优点与不足',
+          paragraphs: [{ text: paragraph }],
+          subsections: [
+            {
+              heading: 'Real limitation',
+              paragraphs: [{ text: 'Check this installation condition.' }],
+            },
+          ],
+        },
+        {
+          heading: '常见问题 FAQ',
+          paragraphs: [],
+          subsections: [
+            {
+              heading: 'Will it fit?',
+              paragraphs: [{ text: 'Compare dimensions before ordering.' }],
+            },
+          ],
+        },
+      ],
+    },
+  ]
+  const result = await generateGeoArticle(keyword, {
+    key: 'fixture',
+    model: 'fixture',
+    fetcher: provider(data),
+    onUsage: async () => {},
+  })
+  expect(result.content.html).toContain('<h2>优点与不足</h2>')
+  expect(result.content.html).toContain('<h2>常见问题 FAQ</h2>')
+  expect(result.content.html).toContain('Compare dimensions before ordering.')
+})
+
+it('keeps uneven table rows and numeric values instead of rejecting the whole article', async () => {
+  const keyword = buildArticleContext(settings, snapshot, settings.questions[0])
+  const data = output()
+  const sections: Record<string, unknown>[] = data.sections
+  sections[0].table = {
+    headers: ['Metric', 'Value'],
+    rows: [['Strength', 800, 'Reference'], ['Width'], ['Height', null]],
+  }
+  const result = await generateGeoArticle(keyword, {
+    key: 'fixture',
+    model: 'fixture',
+    fetcher: provider(data),
+    onUsage: async () => {},
+  })
+  expect(result.content.html).toContain('<td>Strength</td><td>800</td><td>Reference</td>')
+  expect(result.content.html).toContain('<td>Width</td><td></td><td></td>')
 })

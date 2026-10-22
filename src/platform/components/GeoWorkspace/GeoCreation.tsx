@@ -583,13 +583,12 @@ export function GeoCreation({
         throw new Error('请先选择优化词与关键词。')
       const questions =
         kind === 'translate'
-          ? draft.questions
-              .filter(
-                (q) =>
-                  !q.translated ||
-                  q.translatedFrom !== q.original ||
-                  q.translatedLocale !== draft.locale,
-              )
+          ? draft.questions.filter(
+              (q) =>
+                !q.translated ||
+                q.translatedFrom !== q.original ||
+                q.translatedLocale !== draft.locale,
+            )
           : []
       if (kind === 'translate' && !questions.length) throw new Error('当前没有需要翻译的问题。')
       const input = {
@@ -600,6 +599,9 @@ export function GeoCreation({
         intent,
         locale: draft.locale,
         questions,
+        ...(kind === 'expand'
+          ? { previousQuestions: draft.questions.map((question) => question.original) }
+          : {}),
       }
       const encoded = JSON.stringify(input)
       if (!aiRequest.current || aiRequest.current.input !== encoded)
@@ -672,16 +674,16 @@ export function GeoCreation({
       ? [selectedConfig, ...configs]
       : configs
   const directionDescriptions: Record<string, string> = {
-    AI匹配: '按问题与可用资料匹配合适的写作方向。',
-    企业榜单: '对照可核验资料，说明企业比较依据。',
+    AI匹配: '从十个方向中匹配五个适合问题的方向，再选择一个创作。',
+    企业榜单: '按评选规则、榜单结果、企业解读和选型建议展开。',
     产品介绍: '介绍产品原理、参数、配置与应用场景。',
     技术解读: '解释技术原理、设计方法与实施要点。',
     场景化问题解答: '围绕具体使用场景给出选型和解决方法。',
     行业问题解答: '回答行业常见问题与采购疑问。',
     行业百科: '梳理行业定义、产品分类与基础知识。',
-    体验分享: '以可核验的实际记录说明使用过程。',
+    体验分享: '按测试背景、使用体验、性能对比和优缺点展开。',
     企业推荐: '根据采购需求介绍企业能力与适用范围。',
-    新闻报道: '根据真实事件和来源整理行业资讯。',
+    新闻报道: '按副标题、导语、新闻主体、引述和企业背景展开。',
     知识科普: '用易懂的语言解释概念与选型知识。',
   }
   const generationLabels: Record<string, string> = {
@@ -1243,8 +1245,8 @@ export function GeoCreation({
                   </label>
                   <div className="geo-creation__segments" role="group" aria-label="文章长度">
                     {[
-                      ['short', '精简（约500字）'],
-                      ['long', '完整（约1000字）'],
+                      ['short', '短篇'],
+                      ['long', '长篇'],
                     ].map(([value, label]) => (
                       <button
                         key={value}
