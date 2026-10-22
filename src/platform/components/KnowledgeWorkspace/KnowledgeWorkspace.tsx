@@ -268,7 +268,15 @@ export function KnowledgeWorkspace({
                   void action(async () => {
                     await readJSON(
                       endpoint,
-                      json({ ...base, enabled: event.target.checked }, 'PUT'),
+                      json(
+                        {
+                          name: base.name,
+                          intro: base.intro,
+                          version: base.version,
+                          enabled: event.target.checked,
+                        },
+                        'PUT',
+                      ),
                     )
                     await load()
                     setNotice('已保存')
