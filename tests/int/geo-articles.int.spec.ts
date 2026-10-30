@@ -520,3 +520,85 @@ it('keeps uneven table rows and numeric values instead of rejecting the whole ar
   expect(result.content.html).toContain('<td>Strength</td><td>800</td><td>Reference</td>')
   expect(result.content.html).toContain('<td>Width</td><td></td><td></td>')
 })
+
+// Production diagnosis: legacy evidence-mode jobs failed with INVALID_OUTPUT before bounded repair.
+describe('production article JSON recovery regression', () => {
+  const response = (content: string, finish_reason = 'stop') =>
+    new Response(
+      JSON.stringify({
+        usage: { prompt_tokens: 100, completion_tokens: 200, total_tokens: 300 },
+        choices: [{ finish_reason, message: { content } }],
+      }),
+    )
+  it('accepts an entire JSON code fence locally without another provider request', async () => {
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(response('```json\n' + JSON.stringify(output()) + '\n```'))
+    const result = await generateGeoArticle(context, {
+      key: 'fixture',
+      model: 'fixture',
+      fetcher,
+      onUsage: async () => {},
+    })
+    expect(result.content.issues).toEqual([])
+    expect(fetcher).toHaveBeenCalledTimes(1)
+  })
+  it('repairs evidence-mode JSON once and retains evidence validation and total usage', async () => {
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(response('{"title":"broken",}'))
+      .mockResolvedValueOnce(response(JSON.stringify(output())))
+    const onUsage = vi.fn().mockResolvedValue(undefined)
+    const result = await generateGeoArticle(context, {
+      key: 'fixture',
+      model: 'fixture',
+      fetcher,
+      onUsage,
+    })
+    expect(result.content.issues).toEqual([])
+    expect(fetcher).toHaveBeenCalledTimes(2)
+    expect(onUsage).toHaveBeenLastCalledWith(expect.objectContaining({ totalTokens: 600 }))
+  })
+  it('rejects fabricated evidence even if it was returned by format repair', async () => {
+    const bad = output()
+    bad.sections[0].paragraphs[0].quote = 'Fabricated claim not in the source.'
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(response('{bad json}'))
+      .mockResolvedValueOnce(response(JSON.stringify(bad)))
+    await expect(
+      generateGeoArticle(context, {
+        key: 'fixture',
+        model: 'fixture',
+        fetcher,
+        onUsage: async () => {},
+      }),
+    ).rejects.toMatchObject({ code: 'UNSUPPORTED_CLAIM' })
+    expect(fetcher).toHaveBeenCalledTimes(2)
+  })
+  it('stops after one unsuccessful repair and never retries truncated output', async () => {
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(response('{bad json}'))
+      .mockResolvedValueOnce(response('{still bad}'))
+    await expect(
+      generateGeoArticle(context, {
+        key: 'fixture',
+        model: 'fixture',
+        fetcher,
+        onUsage: async () => {},
+      }),
+    ).rejects.toMatchObject({ code: 'INVALID_OUTPUT' })
+    expect(fetcher).toHaveBeenCalledTimes(2)
+    const truncated = vi.fn().mockResolvedValueOnce(response('{truncated', 'length'))
+    await expect(
+      generateGeoArticle(context, {
+        key: 'fixture',
+        model: 'fixture',
+        fetcher: truncated,
+        onUsage: async () => {},
+      }),
+    ).rejects.toMatchObject({ code: 'INCOMPLETE_OUTPUT' })
+    expect(truncated).toHaveBeenCalledTimes(1)
+  })
+})
