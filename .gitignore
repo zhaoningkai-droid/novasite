@@ -73,3 +73,7 @@ node_modules/
 docs/geo/evidence/
 .next*/
 output/
+
+# Python maintenance helper output
+__pycache__/
+*.pyc
