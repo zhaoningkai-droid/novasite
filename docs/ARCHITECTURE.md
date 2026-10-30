@@ -1,3 +1,5 @@
+> 当前代码说明以 v1.3.1 发布记录和 `PROJECT_STATUS.md` 为准。新增参考模板位于 `src/platform/reference-templates` 与 `src/platform/allynav-template`，演示和客户站共用模板组件、分别适配数据。
+
 # NovaSite 系统架构与目录说明
 
 本文按当前生产源码快照中的实际结构描述系统，不代表所有后续规划已经实现。版本证据和限制见 [生产基线记录](./RELEASES/production-baseline-2026-10.md)。
@@ -55,7 +57,7 @@ Caddy ─ HTTPS/入口路由 ─ Web 服务
 
 `Tenants` 表示一个客户公司的站点；Multi-Tenant 插件在多个集合上加入租户关系和后台过滤。`Users` 保存账号和角色。`src/access`、集合 access/hooks、自定义 workspace route 共同决定访问边界。平台超级管理员可跨租户，普通操作员应受授权租户约束。面向客户开放独立权限后台是后续目标，当前 V1 以内部运营工作台为主。
 
-系统保留单独的演示 seed route：`src/app/(frontend)/next/seed/route.ts`。当前候选只允许非生产环境在显式启用后调用，并要求平台超级管理员；`src/endpoints/seed/index.ts` 在清理数据前再次检查环境和权限。公开安全修订尚未部署，不要在生产调用 seed。
+系统保留单独的演示 seed route：`src/app/(frontend)/next/seed/route.ts`。当前候选只允许非生产环境在显式启用后调用，并要求平台超级管理员；`src/endpoints/seed/index.ts` 在清理数据前再次检查环境和权限。生产环境禁止调用 seed。
 
 ### 内容、模板与预览
 
