@@ -839,8 +839,8 @@ export function ExecutiveTemplatePages({ locale, path, page, category }: Props) 
                   {index === 0 ? (
                     <a
                       className="ed-button ed-button--document"
-                      download={en ? 'novasite-heritage-roof-demo.pdf' : 'NovaSite-古建屋面演示样例.pdf'}
-                      href="/template-demos/executive-industrial-pro-v1/novasite-heritage-roof-demo.pdf"
+                      download={en ? 'jiangjing-roof-sample.pdf' : '匠境古建-屋面构件演示样例.pdf'}
+                      href="/template-demos/executive-industrial-pro-v1/jiangjing-heritage-roof-sample.pdf"
                     >
                       <Download aria-hidden="true" size={16} />
                       {en ? 'Download sample sheet' : '下载演示产品资料'}
@@ -1284,7 +1284,7 @@ export function ExecutiveTemplatePages({ locale, path, page, category }: Props) 
           }}
         >
           <div>
-            <span className="ed-eyebrow">NOVASITE HERITAGE DEMO</span>
+            <span className="ed-eyebrow">JIANGJING HERITAGE</span>
             <h1>{copy.nav.about}</h1>
             <p>{copy.aboutText}</p>
             <button
@@ -1390,7 +1390,7 @@ export function ExecutiveTemplatePages({ locale, path, page, category }: Props) 
           <div className="ed-contact-card">
             <section className="ed-contact-info">
               <span className="ed-eyebrow ed-eyebrow--green">
-                {en ? 'CONTACT THE DEMO TEAM' : '联系演示团队'}
+                {en ? 'GET IN TOUCH' : '联系匠境古建'}
               </span>
               <h1>{copy.nav.contact}</h1>
               <p>
@@ -1415,14 +1415,14 @@ export function ExecutiveTemplatePages({ locale, path, page, category }: Props) 
                 </div>
                 <div>
                   <dt>{en ? 'Email' : '邮箱'}</dt>
-                  <dd>demo@example.invalid</dd>
+                  <dd>hello@jiangjing-demo.example</dd>
                 </div>
                 <div>
                   <dt>{en ? 'Address' : '地址'}</dt>
                   <dd>
                     {en
-                      ? 'NovaSite heritage demonstration · Fictional address'
-                      : '中国 · NovaSite 古建模板演示区（虚构地址）'}
+                      ? 'Jiangjing Heritage sample gallery · Demo address'
+                      : '中国 · 匠境古建构件演示区（样例地址）'}
                   </dd>
                 </div>
               </dl>

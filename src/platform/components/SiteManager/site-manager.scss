@@ -108,3 +108,6 @@
 .site-manager__feedback.is-error { background: #fff2f3; border-color: #efc7ce; color: #a93040; }
 .site-manager__domain-link { align-items: center; color: var(--ws-primary, #315be8); display: inline-flex; font-size: 13px; gap: 6px; justify-self: start; text-decoration: none; }
 .site-manager__domain-link:hover { text-decoration: underline; }
+
+.site-manager__layout-demo .reference-template-thumb { display:block; width:100%; height:100%; object-fit:cover; object-position:top; }
+.site-manager__layout-demo:has(.reference-template-thumb) { padding:0; overflow:hidden; }

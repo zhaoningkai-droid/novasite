@@ -1,1 +1,9 @@
 *.pdf binary
+
+# Preserve downloaded reference CSS verbatim; binary font data should not render as text diffs.
+public/sites/** -whitespace
+src/platform/reference-templates/demo/**/base.css -whitespace
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary

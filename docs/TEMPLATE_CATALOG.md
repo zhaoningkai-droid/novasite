@@ -1,4 +1,4 @@
-# V1 重点模板与代码入口
+# 模板目录与代码入口
 
 本文说明当前源码中的重点模板结构。它是代码导航，不宣称三套模板已完成所有视觉矩阵、客户验收或独立部署验证。
 
@@ -31,3 +31,18 @@
 2. 添加真实测试租户内容后切换模板，确认产品、新闻、案例、FAQ、关于、联系信息与媒体不丢失。
 3. 分别覆盖桌面和窄屏，核对列表、详情、报价弹窗、语言和表单。
 4. 验证素材清单中的文件 hash/source、第三方许可和 PDF 可见的示例标识。
+
+
+## v1.3.0 新增模板
+
+| 模板 | key | 实现 | 公共素材 |
+| --- | --- | --- | --- |
+| K607 | `plush-607-v1` | `src/platform/reference-templates` | `public/sites/k607` |
+| K712 | `plush-712-v1` | `src/platform/reference-templates` | `public/sites/k712` |
+| AllyNav | `allynav-v1` | `src/platform/allynav-template` | `public/sites/allynav` |
+
+三套模板均通过 `/template-demo/{key}/{lang}` 展示独立演示，通过客户选中的模板渲染 `/s/{site}/{lang}`。每套模板的演示和客户站共用组件，数据适配器分别提供示例与公司内容。客户数据和模板演示资料分开保存。AllyNav 使用少量示例素材，演示表单仅本地保存，外部视频需要网络。
+
+发布时仅注册缺失的模板目录项，不自动切换公司的模板、不导入示例内容。全站视觉与编辑体验仍以用户验收为准。
+
+新增模板目录可由维护人员在确认生产环境及备份后运行 `NODE_ENV=production node --import ./scripts/verify-v1-node-style-hook.mjs --import tsx scripts/register-website-templates.mts`。该命令只新增不存在的三条目录项，已有记录和公司选择保持原值，不执行迁移或 seed。请使用生产私有工具镜像与配置，勿把凭据写入命令行。

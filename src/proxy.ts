@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { classifyPlatformHost, isCustomerPagePath, platformDomainsEnabled, platformDomainSettings } from './platform/platform-hosts'
+import { classifyPlatformHost, configuredCustomerDomains, isCustomerPagePath, platformDomainsEnabled, platformDomainSettings } from './platform/platform-hosts'
 import { isSiteLocale } from './platform/site-locales'
 import { managedMediaFilename, mediaAccessControlEnabled, privateMediaHeaders } from './platform/storage/access-mode'
 
@@ -118,6 +118,12 @@ function hostedRequest(request: NextRequest) {
     return response
   }
 
+  const binding = configuredCustomerDomains()[entry.slug]
+  if (binding?.aliases.includes(entry.host) && ['GET', 'HEAD'].includes(request.method)) {
+    const destination = new URL(`https://${binding.primary}${path}`)
+    destination.search = request.nextUrl.search
+    return NextResponse.redirect(destination, 308)
+  }
   headers.set('x-novasite-site-slug', entry.slug)
   const readOnly = request.method === 'GET' || request.method === 'HEAD'
   if (path === '/api/submit-inquiry') {

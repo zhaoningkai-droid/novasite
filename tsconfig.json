@@ -37,20 +37,19 @@
     }
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    "redirects.js",
+    "src/**/*.ts",
+    "src/**/*.tsx",
     "next-env.d.ts",
-    "next.config.js",
-    "next-sitemap.config.cjs",
-    ".next/dev/types/**/*.ts",
-    ".next-dev/types/**/*.ts",
-    ".next-dev/dev/types/**/*.ts",
-    ".next-production-check/types/**/*.ts",
-    ".next-production-check/dev/types/**/*.ts"
+    "next.config.ts",
+    "redirects.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "docs",
+    "artifacts",
+    "output",
+    ".private"
   ]
 }

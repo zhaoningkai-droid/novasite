@@ -1,0 +1,830 @@
+{
+  "/product/": {
+    "kind": "list",
+    "items": [
+      {
+        "href": "/product/5.html",
+        "title": "苹果水豚",
+        "image": "/sites/k607/35b2040caa9ad9f468c1a3c04f22eb82.png"
+      },
+      {
+        "href": "/product/14.html",
+        "title": "西瓜",
+        "image": "/sites/k607/663fdfbfb31ac941340ef3f84c75fe47.jpg"
+      },
+      {
+        "href": "/product/17.html",
+        "title": "背包维尼",
+        "image": "/sites/k607/bf1994c89d6d9422fd2396495a08ac3b.jpg"
+      },
+      {
+        "href": "/product/15.html",
+        "title": "飞机鲨鱼",
+        "image": "/sites/k607/cda66e77c437657aef6984c7c6c32c1d.jpg"
+      },
+      {
+        "href": "/product/13.html",
+        "title": "KT猫公仔",
+        "image": "/sites/k607/953e7f4e3cc94a39a4a38da967cb2690.jpg"
+      },
+      {
+        "href": "/product/12.html",
+        "title": "奶茶KT",
+        "image": "/sites/k607/1370674d509915af1c80ff8986ad7d69.jpg"
+      },
+      {
+        "href": "/product/6.html",
+        "title": "草莓熊",
+        "image": "/sites/k607/1073063fc73b4b39ea7757b7c9f9ba23.png"
+      },
+      {
+        "href": "/product/4.html",
+        "title": "派大星",
+        "image": "/sites/k607/6267209aa970045cc6b2f4ff2c8e591b.png"
+      },
+      {
+        "href": "/product/3.html",
+        "title": "唐老鸭",
+        "image": "/sites/k607/22f38b1da38dd70aae79f2e8b0ebafb0.png"
+      }
+    ],
+    "pagination": [
+      {
+        "href": "/product/",
+        "text": "首页"
+      },
+      {
+        "href": "/product/",
+        "text": "<<"
+      },
+      {
+        "href": "javascript:;",
+        "text": "1"
+      },
+      {
+        "href": "",
+        "text": "1/2"
+      },
+      {
+        "href": "/product?page=2",
+        "text": ">>"
+      },
+      {
+        "href": "/product?page=2",
+        "text": "末页"
+      }
+    ]
+  },
+  "/product/12.html": {
+    "kind": "detail",
+    "title": "奶茶KT",
+    "date": "2026-03-21",
+    "tags": [
+      "KT猫",
+      "三丽鸥"
+    ],
+    "images": [
+      {
+        "src": "/sites/k607/1370674d509915af1c80ff8986ad7d69.jpg",
+        "alt": "奶茶KT"
+      },
+      {
+        "src": "/sites/k607/asset-773824258fb6e421.jpg",
+        "alt": "奶茶KT"
+      },
+      {
+        "src": "/sites/k607/asset-d630e7d3edbe19cc.jpg",
+        "alt": "奶茶KT"
+      }
+    ],
+    "html": "\n              <h2><span style=\"color: rgb(0, 0, 0)\"><strong>◆ 产品名称</strong></span><strong>：</strong>Hello Kitty 毛绒公仔 相机款 / 气球款可爱玩偶</h2><h2><span style=\"color: rgb(0, 0, 0)\"><strong>◆ 产品基本信息</strong></span></h2><p>尺寸：25cm/30cm（多尺寸可选，满足不同场景需求）</p><p>材质：优质短毛绒 / 兔毛绒（亲肤柔软、不掉毛、手感蓬松）</p><p>填充：高弹 PP 棉（饱满有型，不易变形，回弹性好）</p><p>价格：35 元 / 个（出厂不含税不包邮，单品 10 个起订）</p><p>适用场景：儿童安抚、家居装饰、节日礼品、活动赠品、批发零售、车载摆件</p><h2><span style=\"color: rgb(0, 0, 0)\"><strong>◆ 产品亮点</strong></span></h2><p>经典萌系造型：还原 Hello Kitty 经典形象，搭配相机 / 气球装饰，憨态可掬，自带甜美治愈氛围，深受各年龄段喜爱。</p><p>亲肤舒适材质：精选优质毛绒面料，触感柔软细腻，安全无刺激，儿童可放心抱玩，不掉毛不闷肤。</p><p>多尺寸选择：25cm/30cm 黄金尺寸，既可以当玩偶陪伴孩子，也能做抱枕靠垫，兼具装饰与实用性。</p><p>品质工艺保障：立体缝合工艺，针脚细密均匀，填充饱满，不易变形、不易开线，耐用性强。</p><p>场景多元：适合作为生日礼物、情人节礼物、伴手礼，也可用于家居软装、店铺陈列、活动奖品、车载装饰。</p><h2><span style=\"color: rgb(0, 0, 0)\">◆<strong> 购买须知</strong></span></h2><p>出厂不含税不包邮，单品 10 个起订，支持国内代发。</p><p>支持定制服务（可加印 logo、更换装饰图案、定制专属造型、定制包装）。</p><p>现货充足，发货时效快，品质稳定，适合批发商、礼品商、电商卖家长期合作。</p>            ",
+    "recommended": [
+      {
+        "href": "/product/17.html",
+        "title": "背包维尼",
+        "image": "/sites/k607/bf1994c89d6d9422fd2396495a08ac3b.jpg"
+      },
+      {
+        "href": "/product/15.html",
+        "title": "飞机鲨鱼",
+        "image": "/sites/k607/cda66e77c437657aef6984c7c6c32c1d.jpg"
+      },
+      {
+        "href": "/product/14.html",
+        "title": "西瓜",
+        "image": "/sites/k607/663fdfbfb31ac941340ef3f84c75fe47.jpg"
+      },
+      {
+        "href": "/product/13.html",
+        "title": "KT猫公仔",
+        "image": "/sites/k607/953e7f4e3cc94a39a4a38da967cb2690.jpg"
+      },
+      {
+        "href": "/product/12.html",
+        "title": "奶茶KT",
+        "image": "/sites/k607/1370674d509915af1c80ff8986ad7d69.jpg"
+      }
+    ]
+  },
+  "/product/13.html": {
+    "kind": "detail",
+    "title": "KT猫公仔",
+    "date": "2026-03-21",
+    "tags": [
+      "三丽鸥",
+      "Hello Kitty"
+    ],
+    "images": [
+      {
+        "src": "/sites/k607/953e7f4e3cc94a39a4a38da967cb2690.jpg",
+        "alt": "KT猫公仔"
+      },
+      {
+        "src": "/sites/k607/asset-ce27a86612975a4a.jpg",
+        "alt": "KT猫公仔"
+      },
+      {
+        "src": "/sites/k607/asset-ab9e358e713bbd06.jpg",
+        "alt": "KT猫公仔"
+      },
+      {
+        "src": "/sites/k607/asset-084ac4393dbb8b19.jpg",
+        "alt": "KT猫公仔"
+      },
+      {
+        "src": "/sites/k607/asset-b21ce36a2079c95b.jpg",
+        "alt": "KT猫公仔"
+      }
+    ],
+    "html": "\n              <h3><span style=\"color: rgb(0, 0, 0)\"><strong>◆ 产品名称：</strong></span>Hello Kitty 毛绒公仔 相机款 / 气球款可爱玩偶</h3><h3><span style=\"color: rgb(0, 0, 0)\"><strong>◆ 产品基本信息</strong></span></h3><p>尺寸：25cm/30cm（多尺寸可选，满足不同场景需求）</p><p>材质：优质短毛绒 / 兔毛绒（亲肤柔软、不掉毛、手感蓬松）</p><p>填充：高弹 PP 棉（饱满有型，不易变形，回弹性好）</p><p>价格：35 元 / 个（出厂不含税不包邮，单品 10 个起订）</p><p>适用场景：儿童安抚、家居装饰、节日礼品、活动赠品、批发零售、车载摆件</p><h3><span style=\"color: rgb(34, 7, 94)\"><strong>◆ 产品亮点</strong></span></h3><p>经典萌系造型：还原 Hello Kitty 经典形象，搭配相机 / 气球装饰，憨态可掬，自带甜美治愈氛围，深受各年龄段喜爱。</p><p>亲肤舒适材质：精选优质毛绒面料，触感柔软细腻，安全无刺激，儿童可放心抱玩，不掉毛不闷肤。</p><p>多尺寸选择：25cm/30cm 黄金尺寸，既可以当玩偶陪伴孩子，也能做抱枕靠垫，兼具装饰与实用性。</p><p>品质工艺保障：立体缝合工艺，针脚细密均匀，填充饱满，不易变形、不易开线，耐用性强。</p><p>场景多元：适合作为生日礼物、情人节礼物、伴手礼，也可用于家居软装、店铺陈列、活动奖品、车载装饰。</p><h3><span style=\"color: rgb(34, 7, 94)\"><strong>◆ 购买须知</strong></span></h3><p>出厂不含税不包邮，单品 10 个起订，支持国内代发。</p><p>支持定制服务（可加印 logo、更换装饰图案、定制专属造型、定制包装）。</p><p>现货充足，发货时效快，品质稳定，适合批发商、礼品商、电商卖家长期合作。</p>            ",
+    "recommended": [
+      {
+        "href": "/product/17.html",
+        "title": "背包维尼",
+        "image": "/sites/k607/bf1994c89d6d9422fd2396495a08ac3b.jpg"
+      },
+      {
+        "href": "/product/15.html",
+        "title": "飞机鲨鱼",
+        "image": "/sites/k607/cda66e77c437657aef6984c7c6c32c1d.jpg"
+      },
+      {
+        "href": "/product/14.html",
+        "title": "西瓜",
+        "image": "/sites/k607/663fdfbfb31ac941340ef3f84c75fe47.jpg"
+      },
+      {
+        "href": "/product/13.html",
+        "title": "KT猫公仔",
+        "image": "/sites/k607/953e7f4e3cc94a39a4a38da967cb2690.jpg"
+      },
+      {
+        "href": "/product/12.html",
+        "title": "奶茶KT",
+        "image": "/sites/k607/1370674d509915af1c80ff8986ad7d69.jpg"
+      }
+    ]
+  },
+  "/product/14.html": {
+    "kind": "detail",
+    "title": "西瓜",
+    "date": "2026-03-21",
+    "tags": [
+      "西瓜抱枕",
+      "抱枕"
+    ],
+    "images": [
+      {
+        "src": "/sites/k607/663fdfbfb31ac941340ef3f84c75fe47.jpg",
+        "alt": "西瓜"
+      }
+    ],
+    "html": "\n              <p>◆ 产品名称：可爱西瓜毛绒公仔 仿真切片西瓜抱枕玩偶</p><p>◆ 产品基本信息</p><p>尺寸：25cm/35cm/45cm（多尺寸可选，满足不同场景需求）</p><p>材质：优质短毛绒 / 兔毛绒（亲肤柔软、不掉毛、手感蓬松）</p><p>填充：高弹 PP 棉（饱满有型，不易变形，回弹性好）</p><p>价格：28 元 / 个（出厂不含税不包邮，单品 10 个起订）</p><p>适用场景：儿童安抚、家居装饰、节日礼品、活动赠品、批发零售、车载靠垫</p><p>◆ 产品亮点</p><p>清新治愈造型：仿真西瓜切片设计，搭配呆萌笑脸表情与圆滚滚四肢，软萌感十足，自带夏日清新治愈氛围。</p><p>亲肤舒适材质：精选优质毛绒面料，触感柔软细腻，安全无刺激，儿童可放心抱玩，不掉毛不闷肤。</p><p>多尺寸选择：25cm/35cm/45cm 黄金尺寸，既可以当玩偶陪伴孩子，也能做抱枕靠垫，兼具装饰与实用性。</p><p>品质工艺保障：立体缝合工艺，针脚细密均匀，填充饱满，不易变形、不易开线，耐用性强。</p><p>场景多元：适合作为生日礼物、伴手礼、节日礼品，也可用于家居软装、店铺陈列、活动奖品、车载装饰。</p><p>◆ 购买须知</p><p>出厂不含税不包邮，单品 10 个起订，支持国内代发。</p><p>支持定制服务（可加印 logo、更换表情图案、定制专属造型、定制包装）。</p><p>现货充足，发货时效快，品质稳定，适合批发商、礼品商、电商卖家长期合作。</p>            ",
+    "recommended": [
+      {
+        "href": "/product/17.html",
+        "title": "背包维尼",
+        "image": "/sites/k607/bf1994c89d6d9422fd2396495a08ac3b.jpg"
+      },
+      {
+        "href": "/product/15.html",
+        "title": "飞机鲨鱼",
+        "image": "/sites/k607/cda66e77c437657aef6984c7c6c32c1d.jpg"
+      },
+      {
+        "href": "/product/14.html",
+        "title": "西瓜",
+        "image": "/sites/k607/663fdfbfb31ac941340ef3f84c75fe47.jpg"
+      },
+      {
+        "href": "/product/13.html",
+        "title": "KT猫公仔",
+        "image": "/sites/k607/953e7f4e3cc94a39a4a38da967cb2690.jpg"
+      },
+      {
+        "href": "/product/12.html",
+        "title": "奶茶KT",
+        "image": "/sites/k607/1370674d509915af1c80ff8986ad7d69.jpg"
+      }
+    ]
+  },
+  "/product/15.html": {
+    "kind": "detail",
+    "title": "飞机鲨鱼",
+    "date": "2026-03-21",
+    "tags": [
+      "飞机鲨鱼",
+      "毛绒玩具",
+      "20寸玩偶",
+      "小兔毛公仔",
+      "礼品娃娃"
+    ],
+    "images": [
+      {
+        "src": "/sites/k607/cda66e77c437657aef6984c7c6c32c1d.jpg",
+        "alt": "飞机鲨鱼"
+      }
+    ],
+    "html": "\n              <p>、◆ 产品名称：可爱鲨鱼毛绒公仔 卡通鲨鱼玩偶抱枕</p><p>◆ 产品基本信息</p><p>尺寸：25cm/35cm/45cm（多尺寸可选，满足不同场景需求）</p><p>材质：优质短毛绒（亲肤柔软、不掉毛、手感蓬松）</p><p>填充：高弹 PP 棉（饱满有型，不易变形，回弹性好）</p><p>价格：30 元 / 个（出厂不含税不包邮，单品 10 个起订）</p><p>适用场景：儿童安抚、家居装饰、节日礼品、活动赠品、批发零售、车载靠垫</p><p>◆ 产品亮点</p><p>萌趣海洋造型：卡通鲨鱼形象，搭配大眼睛与撞色条纹设计，憨态可掬，自带活泼童趣氛围。</p><p>亲肤舒适材质：精选优质毛绒面料，触感柔软细腻，安全无刺激，儿童可放心抱玩，不掉毛不闷肤。</p><p>多尺寸选择：25cm/35cm/45cm 黄金尺寸，既可以当玩偶陪伴孩子，也能做抱枕靠垫，兼具装饰与实用性。</p><p>品质工艺保障：立体缝合工艺，针脚细密均匀，填充饱满，不易变形、不易开线，耐用性强。</p><p>场景多元：适合作为生日礼物、伴手礼、海洋主题礼品，也可用于家居软装、店铺陈列、活动奖品、车载装饰。</p><p>◆ 购买须知</p><p>出厂不含税不包邮，单品 10 个起订，支持国内代发。</p><p>支持定制服务（可加印 logo、更换配色、定制专属造型、定制包装）。</p><p>现货充足，发货时效快，品质稳定，适合批发商、礼品商、电商卖家长期合作。</p><p><br></p>            ",
+    "recommended": [
+      {
+        "href": "/product/17.html",
+        "title": "背包维尼",
+        "image": "/sites/k607/bf1994c89d6d9422fd2396495a08ac3b.jpg"
+      },
+      {
+        "href": "/product/15.html",
+        "title": "飞机鲨鱼",
+        "image": "/sites/k607/cda66e77c437657aef6984c7c6c32c1d.jpg"
+      },
+      {
+        "href": "/product/14.html",
+        "title": "西瓜",
+        "image": "/sites/k607/663fdfbfb31ac941340ef3f84c75fe47.jpg"
+      },
+      {
+        "href": "/product/13.html",
+        "title": "KT猫公仔",
+        "image": "/sites/k607/953e7f4e3cc94a39a4a38da967cb2690.jpg"
+      },
+      {
+        "href": "/product/12.html",
+        "title": "奶茶KT",
+        "image": "/sites/k607/1370674d509915af1c80ff8986ad7d69.jpg"
+      }
+    ]
+  },
+  "/product/17.html": {
+    "kind": "detail",
+    "title": "背包维尼",
+    "date": "2026-03-21",
+    "tags": [
+      "背包维尼",
+      "毛绒玩具",
+      "20 寸玩偶",
+      "小兔毛公仔",
+      "卡通玩具"
+    ],
+    "images": [
+      {
+        "src": "/sites/k607/bf1994c89d6d9422fd2396495a08ac3b.jpg",
+        "alt": "背包维尼"
+      }
+    ],
+    "html": "\n              <h2><strong>◆ 产品名称：可爱背包维尼毛绒公仔</strong></h2><h3><strong>◆ 产品基本信息</strong></h3><p><strong>尺寸：25cm/35cm/45cm（多尺寸可选，满足不同场景需求）</strong></p><p><strong>材质：优质短毛绒 / 兔毛绒（亲肤柔软、不掉毛、手感蓬松）</strong></p><p><strong>填充：高弹 PP 棉（饱满有型，不易变形，回弹性好）</strong></p><p><strong>价格：33 元 / 个（出厂不含税不包邮，单品 10 个起订）</strong></p><p><strong>适用场景：儿童安抚、家居装饰、节日礼品、活动赠品、批发零售、车载靠垫、生日伴手礼</strong></p><h3><strong>◆ 产品亮点</strong></h3><p><strong>元气清新造型：软萌黄色小熊搭配头顶橘子与蓝色斜挎包设计，憨态可掬，自带元气满满的治愈感，寓意 “大吉大利”。</strong></p><p><strong>亲肤舒适材质：精选优质毛绒面料，触感柔软细腻，安全无刺激，儿童可放心抱玩，不掉毛不闷肤。</strong></p><p><strong>多尺寸选择：25cm/35cm/45cm 黄金尺寸，既可以当玩偶陪伴孩子，也能做抱枕靠垫，兼具装饰与实用性。</strong></p><p><strong>品质工艺保障：立体缝合工艺，针脚细密均匀，填充饱满，不易变形、不易开线，耐用性强。</strong></p><p><strong>场景多元：适合作为生日礼物、节日礼品、伴手礼，也可用于家居软装、店铺陈列、活动奖品、车载装饰。</strong></p><h3><strong>◆ 购买须知</strong></h3><p><strong>出厂不含税不包邮，单品 10 个起订，支持国内代发。</strong></p><p><strong>支持定制服务（可加印 logo、更换包袋文字、定制专属配色、定制包装）。</strong></p><p><strong>现货充足，发货时效快，品质稳定，适合批发商、礼品商、电商卖家长期合作。</strong></p>            ",
+    "recommended": [
+      {
+        "href": "/product/17.html",
+        "title": "背包维尼",
+        "image": "/sites/k607/bf1994c89d6d9422fd2396495a08ac3b.jpg"
+      },
+      {
+        "href": "/product/15.html",
+        "title": "飞机鲨鱼",
+        "image": "/sites/k607/cda66e77c437657aef6984c7c6c32c1d.jpg"
+      },
+      {
+        "href": "/product/14.html",
+        "title": "西瓜",
+        "image": "/sites/k607/663fdfbfb31ac941340ef3f84c75fe47.jpg"
+      },
+      {
+        "href": "/product/13.html",
+        "title": "KT猫公仔",
+        "image": "/sites/k607/953e7f4e3cc94a39a4a38da967cb2690.jpg"
+      },
+      {
+        "href": "/product/12.html",
+        "title": "奶茶KT",
+        "image": "/sites/k607/1370674d509915af1c80ff8986ad7d69.jpg"
+      }
+    ]
+  },
+  "/product/2.html": {
+    "kind": "detail",
+    "title": "围巾猴",
+    "date": "2026-03-16",
+    "tags": [
+      "兔毛公仔",
+      "毛绒玩具",
+      "礼品娃娃",
+      "大号抱枕",
+      "工厂直供"
+    ],
+    "images": [
+      {
+        "src": "/sites/k607/00a9416314b8714e671ca0374cef8f30.png",
+        "alt": "围巾猴"
+      }
+    ],
+    "html": "\n              <p><strong>🔹 产品名称：</strong>20 寸围巾猴毛绒玩具 兔毛可爱猴子公仔</p><p><strong>🔹 产品基本信息</strong></p><p>尺寸：60cm/20 寸（大号抱枕尺寸）</p><p>材质：优质兔毛（亲肤柔软、不掉毛、手感蓬松）</p><p>填充：高弹 PP 棉（饱满有型，不易变形）</p><p>价格：32 元 / 个（出厂不含税不包邮，单品 10 个起订）</p><p>适用场景：儿童安抚、家居装饰、节日礼品、活动赠品、批发零售</p><p><strong>🔹 产品亮点</strong></p><p>呆萌治愈造型：经典猴子形象搭配绿色针织围巾与立体小花装饰，软萌可爱，辨识度高，自带温暖感</p><p>亲肤舒适材质：精选兔毛面料，触感柔软细腻，安全无刺激，儿童可放心抱玩，不掉毛不闷肤</p><p>实用大号尺寸：20 寸黄金尺寸，既可以当玩偶陪伴孩子，也能做抱枕靠垫，兼具装饰与实用性</p><p>品质工艺保障：立体缝合工艺，填充饱满均匀，不易变形、不易开线，耐用性强</p><p>场景多元：适合作为生日礼物、情人节礼物、伴手礼，也可用于家居软装、店铺陈列、活动奖品</p><p><strong>🔹 购买须知</strong></p><p>出厂不含税不包邮，单品 10 个起订，支持国内代发</p><p>支持定制服务（可加印 logo、更换围巾配色 / 图案、定制专属造型、定制包装）</p><p>现货充足，发货时效快，品质稳定，适合批发商、礼品商、电商卖家长期合作</p>            ",
+    "recommended": [
+      {
+        "href": "/product/17.html",
+        "title": "背包维尼",
+        "image": "/sites/k607/bf1994c89d6d9422fd2396495a08ac3b.jpg"
+      },
+      {
+        "href": "/product/15.html",
+        "title": "飞机鲨鱼",
+        "image": "/sites/k607/cda66e77c437657aef6984c7c6c32c1d.jpg"
+      },
+      {
+        "href": "/product/14.html",
+        "title": "西瓜",
+        "image": "/sites/k607/663fdfbfb31ac941340ef3f84c75fe47.jpg"
+      },
+      {
+        "href": "/product/13.html",
+        "title": "KT猫公仔",
+        "image": "/sites/k607/953e7f4e3cc94a39a4a38da967cb2690.jpg"
+      },
+      {
+        "href": "/product/12.html",
+        "title": "奶茶KT",
+        "image": "/sites/k607/1370674d509915af1c80ff8986ad7d69.jpg"
+      }
+    ]
+  },
+  "/product/3.html": {
+    "kind": "detail",
+    "title": "唐老鸭",
+    "date": "2026-03-16",
+    "tags": [
+      "唐老鸭",
+      "毛绒玩具",
+      "小兔毛公仔",
+      "迪士尼玩偶",
+      "卡通可爱玩具"
+    ],
+    "images": [
+      {
+        "src": "/sites/k607/22f38b1da38dd70aae79f2e8b0ebafb0.png",
+        "alt": "唐老鸭"
+      }
+    ],
+    "html": "\n              <p><strong>🔹 产品名称：</strong>20 寸唐老鸭 &amp; 黛丝毛绒玩具 小兔毛经典卡通公仔（情侣款可选）</p><p><strong>🔹 产品基本信息</strong></p><p>尺寸：60cm/20 寸（大号抱枕尺寸）</p><p>材质：优质小兔毛（亲肤柔软、不掉毛、手感蓬松）</p><p>填充：高弹 PP 棉（饱满有型，不易变形）</p><p>价格：32 元 / 个（出厂不含税不包邮，单品 10 个起订）</p><p>可选款式：唐老鸭款、黛丝款（可搭配情侣款）</p><p>适用场景：儿童安抚、家居装饰、节日礼品、活动赠品、批发零售</p><p><strong>🔹 产品亮点</strong></p><p>经典卡通还原：高度还原迪士尼唐老鸭 &amp; 黛丝形象，蓝粉配色经典耐看，情侣款搭配更具氛围感，辨识度拉满</p><p>亲肤舒适材质：精选小兔毛面料，触感柔软细腻，安全无刺激，儿童可放心抱玩，不掉毛不闷肤</p><p>实用大号尺寸：20 寸黄金尺寸，既可以当玩偶陪伴孩子，也能做抱枕靠垫，兼具装饰与实用性</p><p>品质工艺保障：立体缝合工艺，填充饱满均匀，不易变形、不易开线，耐用性强</p><p>场景多元：适合作为生日礼物、情人节礼物、伴手礼，也可用于家居软装、店铺陈列、活动奖品</p><p><strong>🔹 购买须知</strong></p><p>出厂不含税不包邮，单品 10 个起订，支持国内代发</p><p>支持定制服务（可加印 logo、更换配色、定制专属造型、定制包装）</p><p>现货充足，发货时效快，品质稳定，适合批发商、礼品商、电商卖家长期合作</p>            ",
+    "recommended": [
+      {
+        "href": "/product/17.html",
+        "title": "背包维尼",
+        "image": "/sites/k607/bf1994c89d6d9422fd2396495a08ac3b.jpg"
+      },
+      {
+        "href": "/product/15.html",
+        "title": "飞机鲨鱼",
+        "image": "/sites/k607/cda66e77c437657aef6984c7c6c32c1d.jpg"
+      },
+      {
+        "href": "/product/14.html",
+        "title": "西瓜",
+        "image": "/sites/k607/663fdfbfb31ac941340ef3f84c75fe47.jpg"
+      },
+      {
+        "href": "/product/13.html",
+        "title": "KT猫公仔",
+        "image": "/sites/k607/953e7f4e3cc94a39a4a38da967cb2690.jpg"
+      },
+      {
+        "href": "/product/12.html",
+        "title": "奶茶KT",
+        "image": "/sites/k607/1370674d509915af1c80ff8986ad7d69.jpg"
+      }
+    ]
+  },
+  "/product/4.html": {
+    "kind": "detail",
+    "title": "派大星",
+    "date": "2026-03-16",
+    "tags": [
+      "派大星",
+      "毛绒玩具",
+      "小兔毛公仔",
+      "海绵宝宝",
+      "卡通玩偶"
+    ],
+    "images": [
+      {
+        "src": "/sites/k607/6267209aa970045cc6b2f4ff2c8e591b.png",
+        "alt": "派大星"
+      }
+    ],
+    "html": "\n              <p><strong>🔹 产品名称：</strong>20 寸派大星毛绒玩具 小兔毛海绵宝宝卡通公仔</p><p><strong>🔹 产品基本信息</strong></p><p>尺寸：60cm/20 寸（大号抱枕尺寸）</p><p>材质：优质小兔毛（亲肤柔软、不掉毛、手感蓬松）</p><p>填充：高弹 PP 棉（饱满有型，不易变形）</p><p>价格：32 元 / 个（出厂不含税不包邮，单品 10 个起订）</p><p>适用场景：儿童安抚、家居装饰、节日礼品、活动赠品、批发零售</p><p><strong>🔹 产品亮点</strong></p><p>经典卡通还原：高度还原《海绵宝宝》派大星形象，粉色海星造型 + 绿色短裤，呆萌憨趣，辨识度拉满，唤起童年回忆</p><p>亲肤舒适材质：精选小兔毛面料，触感柔软细腻，安全无刺激，儿童可放心抱玩，不掉毛不闷肤</p><p>实用大号尺寸：20 寸黄金尺寸，既可以当玩偶陪伴孩子，也能做抱枕靠垫，兼具装饰与实用性</p><p>品质工艺保障：立体缝合工艺，填充饱满均匀，不易变形、不易开线，耐用性强</p><p>场景多元：适合作为生日礼物、情人节礼物、伴手礼，也可用于家居软装、店铺陈列、活动奖品</p><p><strong>🔹 购买须知</strong></p><p>出厂不含税不包邮，单品 10 个起订，支持国内代发</p><p>支持定制服务（可加印 logo、更换配色、定制专属造型、定制包装）</p><p>现货充足，发货时效快，品质稳定，适合批发商、礼品商、电商卖家长期合作</p>            ",
+    "recommended": [
+      {
+        "href": "/product/17.html",
+        "title": "背包维尼",
+        "image": "/sites/k607/bf1994c89d6d9422fd2396495a08ac3b.jpg"
+      },
+      {
+        "href": "/product/15.html",
+        "title": "飞机鲨鱼",
+        "image": "/sites/k607/cda66e77c437657aef6984c7c6c32c1d.jpg"
+      },
+      {
+        "href": "/product/14.html",
+        "title": "西瓜",
+        "image": "/sites/k607/663fdfbfb31ac941340ef3f84c75fe47.jpg"
+      },
+      {
+        "href": "/product/13.html",
+        "title": "KT猫公仔",
+        "image": "/sites/k607/953e7f4e3cc94a39a4a38da967cb2690.jpg"
+      },
+      {
+        "href": "/product/12.html",
+        "title": "奶茶KT",
+        "image": "/sites/k607/1370674d509915af1c80ff8986ad7d69.jpg"
+      }
+    ]
+  },
+  "/product/5.html": {
+    "kind": "detail",
+    "title": "苹果水豚",
+    "date": "2026-03-16",
+    "tags": [
+      "苹果水豚",
+      "毛绒玩具",
+      "兔毛公仔",
+      "可爱水豚玩偶",
+      "礼品娃娃"
+    ],
+    "images": [
+      {
+        "src": "/sites/k607/35b2040caa9ad9f468c1a3c04f22eb82.png",
+        "alt": "苹果水豚"
+      }
+    ],
+    "html": "\n              <p><strong>🔹 产品名称：</strong>20 寸苹果水豚毛绒玩具 兔毛可爱网红水豚公仔</p><p><strong>🔹 产品基本信息</strong></p><p>尺寸：60cm/20 寸（大号抱枕尺寸）</p><p>材质：优质兔毛（亲肤柔软、不掉毛、手感蓬松）</p><p>填充：高弹 PP 棉（饱满有型，不易变形）</p><p>价格：32 元 / 个（出厂不含税不包邮，单品 10 个起订）</p><p>适用场景：儿童安抚、家居装饰、节日礼品、活动赠品、批发零售</p><p><strong>🔹 产品亮点</strong></p><p>呆萌治愈造型：网红水豚形象搭配苹果装饰，憨态可掬，软萌感十足，自带清新治愈氛围</p><p>亲肤舒适材质：精选兔毛面料，触感柔软细腻，安全无刺激，儿童可放心抱玩，不掉毛不闷肤</p><p>实用大号尺寸：20 寸黄金尺寸，既可以当玩偶陪伴孩子，也能做抱枕靠垫，兼具装饰与实用性</p><p>品质工艺保障：立体缝合工艺，填充饱满均匀，不易变形、不易开线，耐用性强</p><p>场景多元：适合作为生日礼物、情人节礼物、伴手礼，也可用于家居软装、店铺陈列、活动奖品</p><p><strong>🔹 购买须知</strong></p><p>出厂不含税不包邮，单品 10 个起订，支持国内代发</p><p>支持定制服务（可加印 logo、更换装饰图案、定制专属造型、定制包装）</p><p>现货充足，发货时效快，品质稳定，适合批发商、礼品商、电商卖家长期合作</p>            ",
+    "recommended": [
+      {
+        "href": "/product/17.html",
+        "title": "背包维尼",
+        "image": "/sites/k607/bf1994c89d6d9422fd2396495a08ac3b.jpg"
+      },
+      {
+        "href": "/product/15.html",
+        "title": "飞机鲨鱼",
+        "image": "/sites/k607/cda66e77c437657aef6984c7c6c32c1d.jpg"
+      },
+      {
+        "href": "/product/14.html",
+        "title": "西瓜",
+        "image": "/sites/k607/663fdfbfb31ac941340ef3f84c75fe47.jpg"
+      },
+      {
+        "href": "/product/13.html",
+        "title": "KT猫公仔",
+        "image": "/sites/k607/953e7f4e3cc94a39a4a38da967cb2690.jpg"
+      },
+      {
+        "href": "/product/12.html",
+        "title": "奶茶KT",
+        "image": "/sites/k607/1370674d509915af1c80ff8986ad7d69.jpg"
+      }
+    ]
+  },
+  "/product/6.html": {
+    "kind": "detail",
+    "title": "草莓熊",
+    "date": "2026-03-16",
+    "tags": [
+      "草莓熊",
+      "毛绒玩具",
+      "20 寸玩偶",
+      "小兔毛公仔",
+      "礼品娃娃"
+    ],
+    "images": [
+      {
+        "src": "/sites/k607/1073063fc73b4b39ea7757b7c9f9ba23.png",
+        "alt": "草莓熊"
+      }
+    ],
+    "html": "\n              <p><strong>🔹 产品名称：</strong>20 寸草莓熊毛绒玩具 小兔毛经典粉色公仔</p><p><strong>🔹 产品基本信息</strong></p><p>尺寸：60cm/20 寸（大号抱枕黄金尺寸）</p><p>材质：优质小兔毛（亲肤柔软、不掉毛、手感蓬松细腻）</p><p>填充：高弹 PP 棉（饱满有型，不易变形、不易塌陷）</p><p>价格：32 元 / 个（出厂不含税不包邮，单品 10 个起订）</p><p>适用场景：儿童安抚陪伴、家居装饰抱枕、节日礼品、活动奖品、批发零售</p><p><strong>🔹 产品亮点</strong></p><p>经典 IP 还原：高度还原草莓熊经典粉色造型，憨态可掬的神态搭配标志性细节，自带流量与情怀，受众覆盖全年龄段</p><p>亲肤安全材质：精选小兔毛面料，触感柔软不扎肤，安全无刺激，儿童可安心抱玩，同时具备不掉毛、易打理的特点</p><p>实用大号尺寸：20 寸黄金尺寸，既可以作为专属陪伴玩偶，也能当作沙发抱枕、靠垫，装饰性与实用性双在线</p><p>品质工艺扎实：采用立体缝合工艺，填充饱满均匀，缝线牢固不易开线，耐用性强，经得起长期把玩</p><p>送礼氛围感拉满：粉色系 + 草莓熊 IP 属性，自带甜蜜氛围，是生日、情人节、纪念日等场景的优质礼品选择</p><p><strong>🔹 购买须知</strong></p><p>出厂不含税不包邮，单品 10 个起订，支持国内一件代发</p><p>支持定制服务（可加印 logo、更换包装、定制专属造型细节）</p><p>现货充足，发货时效稳定，适合批发商、礼品商、电商卖家长期合作</p>            ",
+    "recommended": [
+      {
+        "href": "/product/17.html",
+        "title": "背包维尼",
+        "image": "/sites/k607/bf1994c89d6d9422fd2396495a08ac3b.jpg"
+      },
+      {
+        "href": "/product/15.html",
+        "title": "飞机鲨鱼",
+        "image": "/sites/k607/cda66e77c437657aef6984c7c6c32c1d.jpg"
+      },
+      {
+        "href": "/product/14.html",
+        "title": "西瓜",
+        "image": "/sites/k607/663fdfbfb31ac941340ef3f84c75fe47.jpg"
+      },
+      {
+        "href": "/product/13.html",
+        "title": "KT猫公仔",
+        "image": "/sites/k607/953e7f4e3cc94a39a4a38da967cb2690.jpg"
+      },
+      {
+        "href": "/product/12.html",
+        "title": "奶茶KT",
+        "image": "/sites/k607/1370674d509915af1c80ff8986ad7d69.jpg"
+      }
+    ]
+  },
+  "/product/c1/": {
+    "kind": "list",
+    "items": [
+      {
+        "href": "/product/15.html",
+        "title": "飞机鲨鱼",
+        "image": "/sites/k607/cda66e77c437657aef6984c7c6c32c1d.jpg"
+      },
+      {
+        "href": "/product/2.html",
+        "title": "围巾猴",
+        "image": "/sites/k607/00a9416314b8714e671ca0374cef8f30.png"
+      }
+    ],
+    "pagination": [
+      {
+        "href": "/product/c1/",
+        "text": "首页"
+      },
+      {
+        "href": "/product/c1/",
+        "text": "<<"
+      },
+      {
+        "href": "javascript:;",
+        "text": "1"
+      },
+      {
+        "href": "",
+        "text": "1/1"
+      },
+      {
+        "href": "/product/c1/",
+        "text": ">>"
+      },
+      {
+        "href": "/product/c1/",
+        "text": "末页"
+      }
+    ]
+  },
+  "/product/c14/": {
+    "kind": "list",
+    "items": [
+      {
+        "href": "/product/13.html",
+        "title": "KT猫公仔",
+        "image": "/sites/k607/953e7f4e3cc94a39a4a38da967cb2690.jpg"
+      },
+      {
+        "href": "/product/12.html",
+        "title": "奶茶KT",
+        "image": "/sites/k607/1370674d509915af1c80ff8986ad7d69.jpg"
+      }
+    ],
+    "pagination": [
+      {
+        "href": "/product/c14/",
+        "text": "首页"
+      },
+      {
+        "href": "/product/c14/",
+        "text": "<<"
+      },
+      {
+        "href": "javascript:;",
+        "text": "1"
+      },
+      {
+        "href": "",
+        "text": "1/1"
+      },
+      {
+        "href": "/product/c14/",
+        "text": ">>"
+      },
+      {
+        "href": "/product/c14/",
+        "text": "末页"
+      }
+    ]
+  },
+  "/product/c15/": {
+    "kind": "list",
+    "items": [
+      {
+        "href": "/product/17.html",
+        "title": "背包维尼",
+        "image": "/sites/k607/bf1994c89d6d9422fd2396495a08ac3b.jpg"
+      }
+    ],
+    "pagination": [
+      {
+        "href": "/product/c15/",
+        "text": "首页"
+      },
+      {
+        "href": "/product/c15/",
+        "text": "<<"
+      },
+      {
+        "href": "javascript:;",
+        "text": "1"
+      },
+      {
+        "href": "",
+        "text": "1/1"
+      },
+      {
+        "href": "/product/c15/",
+        "text": ">>"
+      },
+      {
+        "href": "/product/c15/",
+        "text": "末页"
+      }
+    ]
+  },
+  "/product/c16/": {
+    "kind": "list",
+    "items": [
+      {
+        "href": "/product/17.html",
+        "title": "背包维尼",
+        "image": "/sites/k607/bf1994c89d6d9422fd2396495a08ac3b.jpg"
+      }
+    ],
+    "pagination": [
+      {
+        "href": "/product/c16/",
+        "text": "首页"
+      },
+      {
+        "href": "/product/c16/",
+        "text": "<<"
+      },
+      {
+        "href": "javascript:;",
+        "text": "1"
+      },
+      {
+        "href": "",
+        "text": "1/1"
+      },
+      {
+        "href": "/product/c16/",
+        "text": ">>"
+      },
+      {
+        "href": "/product/c16/",
+        "text": "末页"
+      }
+    ]
+  },
+  "/product/c2/": {
+    "kind": "list",
+    "items": [
+      {
+        "href": "/product/4.html",
+        "title": "派大星",
+        "image": "/sites/k607/6267209aa970045cc6b2f4ff2c8e591b.png"
+      },
+      {
+        "href": "/product/3.html",
+        "title": "唐老鸭",
+        "image": "/sites/k607/22f38b1da38dd70aae79f2e8b0ebafb0.png"
+      }
+    ],
+    "pagination": [
+      {
+        "href": "/product/c2/",
+        "text": "首页"
+      },
+      {
+        "href": "/product/c2/",
+        "text": "<<"
+      },
+      {
+        "href": "javascript:;",
+        "text": "1"
+      },
+      {
+        "href": "",
+        "text": "1/1"
+      },
+      {
+        "href": "/product/c2/",
+        "text": ">>"
+      },
+      {
+        "href": "/product/c2/",
+        "text": "末页"
+      }
+    ]
+  },
+  "/product/c3/": {
+    "kind": "list",
+    "items": [
+      {
+        "href": "/product/5.html",
+        "title": "苹果水豚",
+        "image": "/sites/k607/35b2040caa9ad9f468c1a3c04f22eb82.png"
+      },
+      {
+        "href": "/product/14.html",
+        "title": "西瓜",
+        "image": "/sites/k607/663fdfbfb31ac941340ef3f84c75fe47.jpg"
+      },
+      {
+        "href": "/product/6.html",
+        "title": "草莓熊",
+        "image": "/sites/k607/1073063fc73b4b39ea7757b7c9f9ba23.png"
+      }
+    ],
+    "pagination": [
+      {
+        "href": "/product/c3/",
+        "text": "首页"
+      },
+      {
+        "href": "/product/c3/",
+        "text": "<<"
+      },
+      {
+        "href": "javascript:;",
+        "text": "1"
+      },
+      {
+        "href": "",
+        "text": "1/1"
+      },
+      {
+        "href": "/product/c3/",
+        "text": ">>"
+      },
+      {
+        "href": "/product/c3/",
+        "text": "末页"
+      }
+    ]
+  },
+  "/product?page=2": {
+    "kind": "list",
+    "items": [
+      {
+        "href": "/product/2.html",
+        "title": "围巾猴",
+        "image": "/sites/k607/00a9416314b8714e671ca0374cef8f30.png"
+      }
+    ],
+    "pagination": [
+      {
+        "href": "/product/",
+        "text": "首页"
+      },
+      {
+        "href": "/product/",
+        "text": "<<"
+      },
+      {
+        "href": "javascript:;",
+        "text": "2"
+      },
+      {
+        "href": "",
+        "text": "2/2"
+      },
+      {
+        "href": "/product?page=2",
+        "text": ">>"
+      },
+      {
+        "href": "/product?page=2",
+        "text": "末页"
+      }
+    ]
+  }
+}

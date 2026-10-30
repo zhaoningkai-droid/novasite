@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
+import { trackGa4Inquiry } from '../analytics/ga4-browser'
 
 type Pending = { fingerprint: string; key: string }
 const requestID = () => {
@@ -54,6 +55,10 @@ export function useInquirySubmission() {
         // A login/error page can return HTTP 200; keep the form and retry key
         // until the inquiry endpoint explicitly acknowledges the submission.
         throw new Error('Inquiry submission failed')
+      }
+      // Only a newly persisted inquiry is a conversion. Honeypot/replay acknowledgements are HTTP 200.
+      if (response.status === 201) {
+        try { trackGa4Inquiry(site, attempt.key) } catch { /* Analytics must never interrupt a successful inquiry. */ }
       }
       // Only a successful acknowledgement starts a new logical submission.
       pending.current = undefined

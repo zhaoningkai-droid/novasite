@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+<meta name="renderer" content="webkit">
+<meta name="applicable-device" content="pc">
+<title>Pbootcms模板-Pbootcms模板开发-企业网站模板库</title>
+<meta name="keywords" content="Pbootcms模板,网站建设制作,APP开发,百度推广开户,全网营销服务,小程序制作">
+<meta name="description" content="邦盾营销致力于为广大中小企业提供一站式网络营销的服务商，一直坚持自主研发，不断探索与革新互联网营销方法， 为广大中小企业提供行业整体推广方案。">
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="/template/default/static/css/ui.css">
+<link rel="stylesheet" href="/template/default/static/css/cms321.css">
+<script src="/template/default/static/js/jq.js"></script>
+<script src="/template/default/static/js/ui.js"></script>
+<script src="/template/default/static/js/qrcode.js"></script>
+<script src="/template/default/static/js/pjax.js"></script>
+<script src="/template/default/static/js/lazyload.js"></script>
+<script src="/template/default/static/js/cms.js"></script>
+</head>
+<body>	
+
+       <div class="ui-filter topfix">
+	   	   
+			<a href="/"><img src="/static/upload/image/20240505/1714901069252677.jpg" alt="Pbootcms模板-Pbootcms模板开发-企业网站模板库" style="display: block; margin: 0 auto;"></a>
+        	    
+                     <div class="ui-row">
+                <div class="ui-filter-left"><span><strong>行业</strong></span></div>
+                <div class="ui-filter-right">
+                    <a href="/muban/" class="active">全部</a>
+                   <a href="/jiudian/">酒店/餐饮/旅游</a> <a href="/qiceh/">汽车/能源/环保</a> <a href="/maoyi/">贸易/运输/海关</a> <a href="/meizhuang/">美妆/配饰/鞋服</a> <a href="/jixie/">机械/设备/五金</a> <a href="/jiancai/">建材/家具/居家</a> <a href="/wangluo/">广告/传媒/网络</a> <a href="/jianzhu/">工程/建筑/装修</a> <a href="/waimao/">外贸/繁简/双语</a> <a href="/jiaoyu/">培训/教育/学习</a> <a href="/muyin/">母婴/医疗/健康</a> <a href="/nongye/">农业/养殖/果蔬</a> <a href="/boke/">博客/资讯/资源</a> <a href="/tongyong/">通用/产品/其他</a> 
+
+                                    </div>
+            </div>
+						
+			    <div class="ui-row">
+                <div class="ui-filter-left"><span><strong>教程</strong></span></div>
+                <div class="ui-filter-right">
+                    <a href="/article/" class="active">全部</a>
+                      <a href="/anzhuang/">安装教程</a><a href="/houtai/">后台使用</a><a href="/jishu/">技术分享</a><a href="/fuwu/">产品服务</a><a href="/ruanjian/">软件工具</a>
+                                    </div>
+                                    
+           <form action="/search/"  method="get">
+            <input type="text" name="keyword" placeholder="请输入关键词">
+             <input type="submit" value="立即搜索">
+           </form>                                   
+                                    
+                                    
+            </div>
+
+            </div>
+
+	<div class="width ui-mt-20 ">
+						
+        <div class="temp-list pro-list">
+        	<div class="temp-list-wrap">
+            	    
+					<div class="temp-list-item">                	                	
+					<div class="temp-list-box">
+                    	<div class="item-image white">
+                        	<a href="/qiceh/682.html" target="_blank" title="响应式自行车摩托车科技公司网站模板自适应手机端"><img data-original="/static/upload/image/20250115/1736921963623754.jpg" src="/template/default/static/picture/spacer.gif" alt="响应式自行车摩托车科技公司网站模板自适应手机端"></a>
+                        </div>
+                        <div class="item-text">
+                        	<a href="/qiceh/682.html" target="_blank" title="响应式自行车摩托车科技公司网站模板自适应手机端" class="ui-text-hide">响应式自行车摩托车科技公司网站模板自适应手机端</a>
+                        </div>
+                         <div class="my-line"><i></i></div>
+                        <div class="item-footer">
+                        	<div class="user"><a href="/qiceh/" target="_blank"><img src="/template/default/static/picture/16795929945704.jpg" title="响应式自行车摩托车科技公司网站模板自适应手机端">汽车/能源/环保</a></div>
+							<div class="user"><a href="/qiceh/682.html">↓14.07MB</a></div>
+							<div class="user"><a href="/qiceh/682.html" >P712</a></div>
+                            <!--售价<div class="info"><em>￥300</em></div>-->
+                        </div>
+                    </div>
+                </div>
+				    
+					<div class="temp-list-item">                	                	
+					<div class="temp-list-box">
+                    	<div class="item-image white">
+                        	<a href="/jixie/680.html" target="_blank" title="响应式摄像头设备安装企业网站模板自适应手机端"><img data-original="/static/upload/image/20250114/1736831447505784.jpg" src="/template/default/static/picture/spacer.gif" alt="响应式摄像头设备安装企业网站模板自适应手机端"></a>
+                        </div>
+                        <div class="item-text">
+                        	<a href="/jixie/680.html" target="_blank" title="响应式摄像头设备安装企业网站模板自适应手机端" class="ui-text-hide">响应式摄像头设备安装企业网站模板自适应手机端</a>
+                        </div>
+                         <div class="my-line"><i></i></div>
+                        <div class="item-footer">
+                        	<div class="user"><a href="/jixie/" target="_blank"><img src="/template/default/static/picture/16795929945704.jpg" title="响应式摄像头设备安装企业网站模板自适应手机端">机械/设备/五金</a></div>
+							<div class="user"><a href="/jixie/680.html">↓6.15MB</a></div>
+							<div class="user"><a href="/jixie/680.html" >P710</a></div>
+                            <!--售价<div class="info"><em>￥60</em></div>-->
+                        </div>
+                    </div>
+                </div>
+				    
+					<div class="temp-list-item">                	                	
+					<div class="temp-list-box">
+                    	<div class="item-image white">
+                        	<a href="/jiancai/679.html" target="_blank" title="多用途精美家具企业网站模板自适应手机端"><img data-original="/static/upload/image/20250114/1736823879905356.jpg" src="/template/default/static/picture/spacer.gif" alt="多用途精美家具企业网站模板自适应手机端"></a>
+                        </div>
+                        <div class="item-text">
+                        	<a href="/jiancai/679.html" target="_blank" title="多用途精美家具企业网站模板自适应手机端" class="ui-text-hide">多用途精美家具企业网站模板自适应手机端</a>
+                        </div>
+                         <div class="my-line"><i></i></div>
+                        <div class="item-footer">
+                        	<div class="user"><a href="/jiancai/" target="_blank"><img src="/template/default/static/picture/16795929945704.jpg" title="多用途精美家具企业网站模板自适应手机端">建材/家具/居家</a></div>
+							<div class="user"><a href="/jiancai/679.html">↓11.00MB</a></div>
+							<div class="user"><a href="/jiancai/679.html" >P709</a></div>
+                            <!--售价<div class="info"><em>￥300</em></div>-->
+                        </div>
+                    </div>
+                </div>
+				    
+					<div class="temp-list-item">                	                	
+					<div class="temp-list-box">
+                    	<div class="item-image white">
+                        	<a href="/jixie/678.html" target="_blank" title="响应式家电产品展示销售企业网站模板自适应手机端"><img data-original="/static/upload/image/20250112/1736665787904097.jpg" src="/template/default/static/picture/spacer.gif" alt="响应式家电产品展示销售企业网站模板自适应手机端"></a>
+                        </div>
+                        <div class="item-text">
+                        	<a href="/jixie/678.html" target="_blank" title="响应式家电产品展示销售企业网站模板自适应手机端" class="ui-text-hide">响应式家电产品展示销售企业网站模板自适应手机端</a>
+                        </div>
+                         <div class="my-line"><i></i></div>
+                        <div class="item-footer">
+                        	<div class="user"><a href="/jixie/" target="_blank"><img src="/template/default/static/picture/16795929945704.jpg" title="响应式家电产品展示销售企业网站模板自适应手机端">机械/设备/五金</a></div>
+							<div class="user"><a href="/jixie/678.html">↓17.42MB</a></div>
+							<div class="user"><a href="/jixie/678.html" >P708</a></div>
+                            <!--售价<div class="info"><em>￥180</em></div>-->
+                        </div>
+                    </div>
+                </div>
+				    
+					<div class="temp-list-item">                	                	
+					<div class="temp-list-box">
+                    	<div class="item-image white">
+                        	<a href="/meizhuang/676.html" target="_blank" title="响应式美妆化妆品集团公司网站模板自适应手机端"><img data-original="/static/upload/image/20250110/1736490746446477.jpg" src="/template/default/static/picture/spacer.gif" alt="响应式美妆化妆品集团公司网站模板自适应手机端"></a>
+                        </div>
+                        <div class="item-text">
+                        	<a href="/meizhuang/676.html" target="_blank" title="响应式美妆化妆品集团公司网站模板自适应手机端" class="ui-text-hide">响应式美妆化妆品集团公司网站模板自适应手机端</a>
+                        </div>
+                         <div class="my-line"><i></i></div>
+                        <div class="item-footer">
+                        	<div class="user"><a href="/meizhuang/" target="_blank"><img src="/template/default/static/picture/16795929945704.jpg" title="响应式美妆化妆品集团公司网站模板自适应手机端">美妆/配饰/鞋服</a></div>
+							<div class="user"><a href="/meizhuang/676.html">↓15.32MB</a></div>
+							<div class="user"><a href="/meizhuang/676.html" >P706</a></div>
+                            <!--售价<div class="info"><em>￥180</em></div>-->
+                        </div>
+                    </div>
+                </div>
+				    
+					<div class="temp-list-item">                	                	
+					<div class="temp-list-box">
+                    	<div class="item-image white">
+                        	<a href="/waimao/675.html" target="_blank" title="响应式日用化妆品外贸英文企业网站模板自适应手机端"><img data-original="/static/upload/image/20250107/1736226790864634.jpg" src="/template/default/static/picture/spacer.gif" alt="响应式日用化妆品外贸英文企业网站模板自适应手机端"></a>
+                        </div>
+                        <div class="item-text">
+                        	<a href="/waimao/675.html" target="_blank" title="响应式日用化妆品外贸英文企业网站模板自适应手机端" class="ui-text-hide">响应式日用化妆品外贸英文企业网站模板自适应手机端</a>
+                        </div>
+                         <div class="my-line"><i></i></div>
+                        <div class="item-footer">
+                        	<div class="user"><a href="/waimao/" target="_blank"><img src="/template/default/static/picture/16795929945704.jpg" title="响应式日用化妆品外贸英文企业网站模板自适应手机端">外贸/繁简/双语</a></div>
+							<div class="user"><a href="/waimao/675.html">↓11.47MB</a></div>
+							<div class="user"><a href="/waimao/675.html" >P705</a></div>
+                            <!--售价<div class="info"><em>￥150</em></div>-->
+                        </div>
+                    </div>
+                </div>
+				    
+					<div class="temp-list-item">                	                	
+					<div class="temp-list-box">
+                    	<div class="item-image white">
+                        	<a href="/jixie/674.html" target="_blank" title="锚杆生产厂家中空零件设备企业网站模板自适应手机端"><img data-original="/static/upload/image/20250106/1736128813481946.jpg" src="/template/default/static/picture/spacer.gif" alt="锚杆生产厂家中空零件设备企业网站模板自适应手机端"></a>
+                        </div>
+                        <div class="item-text">
+                        	<a href="/jixie/674.html" target="_blank" title="锚杆生产厂家中空零件设备企业网站模板自适应手机端" class="ui-text-hide">锚杆生产厂家中空零件设备企业网站模板自适应手机端</a>
+                        </div>
+                         <div class="my-line"><i></i></div>
+                        <div class="item-footer">
+                        	<div class="user"><a href="/jixie/" target="_blank"><img src="/template/default/static/picture/16795929945704.jpg" title="锚杆生产厂家中空零件设备企业网站模板自适应手机端">机械/设备/五金</a></div>
+							<div class="user"><a href="/jixie/674.html">↓5.33MB</a></div>
+							<div class="user"><a href="/jixie/674.html" >P704</a></div>
+                            <!--售价<div class="info"><em>￥35</em></div>-->
+                        </div>
+                    </div>
+                </div>
+				    
+					<div class="temp-list-item">                	                	
+					<div class="temp-list-box">
+                    	<div class="item-image white">
+                        	<a href="/tongyong/673.html" target="_blank" title="大气奶茶饮品加盟品牌官网网站模板自适应手机端"><img data-original="/static/upload/image/20250106/1736126544610335.jpg" src="/template/default/static/picture/spacer.gif" alt="大气奶茶饮品加盟品牌官网网站模板自适应手机端"></a>
+                        </div>
+                        <div class="item-text">
+                        	<a href="/tongyong/673.html" target="_blank" title="大气奶茶饮品加盟品牌官网网站模板自适应手机端" class="ui-text-hide">大气奶茶饮品加盟品牌官网网站模板自适应手机端</a>
+                        </div>
+                         <div class="my-line"><i></i></div>
+                        <div class="item-footer">
+                        	<div class="user"><a href="/tongyong/" target="_blank"><img src="/template/default/static/picture/16795929945704.jpg" title="大气奶茶饮品加盟品牌官网网站模板自适应手机端">通用/产品/其他</a></div>
+							<div class="user"><a href="/tongyong/673.html">↓20.68MB</a></div>
+							<div class="user"><a href="/tongyong/673.html" >P703</a></div>
+                            <!--售价<div class="info"><em>￥300</em></div>-->
+                        </div>
+                    </div>
+                </div>
+				    
+					<div class="temp-list-item">                	                	
+					<div class="temp-list-box">
+                    	<div class="item-image white">
+                        	<a href="/nongye/681.html" target="_blank" title="有机食品农业产品配送企业网站模板自适应手机端"><img data-original="/static/upload/image/20250114/1736837029934418.jpg" src="/template/default/static/picture/spacer.gif" alt="有机食品农业产品配送企业网站模板自适应手机端"></a>
+                        </div>
+                        <div class="item-text">
+                        	<a href="/nongye/681.html" target="_blank" title="有机食品农业产品配送企业网站模板自适应手机端" class="ui-text-hide">有机食品农业产品配送企业网站模板自适应手机端</a>
+                        </div>
+                         <div class="my-line"><i></i></div>
+                        <div class="item-footer">
+                        	<div class="user"><a href="/nongye/" target="_blank"><img src="/template/default/static/picture/16795929945704.jpg" title="有机食品农业产品配送企业网站模板自适应手机端">农业/养殖/果蔬</a></div>
+							<div class="user"><a href="/nongye/681.html">↓6.69MB</a></div>
+							<div class="user"><a href="/nongye/681.html" >P711</a></div>
+                            <!--售价<div class="info"><em>￥50</em></div>-->
+                        </div>
+                    </div>
+                </div>
+				    
+					<div class="temp-list-item">                	                	
+					<div class="temp-list-box">
+                    	<div class="item-image white">
+                        	<a href="/tongyong/672.html" target="_blank" title="响应式集团科技企业官网网站模板自适应手机端"><img data-original="/static/upload/image/20241227/1735275611946651.jpg" src="/template/default/static/picture/spacer.gif" alt="响应式集团科技企业官网网站模板自适应手机端"></a>
+                        </div>
+                        <div class="item-text">
+                        	<a href="/tongyong/672.html" target="_blank" title="响应式集团科技企业官网网站模板自适应手机端" class="ui-text-hide">响应式集团科技企业官网网站模板自适应手机端</a>
+                        </div>
+                         <div class="my-line"><i></i></div>
+                        <div class="item-footer">
+                        	<div class="user"><a href="/tongyong/" target="_blank"><img src="/template/default/static/picture/16795929945704.jpg" title="响应式集团科技企业官网网站模板自适应手机端">通用/产品/其他</a></div>
+							<div class="user"><a href="/tongyong/672.html">↓27.36MB</a></div>
+							<div class="user"><a href="/tongyong/672.html" >P702</a></div>
+                            <!--售价<div class="info"><em>￥320</em></div>-->
+                        </div>
+                    </div>
+                </div>
+				    
+					<div class="temp-list-item">                	                	
+					<div class="temp-list-box">
+                    	<div class="item-image white">
+                        	<a href="/meizhuang/677.html" target="_blank" title="消防设备生产加工企业展示网站模板自适应手机端"><img data-original="/static/upload/image/20250110/1736495806409499.jpg" src="/template/default/static/picture/spacer.gif" alt="消防设备生产加工企业展示网站模板自适应手机端"></a>
+                        </div>
+                        <div class="item-text">
+                        	<a href="/meizhuang/677.html" target="_blank" title="消防设备生产加工企业展示网站模板自适应手机端" class="ui-text-hide">消防设备生产加工企业展示网站模板自适应手机端</a>
+                        </div>
+                         <div class="my-line"><i></i></div>
+                        <div class="item-footer">
+                        	<div class="user"><a href="/meizhuang/" target="_blank"><img src="/template/default/static/picture/16795929945704.jpg" title="消防设备生产加工企业展示网站模板自适应手机端">美妆/配饰/鞋服</a></div>
+							<div class="user"><a href="/meizhuang/677.html">↓7.72MB</a></div>
+							<div class="user"><a href="/meizhuang/677.html" >P707</a></div>
+                            <!--售价<div class="info"><em>￥45</em></div>-->
+                        </div>
+                    </div>
+                </div>
+				    
+					<div class="temp-list-item">                	                	
+					<div class="temp-list-box">
+                    	<div class="item-image white">
+                        	<a href="/wangluo/671.html" target="_blank" title="企业网站模板资源软件工具分享网站自适应手机端"><img data-original="/static/upload/image/20241112/1731413425985235.jpg" src="/template/default/static/picture/spacer.gif" alt="企业网站模板资源软件工具分享网站自适应手机端"></a>
+                        </div>
+                        <div class="item-text">
+                        	<a href="/wangluo/671.html" target="_blank" title="企业网站模板资源软件工具分享网站自适应手机端" class="ui-text-hide">企业网站模板资源软件工具分享网站自适应手机端</a>
+                        </div>
+                         <div class="my-line"><i></i></div>
+                        <div class="item-footer">
+                        	<div class="user"><a href="/wangluo/" target="_blank"><img src="/template/default/static/picture/16795929945704.jpg" title="企业网站模板资源软件工具分享网站自适应手机端">广告/传媒/网络</a></div>
+							<div class="user"><a href="/wangluo/671.html">↓8.86MB</a></div>
+							<div class="user"><a href="/wangluo/671.html" >P701</a></div>
+                            <!--售价<div class="info"><em>￥120</em></div>-->
+                        </div>
+                    </div>
+                </div>
+				    
+					<div class="temp-list-item">                	                	
+					<div class="temp-list-box">
+                    	<div class="item-image white">
+                        	<a href="/jixie/670.html" target="_blank" title="多用途企业通用型展示下载网站模板自适应手机端"><img data-original="/static/upload/image/20241025/1729822394529354.jpg" src="/template/default/static/picture/spacer.gif" alt="多用途企业通用型展示下载网站模板自适应手机端"></a>
+                        </div>
+                        <div class="item-text">
+                        	<a href="/jixie/670.html" target="_blank" title="多用途企业通用型展示下载网站模板自适应手机端" class="ui-text-hide">多用途企业通用型展示下载网站模板自适应手机端</a>
+                        </div>
+                         <div class="my-line"><i></i></div>
+                        <div class="item-footer">
+                        	<div class="user"><a href="/jixie/" target="_blank"><img src="/template/default/static/picture/16795929945704.jpg" title="多用途企业通用型展示下载网站模板自适应手机端">机械/设备/五金</a></div>
+							<div class="user"><a href="/jixie/670.html">↓12.26MB</a></div>
+							<div class="user"><a href="/jixie/670.html" >P700</a></div>
+                            <!--售价<div class="info"><em>￥80</em></div>-->
+                        </div>
+                    </div>
+                </div>
+				    
+					<div class="temp-list-item">                	                	
+					<div class="temp-list-box">
+                    	<div class="item-image white">
+                        	<a href="/jixie/669.html" target="_blank" title="响应式人脸识别一体机企业网站模板自适应手机端"><img data-original="/static/upload/image/20241023/1729671458116492.jpg" src="/template/default/static/picture/spacer.gif" alt="响应式人脸识别一体机企业网站模板自适应手机端"></a>
+                        </div>
+                        <div class="item-text">
+                        	<a href="/jixie/669.html" target="_blank" title="响应式人脸识别一体机企业网站模板自适应手机端" class="ui-text-hide">响应式人脸识别一体机企业网站模板自适应手机端</a>
+                        </div>
+                         <div class="my-line"><i></i></div>
+                        <div class="item-footer">
+                        	<div class="user"><a href="/jixie/" target="_blank"><img src="/template/default/static/picture/16795929945704.jpg" title="响应式人脸识别一体机企业网站模板自适应手机端">机械/设备/五金</a></div>
+							<div class="user"><a href="/jixie/669.html">↓13.32MB</a></div>
+							<div class="user"><a href="/jixie/669.html" >P699</a></div>
+                            <!--售价<div class="info"><em>￥150</em></div>-->
+                        </div>
+                    </div>
+                </div>
+				    
+					<div class="temp-list-item">                	                	
+					<div class="temp-list-box">
+                    	<div class="item-image white">
+                        	<a href="/tongyong/664.html" target="_blank" title="多用途企业通用型展示网站模板自适应手机端"><img data-original="/static/upload/image/20241018/1729242375846181.jpg" src="/template/default/static/picture/spacer.gif" alt="多用途企业通用型展示网站模板自适应手机端"></a>
+                        </div>
+                        <div class="item-text">
+                        	<a href="/tongyong/664.html" target="_blank" title="多用途企业通用型展示网站模板自适应手机端" class="ui-text-hide">多用途企业通用型展示网站模板自适应手机端</a>
+                        </div>
+                         <div class="my-line"><i></i></div>
+                        <div class="item-footer">
+                        	<div class="user"><a href="/tongyong/" target="_blank"><img src="/template/default/static/picture/16795929945704.jpg" title="多用途企业通用型展示网站模板自适应手机端">通用/产品/其他</a></div>
+							<div class="user"><a href="/tongyong/664.html">↓11.95MB</a></div>
+							<div class="user"><a href="/tongyong/664.html" >P694</a></div>
+                            <!--售价<div class="info"><em>￥80</em></div>-->
+                        </div>
+                    </div>
+                </div>
+				
+                            </div>
+        </div>
+		
+	      
+		  <div class="ui-page red mid center ui-mb-20  ui-mt-30">
+            <ul>
+			<li><a href="/muban/">查看更多模板</a></li>
+			</ul>
+        </div>	
+		
+		
+            </div>
+			
+			
+<div class="footer">
+<div class="reason width">
+<h3>为什么选择我们？</h3>
+<div class="ui-row">
+            <div class="ui-col-2">
+                <i class="ui-icon-hao"></i><p>
+物美价廉多买多送<br>低于市场价50%</p>
+            </div>
+            <div class="ui-col-2">
+                <i class="ui-icon-sheng"></i><p>
+省时省力持续更新<br>
+专人负责网站内容</p>
+            </div>
+            <div class="ui-col-2">
+                <i class="ui-icon-you"></i><p>优质模板宁缺毋滥<br>多次审查严格筛选</p>
+            </div>
+            <div class="ui-col-2">
+                <i class="ui-icon-kuai"></i><p>极速响应售后服务<br>
+一对一用心服务</p>
+            </div>
+            <div class="ui-col-4"><div class="wx-f">
+               <img src="/static/upload/image/20230517/1684311972633183.png" title="微信扫码" width="auto" height="auto"><p>移动端访问</p></div>
+            </div>
+        </div>
+</div>
+    <div class="copyright">
+        <div class="copyright-body widths">
+            <div>Copyright © 2018-2020 邦盾营销服务 All Rights Reserved.<a href="/sitemap.xml">网站地图</a>　</div>
+            <div><a href="https://beian.miit.gov.cn" target="_blank" rel="nofollow">沪ICP备17007001号</a>　</div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="ui-sidebar">
+    <ul>
+                <li><a href="tencent://message/?uin=776560293" title="在线客服" rel="nofollow"><i class="ui-icon-qq"></i></a><div>在线客服</div></li>
+                <li><a href="javascript:;" title="微信扫码" rel="nofollow"><i class="ui-icon-weixin"></i><div class="image">
+				<img src="/static/upload/image/20230518/1684374394600459.jpg" title="微信扫码" width="200" height="auto">使用【微信】扫一扫</div></a></li>    
+				<li class="ui-backtop"><a href="javascript:;" title="返回顶部" rel="nofollow"><i class="ui-icon-top"></i></a><div>返回顶部</div></li>
+    </ul>
+</div>
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?335b45aafdb3f9c8d1793e191b792e67";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+<script>
+document.onkeydown=function(){
+var e = window.event||arguments[0];
+if(e.keyCode==123){
+  alert('本站模板仅演示站代码加密，下载模板无加密，仿站请咨询微信：goodung');
+return false;
+}else if((e.ctrlKey)&&(e.shiftKey)&&(e.keyCode==73)){
+  alert('本站模板仅演示站代码加密，下载模板无加密，，仿站请咨询微信：goodung');
+return false;
+}else if((e.ctrlKey)&&(e.keyCode==85)){
+alert('本站模板仅演示站代码加密，下载模板无加密，，仿站请咨询微信：goodung');
+return false;
+}else if((e.ctrlKey)&&(e.keyCode==83)){
+alert('本站模板仅演示站代码加密，下载模板无加密，，仿站请咨询微信：goodung');
+return false;
+}
+}
+document.oncontextmenu=function(){
+  alert('本站模板仅演示站代码加密，下载模板无加密，，仿站请咨询微信：goodung');
+return false;
+}
+</script>
+
+
+
+</body>
+</html>

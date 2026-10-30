@@ -6,9 +6,15 @@ import { getAccessibleWorkspaceCompanyBySlug } from '@/platform/workspace'
 import { getMeUser } from '@/utilities/getMeUser'
 
 export const metadata: Metadata = { title: 'GEO搜索词追踪' }
-export default async function GeoVisibilityPage({ params }: { params: Promise<{ company: string }> }) {
+export default async function GeoVisibilityPage({
+  params,
+}: {
+  params: Promise<{ company: string }>
+}) {
   const { company: slug } = await params
-  const { user } = await getMeUser({ nullUserRedirect: '/admin/login?redirect=/workspace/companies' })
+  const { user } = await getMeUser({
+    nullUserRedirect: '/admin/login?redirect=/workspace/companies',
+  })
   if (!userHasRole(user, ['super-admin', 'site-admin', 'editor'])) notFound()
   const company = await getAccessibleWorkspaceCompanyBySlug(user, slug)
   if (!company) notFound()

@@ -54,17 +54,15 @@ const input = (kind = 'expand', questions: GeoQuestion[] = []) =>
     config,
   )
 const provider = (data: object, usage?: object) =>
-  vi
-    .fn()
-    .mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          usage,
-          choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(data) } }],
-        }),
-        { status: 200 },
-      ),
-    )
+  vi.fn().mockResolvedValue(
+    new Response(
+      JSON.stringify({
+        usage,
+        choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(data) } }],
+      }),
+      { status: 200 },
+    ),
+  )
 describe('GEO creation configuration and question identity', () => {
   it('accepts a finite group-only task and rejects missing groups or unlimited counts', () => {
     expect(parseGeoTask(task()).count).toBe(1)
@@ -307,39 +305,162 @@ describe('GEO provider with injected responses only, no network', () => {
 
 describe('GEO full-selection generation regression', () => {
   it('accepts more than twenty useful questions without rejecting the entire result', async () => {
-    const questions = Array.from({length:40},(_,i)=>({term:'配电柜',text:`采购场景${i+1}的配电柜有哪些厂家可以了解？`}))
-    const result=await runGeoQuestionAI(input(),config,{key:'fixture',model:'fixture',fetcher:provider({questions})})
+    const questions = Array.from({ length: 40 }, (_, i) => ({
+      term: '配电柜',
+      text: `采购场景${i + 1}的配电柜有哪些厂家可以了解？`,
+    }))
+    const result = await runGeoQuestionAI(input(), config, {
+      key: 'fixture',
+      model: 'fixture',
+      fetcher: provider({ questions }),
+    })
     expect(result.questions).toHaveLength(40)
   })
   it('normalizes omitted spaces in a selected term without accepting unrelated products', async () => {
-    const custom={...config,core:'T 型螺栓'}
-    const result=await runGeoQuestionAI({...input(),terms:['T 型螺栓']},custom,{key:'fixture',model:'fixture',fetcher:provider({questions:[{term:'T型螺栓',text:'T型螺栓批量采购有哪些厂家可以比较？'}]})})
+    const custom = { ...config, core: 'T 型螺栓' }
+    const result = await runGeoQuestionAI({ ...input(), terms: ['T 型螺栓'] }, custom, {
+      key: 'fixture',
+      model: 'fixture',
+      fetcher: provider({
+        questions: [{ term: 'T型螺栓', text: 'T型螺栓批量采购有哪些厂家可以比较？' }],
+      }),
+    })
     expect(result.questions[0].term).toBe('T 型螺栓')
     expect(result.questions[0].original).toContain('T 型螺栓')
   })
-  it('covers core plus all ten subterms and returns about forty questions across automatic batches', async () => {
-    const terms=[config.core,...config.terms]
-    const fetcher=vi.fn(async (_url:unknown,init?:RequestInit)=>{
-      const body=JSON.parse(String(init?.body))
-      const selected=JSON.parse(body.messages[1].content).terms as string[]
-      const perTerm=Number(body.messages[0].content.match(/exactly (\d+)/)[1])
-      return provider({questions:selected.flatMap(term=>Array.from({length:perTerm},(_,i)=>({term,text:`采购场景${i+1}的${term}有哪些厂家？`})))})()
+  it('covers core plus all ten subterms and covers ten buyer-intent slots per product across automatic batches', async () => {
+    const terms = [config.core, ...config.terms]
+    const fetcher = vi.fn(async (_url: unknown, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body))
+      const selected = JSON.parse(body.messages[1].content).terms as string[]
+      const perTerm = Number(body.messages[0].content.match(/exactly (\d+)/)[1])
+      return provider({
+        questions: selected.flatMap((term) =>
+          Array.from({ length: perTerm }, (_, i) => ({
+            term,
+            text: `采购场景${i + 1}的${term}有哪些厂家？`,
+          })),
+        ),
+      })()
     })
-    const result=await runGeoQuestionAI({...input(),terms},config,{key:'fixture',model:'fixture',fetcher})
-    expect(result.questions).toHaveLength(44)
-    expect(new Set(result.questions.map(q=>q.term))).toEqual(new Set(terms))
+    const result = await runGeoQuestionAI({ ...input(), terms }, config, {
+      key: 'fixture',
+      model: 'fixture',
+      fetcher,
+    })
+    expect(result.questions).toHaveLength(110)
+    expect(new Set(result.questions.map((q) => q.term))).toEqual(new Set(terms))
   })
 })
 
-
 describe('GEO mixed provider output', () => {
   it('keeps valid questions when the model includes an unrelated extra item or an alternate text field', async () => {
-    const result=await runGeoQuestionAI(input(),config,{key:'fixture',model:'fixture',fetcher:provider({questions:[
-      {term:'配电柜',text:'配电柜有哪些供应商可以比较？'},
-      {term:'无关产品',text:'无关产品怎么买？'},
-      {term:'配电柜',question:'采购配电柜需要了解哪些交付条件？'},
-    ]})})
+    const result = await runGeoQuestionAI(input(), config, {
+      key: 'fixture',
+      model: 'fixture',
+      fetcher: provider({
+        questions: [
+          { term: '配电柜', text: '配电柜有哪些供应商可以比较？' },
+          { term: '无关产品', text: '无关产品怎么买？' },
+          { term: '配电柜', question: '采购配电柜需要了解哪些交付条件？' },
+        ],
+      }),
+    })
     expect(result.questions).toHaveLength(2)
-    expect(result.questions.every(q=>q.term==='配电柜')).toBe(true)
+    expect(result.questions.every((q) => q.term === '配电柜')).toBe(true)
+  })
+})
+
+// Scenarios observed in the reference site's 42-question generation, 2026-10-19.
+describe('GEO reference question wording', () => {
+  it('preserves faithful shorter product wording instead of adding an artificial keyword prefix', async () => {
+    const term = '伺服防爆控制电机'
+    const result = await runGeoQuestionAI(
+      { ...input(), terms: [term] },
+      { ...config, core: '防爆控制电机', terms: [term] },
+      {
+        key: 'fixture',
+        model: 'fixture',
+        fetcher: provider({
+          questions: [
+            { term, text: '中国伺服防爆电机厂家推荐？' },
+            { term, text: '中国伺服防爆电机出厂价多少？' },
+            { term, text: '哪个餐馆适合聚餐？' },
+          ],
+        }),
+      },
+    )
+    expect(result.questions.map((q) => q.original)).toEqual([
+      '中国伺服防爆电机厂家推荐？',
+      '中国伺服防爆电机出厂价多少？',
+    ])
+    expect(result.questions.every((q) => q.term === term)).toBe(true)
+  })
+  it('keeps the supplied food-waste equipment abbreviation without inventing a keyword prefix', async () => {
+    const term = '餐厨垃圾处理设备'
+    const result = await runGeoQuestionAI(
+      { ...input(), terms: [term] },
+      { ...config, core: term, terms: [term] },
+      {
+        key: 'fixture',
+        model: 'fixture',
+        fetcher: provider({
+          questions: [
+            { term, text: '中国餐厨设备厂家包安装调试吗？' },
+            { term, text: '中国餐厨设备厂能提供海外售后吗？' },
+          ],
+        }),
+      },
+    )
+    expect(result.questions.map((q) => q.original)).toEqual([
+      '中国餐厨设备厂家包安装调试吗？',
+      '中国餐厨设备厂能提供海外售后吗？',
+    ])
+  })
+  it('excludes previous query text when appending another generation', async () => {
+    const previous = '中国配电柜供应商有哪些？'
+    const parsed = parseGeoAIInput({ ...input(), previousQuestions: [previous] }, config)
+    const result = await runGeoQuestionAI(parsed, config, {
+      key: 'fixture',
+      model: 'fixture',
+      fetcher: provider({
+        questions: [
+          { term: '配电柜', text: previous },
+          { term: '配电柜', text: '中国配电柜厂交货周期多久？' },
+        ],
+      }),
+    })
+    expect(result.questions.map((q) => q.original)).toEqual(['中国配电柜厂交货周期多久？'])
+  })
+  it('does not assign a neighboring transformer product to the selected subtype', async () => {
+    const term = '环形变压器'
+    const result = await runGeoQuestionAI(
+      { ...input(), terms: [term] },
+      { ...config, core: '变压器', terms: [term] },
+      {
+        key: 'fixture',
+        model: 'fixture',
+        fetcher: provider({
+          questions: [
+            { term, text: '中国方形变压器厂家推荐？' },
+            { term, text: '中国环形变压器供应商有哪些？' },
+          ],
+        }),
+      },
+    )
+    expect(result.questions.map((q) => q.original)).toEqual(['中国环形变压器供应商有哪些？'])
+  })
+  it('does not retain a target-brand prompt as an independent discovery question', async () => {
+    const result = await runGeoQuestionAI(input(), config, {
+      key: 'fixture',
+      model: 'fixture',
+      fetcher: provider({
+        questions: [
+          { term: '配电柜', text: `${config.brand}的配电柜怎么样？` },
+          { term: '配电柜', text: '中国配电柜厂家有哪些？' },
+        ],
+      }),
+    })
+    expect(result.questions.map((q) => q.original)).toEqual(['中国配电柜厂家有哪些？'])
   })
 })

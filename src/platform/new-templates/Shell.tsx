@@ -1,3 +1,6 @@
+import { isAllyKey } from '@/platform/allynav-template/key'
+import { ReferenceTenantShell } from '@/platform/reference-templates/TenantShell'
+import { isReferenceKey } from '@/platform/reference-templates/keys'
 import Link from 'next/link'
 import type { CSSProperties, ReactNode } from 'react'
 import { getPayload } from 'payload'
@@ -29,6 +32,20 @@ export async function TemplateShell({
   preview?: boolean
   user?: User
 }) {
+  if (isAllyKey(template.key)) return <>{children}</>
+  if (isReferenceKey(template.key))
+    return (
+      <ReferenceTenantShell
+        site={site}
+        locale={locale}
+        templateKey={template.key}
+        base={base}
+        preview={preview}
+        user={user}
+      >
+        {children}
+      </ReferenceTenantShell>
+    )
   if (isIndustryKey(template.key))
     return (
       <IndustryTenantShell
@@ -138,7 +155,13 @@ export async function TemplateShell({
       ) : null}
       <header className="nt-header">
         <div className="nt-wrap nt-header-inner">
-          <CustomerBrand className="nt-logo" href={base} companyName={site.branding.companyName} headerText={site.branding.headerText} logo={logo?.url} />
+          <CustomerBrand
+            className="nt-logo"
+            href={base}
+            companyName={site.branding.companyName}
+            headerText={site.branding.headerText}
+            logo={logo?.url}
+          />
           <nav className="nt-navigation" aria-label={t.menu}>
             {menu}
           </nav>

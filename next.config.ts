@@ -21,8 +21,10 @@ const tunnelHost = process.env.NOVASITE_TUNNEL_HOST
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  ...(process.env.NOVASITE_TSCONFIG_PATH ? { typescript: { tsconfigPath: process.env.NOVASITE_TSCONFIG_PATH } } : {}),
   // 256MiB videos plus multipart fields; match the media route and edge limit.
   experimental: { proxyClientMaxBodySize: 257 * 1024 * 1024 },
+  serverExternalPackages: ['pdf-parse', 'mammoth', 'read-excel-file'],
   // Keep production verification isolated from an active local development server.
   distDir: process.env.NOVASITE_BUILD_DIR || '.next',
   allowedDevOrigins: ['*.trycloudflare.com', ...(tunnelHost ? [tunnelHost] : [])],

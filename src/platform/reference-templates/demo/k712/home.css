@@ -1,0 +1,369 @@
+/* Source homepage inline styles, followed by the React motion adapter. */
+.clone-demo-k712 .sl_list .swiper-slide em {
+  display: block;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: bold;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.clone-demo-k712 .sl_list .swiper-slide p {
+  margin: 15px 0;
+  font-size: 15px;
+  text-align: justify;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  line-height: 1.5em;
+  max-height: 4.5em;
+  text-align: left;
+}
+.clone-demo-k712 .sl_list .swiper-slide a span {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: block;
+  overflow: hidden;
+  box-shadow: 0 0 10px #ccc;
+}
+.clone-demo-k712 .sl_list .swiper-slide a span img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.clone-demo-k712 .case .swiper-wrapper {
+  display: flex !important;
+  align-items: flex-start !important;
+}
+.clone-demo-k712 .case .swiper-slide {
+  height: auto !important;
+  align-self: flex-start;
+}
+.clone-demo-k712 .case .swiper-slide:nth-child(2n) {
+  margin-top: 40px !important;
+}
+.clone-demo-k712 .case .swiper-slide .photo {
+  padding-bottom: 56.25% !important;
+  height: 0;
+  width: 100%;
+}
+.clone-demo-k712 .case .swiper-slide .photo .pic {
+  background-size: cover !important;
+  background-position: center !important;
+}
+.clone-demo-k712 .case .swiper-slide .msg h3 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.clone-demo-k712 .case .swiper-wrapper {
+  min-height: 300px;
+  height: 300px;
+}
+
+.clone-demo-k712 .gallery-thumbs .indexP-swiper-items {
+  cursor: pointer;
+}
+.clone-demo-k712 .gallery-thumbs .indexP-swiper-items.active,
+.clone-demo-k712 .gallery-thumbs .indexP-swiper-items:hover {
+  background-color: #007ED1 !important;
+  color: #fff !important;
+}
+.clone-demo-k712 .gallery-thumbs .indexP-swiper-items.active a,
+.clone-demo-k712 .gallery-thumbs .indexP-swiper-items:hover a {
+  color: #fff !important;
+  background: transparent !important;
+}
+.clone-demo-k712 .gallery-thumbs .indexP-swiper-items:not(.active):not(:hover) {
+  background-color: rgba(255,255,255,.8) !important;
+  color: #333 !important;
+}
+.clone-demo-k712 .gallery-thumbs .indexP-swiper-items:not(.active):not(:hover) a {
+  color: #333 !important;
+  background: transparent !important;
+}
+.clone-demo-k712 .sl_list .swiper-slide a span:empty,
+.clone-demo-k712 .sl_empty {
+  text-align: center;
+  padding: 40px 0;
+  color: #999;
+  font-size: 16px;
+}
+
+/* 手机端样式 */
+@media (max-width: 767px) {
+  .clone-demo-k712 .case .swiper-wrapper {
+    min-height: 400px;
+    height: 400px;
+  }
+}
+.clone-demo-k712 .text-white-50{ color: #000!important;}
+.clone-demo-k712 .news-list .swiper-slide a {
+  display: flex;
+  flex-direction: column;
+}
+.clone-demo-k712 .news-list .swiper-slide a .img-box {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  display: block;
+}
+
+/* 证书展示样式 */
+.clone-demo-k712 .certificate-section {
+  position: relative;
+  padding: 20px 0;
+}
+.clone-demo-k712 .certificate-list {
+  padding-bottom: 40px;
+}
+.clone-demo-k712 .certificate-item {
+  text-align: center;
+}
+.clone-demo-k712 .certificate-img {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #ddd;
+  aspect-ratio: 4 / 3;
+}
+.clone-demo-k712 .certificate-img img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  transition: all 0.3s ease;
+}
+.clone-demo-k712 .certificate-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.clone-demo-k712 .certificate-item:hover .certificate-overlay {
+  opacity: 1;
+}
+.clone-demo-k712 .certificate-overlay i {
+  color: #fff;
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+.clone-demo-k712 .certificate-overlay .certificate-title-hover {
+  color: #fff;
+  font-size: 16px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90%;
+}
+.clone-demo-k712 .certificate-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 8px 15px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.clone-demo-k712 .certificate-item:hover .certificate-title {
+  display: none;
+}
+.clone-demo-k712 .certificate-pagination {
+  text-align: center;
+  margin-top: 20px;
+}
+.clone-demo-k712 .certificate-pagination .swiper-pagination-bullet {
+  width: 12px;
+  height: 12px;
+  background: #ddd;
+  opacity: 1;
+  margin: 0 5px;
+  border-radius: 0;
+}
+.clone-demo-k712 .certificate-pagination .swiper-pagination-bullet-active {
+  background: #007ED1;
+}
+.clone-demo-k712 .news-list .swiper-slide a .img-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.clone-demo-k712 .news-list .swiper-slide b {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.clone-demo-k712 .news-list .swiper-slide p {
+  -webkit-line-clamp: 3 !important;
+  line-height: 1.5em !important;
+  max-height: 4.5em;
+  min-height: 4.5em;
+}
+
+/* 视频整屏版块：背景图 */
+.clone-demo-k712 .homePgVideo {
+  background: none;
+  background-size: cover;
+}
+
+/* 视频整屏版块 — 强制占满 fullpage 容器，禁止溢出 */
+.clone-demo-k712 .video-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+/* 视频容器：绝对居中 */
+.clone-demo-k712 .video-section .video-banner {
+  position: relative;
+  margin: 15px auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: calc(100vh - 120px);
+  overflow: hidden;
+}
+
+/* 横向视频（宽>高）：宽度自适应，高度限制在视口内 */
+.clone-demo-k712 .video-section .video-banner video,
+.clone-demo-k712 .video-section .video-banner iframe {
+  display: block;
+  max-width: 90vw;
+  max-height: calc(100vh - 140px);
+  width: auto;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* 纵向视频（高>宽）：高度限制 */
+.clone-demo-k712 .video-section .video-banner.video-portrait video,
+.clone-demo-k712 .video-section .video-banner.video-portrait iframe {
+  width: auto;
+  max-height: calc(100vh - 140px);
+  height: auto;
+}
+
+/* 手机端：宽度100%高度自动，解除fullpage的height:100% */
+@media (max-width: 767px) {
+  .clone-demo-k712 .homePgVideo {
+    height: auto !important;
+    min-height: auto;
+  }
+  .clone-demo-k712 .video-section .video-banner {
+    width: 100%;
+    padding: 0 15px;
+    box-sizing: border-box;
+    max-height: none;
+  }
+  .clone-demo-k712 .video-section .video-banner video,
+  .clone-demo-k712 .video-section .video-banner iframe,
+  .clone-demo-k712 .video-section .video-banner.video-portrait video,
+  .clone-demo-k712 .video-section .video-banner.video-portrait iframe {
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    max-width: 100% !important;
+  }
+}
+
+.clone-demo-k712 .k712-home-shell {height:100vh;overflow:hidden;position:relative;}
+.clone-demo-k712 .k712-home-shell #homePg {height:100%;transition:transform 700ms ease;touch-action:pan-x;}
+.clone-demo-k712 .k712-home-shell #homePg>.section {height:100vh;position:relative;display:table;width:100%;table-layout:fixed;overflow:hidden;}
+.clone-demo-k712 .k712-home-shell .fp-tableCell {height:100vh;display:table-cell;vertical-align:middle;width:100%;}
+.clone-demo-k712 .k712-home-shell button {cursor:pointer;}
+.clone-demo-k712 .k712-home-shell #banner .pcimg img {display:block;width:100%;height:auto;}
+.clone-demo-k712 .k712-home-shell #banner .swiper-pagination {position:absolute;bottom:30px;left:0;width:100%;z-index:5;}
+.clone-demo-k712 .k712-home-shell .swiper-pagination-bullet {border:0;padding:0;}
+.clone-demo-k712 .k712-home-shell .video-banner {position:relative;width:100%;max-width:100%;overflow:hidden;background:#000;}
+.clone-demo-k712 .k712-home-shell .video-banner video {display:block;width:100%!important;height:auto!important;max-height:70vh;margin:0 auto;}
+.clone-demo-k712 .k712-home-shell .k712-video-play {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:0;background:transparent;color:#fff;font-size:70px;line-height:1;}
+.clone-demo-k712 .k712-home-shell .homePgVideo {background:none;}
+.clone-demo-k712 .k712-home-shell .sl_list {overflow:hidden;}
+.clone-demo-k712 .k712-home-shell .swiper-button-next,.clone-demo-k712 .k712-home-shell .swiper-button-prev {border:0;z-index:4;}
+.clone-demo-k712 .k712-home-shell .swiper-button-next:after,.clone-demo-k712 .k712-home-shell .swiper-button-prev:after {display:none;}
+.clone-demo-k712 .k712-home-shell .swiper-button-next:disabled,.clone-demo-k712 .k712-home-shell .swiper-button-prev:disabled {opacity:.35;cursor:default;}
+.clone-demo-k712 .k712-home-shell .certificate-item {display:block;padding:0;border:0;position:relative;background:none;width:100%;font:inherit;}
+.clone-demo-k712 .k712-home-shell .footer .social-btn {display:inline-flex;align-items:center;justify-content:center;padding:8px;}
+.clone-demo-k712 .k712-home-shell .footer .social-btn img {width:24px;height:24px;}
+.clone-demo-k712 .k712-home-shell .footer .qrcode-item {width:90px;text-align:center;}
+.clone-demo-k712 .k712-home-shell .footer .qrcode-item button {border:0;background:none;padding:0;}
+.clone-demo-k712 .k712-home-shell .footer .link {width:100%;float:left;color:#000;}
+.clone-demo-k712 .k712-lightbox {position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99999;display:flex;align-items:center;justify-content:center;}
+.clone-demo-k712 .k712-lightbox>[role=dialog] {background:#fff;border-radius:8px;position:relative;padding:30px;text-align:center;max-width:90vw;max-height:90vh;}
+.clone-demo-k712 .k712-lightbox img {display:block;max-width:75vw;max-height:72vh;object-fit:contain;}
+.clone-demo-k712 .k712-lightbox p {margin:12px 0 0;color:#333;font-size:14px;}
+.clone-demo-k712 .k712-lightbox .k712-close {position:absolute;right:6px;top:3px;background:#eee;border:0;border-radius:50%;width:26px;height:26px;font-size:22px;line-height:1;}
+@media(min-width:989px){.clone-demo-k712.k712-home-document,.clone-demo-k712.k712-home-document .clone-demo-k712 {overflow:hidden;height:100%;}}
+@media(max-width:988px){
+ .clone-demo-k712 .k712-home-shell {height:auto;overflow:visible;}
+ .clone-demo-k712 .k712-home-shell #homePg {transform:none!important;transition:none;height:auto;touch-action:auto;}
+ .clone-demo-k712 .k712-home-shell #homePg>.section {height:auto;min-height:0;display:block;overflow:hidden;}
+ .clone-demo-k712 .k712-home-shell .fp-tableCell {height:auto;display:block;}
+ .clone-demo-k712 .k712-home-shell .video-section {max-height:none;height:auto;padding:0 15px;}
+ .clone-demo-k712 .k712-home-shell .ab_txt,.clone-demo-k712 .k712-home-shell .ab_right,.clone-demo-k712 .k712-home-shell .ab_bottom,.clone-demo-k712 .k712-home-shell .gallery-top,.clone-demo-k712 .k712-home-shell .gallery-thumbs,.clone-demo-k712 .k712-home-shell .ftimg,.clone-demo-k712 .k712-home-shell .foot,.clone-demo-k712 .k712-home-shell .news-list,.clone-demo-k712 .k712-home-shell .case_body .swiper-slide {opacity:1!important;transform:none!important;}
+ .clone-demo-k712 .k712-home-shell #banner {height:auto;}
+ .clone-demo-k712 .k712-home-shell #banner .swiper {height:auto;}
+}
+
+@media(max-width:988px){.clone-demo-k712 .k712-home-shell #banner .swiper-pagination {bottom:10px;}}
+
+@media(max-width:988px){.clone-demo-k712 .k712-home-shell #homePg>.section,.clone-demo-k712 .k712-home-shell .fp-tableCell {max-height:none;overflow:visible;}}
+
+@media(min-width:989px){.clone-demo-k712 .k712-home-shell #homePg>.homePg6 {display:flex;align-items:center;}.clone-demo-k712 .k712-home-shell .homePg6>.footer {height:100vh;width:100%;overflow:hidden;}}
+@media(prefers-reduced-motion:reduce){.clone-demo-k712 .k712-home-shell #homePg {transition:none;}}
+/* Inline source rules must outrank the separately linked Swiper base stylesheet. */
+.clone-demo-k712 .k712-home-shell .certificate-list{padding-bottom:40px}
+.clone-demo-k712 .k712-home-shell .footer .social-btn img{width:32px;height:32px}
+.clone-demo-k712 .k712-home-shell .footer .qrcode-item button{margin-bottom:4px}
+.clone-demo-k712 .k712-home-shell .certificate-item{cursor:default}
+.clone-demo-k712 .k712-home-shell>.k712-lightbox{background:rgba(0,0,0,.5)}
+.clone-demo-k712 .k712-home-shell>.k712-lightbox>[role=dialog]{border-radius:12px;padding:30px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.clone-demo-k712 .k712-home-shell>.k712-lightbox img{width:300px;height:300px;max-width:none;max-height:none;object-fit:contain}
+.clone-demo-k712 .k712-home-shell>.k712-lightbox p{margin:0;font-size:14px;color:#333}
+.clone-demo-k712 .k712-home-shell>.k712-lightbox .k712-close{top:10px;right:10px;width:28px;height:28px;font-size:18px;background:#f0f0f0;color:#333;display:flex;align-items:center;justify-content:center}
+@media(max-width:767px){.clone-demo-k712 .k712-home-shell>.k712-lightbox img{width:200px;height:200px}}
+@media(min-width:989px){.clone-demo-k712 .k712-home-shell{overflow:clip}}
+/* The reference keeps its video scene full-height between its phone and fullpage breakpoints. */
+@media(min-width:768px) and (max-width:988px){
+ .clone-demo-k712 .k712-home-shell #homePg>.homePgVideo{display:flex;height:100vh;align-items:center;justify-content:center}
+ .clone-demo-k712 .k712-home-shell .homePgVideo .fp-tableCell{width:100%}
+ .clone-demo-k712 .k712-home-shell .homePgVideo .video-section{margin-bottom:25px}
+}
+@media(min-width:768px) and (max-width:988px){.clone-demo-k712 .k712-home-shell .homePgVideo .video-section{height:100%;max-height:100vh}}
+
+/* Swiper 5 emits swiper-container-fade; the source CSS targets newer class names.
+   Opacity must transition so its transitionend unlocks manual navigation. */
+.clone-demo-k712 .k712-home-shell #banner .swiper-container-fade .swiper-slide{pointer-events:none;transition-property:opacity}
+.clone-demo-k712 .k712-home-shell #banner .swiper-container-fade .swiper-slide-active{pointer-events:auto}
+.clone-demo-k712 .k712-home-shell #banner .pcimg img{user-select:none;-webkit-user-drag:none}
+.clone-demo-k712 .k712-home-shell #banner .swiper-pagination{pointer-events:auto;z-index:10}
+.clone-demo-k712 .k712-home-shell #banner .swiper-pagination-bullet{cursor:pointer;min-width:24px;min-height:12px}
+.clone-demo-k712 .k712-home-shell #banner .k712-banner-controls{position:absolute;top:0;left:0;width:100%;aspect-ratio:1280/548;pointer-events:none;z-index:9}
+.clone-demo-k712 .k712-banner-controls button{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:56px;padding:0;border:0;border-radius:4px;background:rgba(0,0,0,.28);color:#fff;font:40px/1 Arial,sans-serif;pointer-events:auto;touch-action:manipulation}
+.clone-demo-k712 .k712-banner-controls button:hover{background:rgba(0,0,0,.5)}
+.clone-demo-k712 .k712-banner-controls .k712-banner-prev{left:18px}
+.clone-demo-k712 .k712-banner-controls .k712-banner-next{right:18px}
+@media(max-width:767px){.clone-demo-k712 .k712-banner-controls button{width:32px;height:40px;font-size:30px}.clone-demo-k712 .k712-banner-controls .k712-banner-prev{left:8px}.clone-demo-k712 .k712-banner-controls .k712-banner-next{right:8px}}

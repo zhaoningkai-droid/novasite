@@ -134,6 +134,17 @@ export function WorkspaceSideNavigation({
                 <ChartNoAxesCombined size={16} aria-hidden="true" />
                 <span>GEO报表</span>
               </Link>
+              {process.env.NODE_ENV !== 'production' && (
+                <Link
+                  className="workspace-side-navigation__link"
+                  href={`${geoBase}/detection`}
+                  onClick={onNavigate}
+                  aria-current={pathname.includes('/geo/detection') ? 'page' : undefined}
+                >
+                  <ChartNoAxesCombined size={16} aria-hidden="true" />
+                  <span>检测任务与证据</span>
+                </Link>
+              )}
             </>
           )}
         </nav>

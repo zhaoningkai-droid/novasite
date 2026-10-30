@@ -32,3 +32,6 @@ try {
   }
   process.stdout.write('Initialized one platform administrator and industry template records. No company or customer content created.\n')
 } finally { await payload.destroy() }
+// Payload plugins can leave process-level timers alive after destroy. This is
+// a completed offline one-shot, so do not block the subsequent web startup.
+process.exit(0)

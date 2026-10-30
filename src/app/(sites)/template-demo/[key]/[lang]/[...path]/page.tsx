@@ -1,3 +1,7 @@
+import { AllyDemo } from '@/platform/allynav-template'
+import { isAllyKey } from '@/platform/allynav-template/key'
+import { ReferenceDemo } from '@/platform/reference-templates/demo'
+import { isReferenceKey } from '@/platform/reference-templates/keys'
 import { notFound } from 'next/navigation'
 
 import { ExecutiveTemplatePages } from '@/platform/legacy-templates/ExecutiveTemplatePages'
@@ -15,6 +19,16 @@ const kinds = new Set(['products', 'news', 'cases', 'about', 'faqs', 'contact'])
 
 export default async function ExecutiveTemplateDemoPage({ params, searchParams }: Props) {
   const [{ key, lang, path }, query] = await Promise.all([params, searchParams])
+  if (isAllyKey(key)) return <AllyDemo locale={lang} path={path} />
+  if (isReferenceKey(key))
+    return (
+      <ReferenceDemo
+        templateKey={key}
+        locale={lang}
+        path={path}
+        page={typeof query.page === 'string' ? query.page : undefined}
+      />
+    )
   if (isIndustryKey(key) && industryDemoLocales.some((locale) => locale === lang))
     return (
       <IndustryDemo

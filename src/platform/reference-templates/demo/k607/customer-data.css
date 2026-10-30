@@ -1,0 +1,76 @@
+/* Content-length resilience for the shared K607 template; no replacement layout. */
+.clone-demo-k607 .hero-slide {
+  position: relative;
+}
+.clone-demo-k607 .hero-slide picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.clone-demo-k607 .hero-content {
+  position: absolute;
+  left: 10%;
+  top: 30%;
+  max-width: 75%;
+  color: white;
+  text-shadow: 0 1px 8px #0005;
+}
+.clone-demo-k607 .hero-content h2 {
+  font-size: clamp(24px, 3.5vw, 60px);
+  line-height: 1.3;
+}
+.clone-demo-k607 .hero-content p {
+  font-size: 18px;
+  margin-top: 15px;
+}
+.clone-demo-k607 .hero-content a {
+  display: inline-block;
+  padding: 8px 24px;
+  border: 1px solid currentColor;
+  margin-top: 20px;
+}
+.clone-demo-k607 :is(.catalog-card p, .case-heading h3, .product-summary-copy h1) {
+  overflow-wrap: anywhere;
+}
+.clone-demo-k607 .product-rich-text :is(table, img),
+.clone-demo-k607 .k607-editorial-richtext img {
+  max-width: 100%;
+}
+.clone-demo-k607 .product-rich-text table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.clone-demo-k607 .product-rich-text :is(th, td) {
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+.clone-demo-k607 .corp-description p {
+  white-space: pre-line;
+}
+.clone-demo-k607 .official-video iframe {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border: 0;
+}
+.clone-demo-k607 .k607-strength {
+  padding-block: 60px;
+}
+.clone-demo-k607 .k607-strength > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 40px;
+  text-align: center;
+}
+.clone-demo-k607 .k607-strength article {
+  flex: 1;
+  min-width: 140px;
+}
+.clone-demo-k607 .k607-strength strong {
+  font-size: 36px;
+  color: #918876;
+}
+.clone-demo-k607 .k607-strength img {
+  max-width: 180px;
+  margin: auto;
+}

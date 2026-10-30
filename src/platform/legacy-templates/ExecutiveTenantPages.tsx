@@ -16,6 +16,7 @@ import { copy } from '@/platform/site'
 import { ExecutiveTenantQuoteTrigger } from './ExecutiveTenantQuoteDialog'
 import { ExecutiveTenantContactForm } from './ExecutiveTenantContactForm'
 import { ExecutiveTenantProductGallery } from './ExecutiveTenantProductGallery'
+import { ContactQRCodes } from '@/platform/components/ContactQRCodes/ContactQRCodes'
 
 export type ExecutiveTenantCardItem = {
   id: number
@@ -597,7 +598,7 @@ export function ExecutiveTenantProductDetail({
     tags: string[]
     productId: number
   }
-  gallery: Array<{ url: string; alt: string }>
+  gallery: Array<{ url: string; alt: string; caption?: ReactNode }>
   related: ExecutiveTenantCardItem[]
   categories: ExecutiveTenantCategory[]
   specs: Array<{ id?: string | number; label: string; value: string }>
@@ -1021,20 +1022,7 @@ export function ExecutiveTenantContact({
             {qrs.length ? (
               <>
                 <h2>{t.follow}</h2>
-                <div className="ed-contact-qr ed-contact-qr--tenant">
-                  {qrs.map((qr) => (
-                    <figure key={qr.label}>
-                      <Image
-                        alt={`${qr.label} QR code`}
-                        height={132}
-                        src={qr.src}
-                        unoptimized
-                        width={132}
-                      />
-                      <figcaption>{qr.label}</figcaption>
-                    </figure>
-                  ))}
-                </div>
+                <ContactQRCodes items={qrs} locale={locale} />
               </>
             ) : null}
           </section>

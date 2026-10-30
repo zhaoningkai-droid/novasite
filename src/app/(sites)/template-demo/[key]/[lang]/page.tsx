@@ -1,3 +1,7 @@
+import { AllyDemo } from '@/platform/allynav-template'
+import { isAllyKey } from '@/platform/allynav-template/key'
+import { ReferenceDemo } from '@/platform/reference-templates/demo'
+import { isReferenceKey } from '@/platform/reference-templates/keys'
 import { notFound } from 'next/navigation'
 
 import { ExecutiveTemplateDemo } from '@/platform/legacy-templates/ExecutiveTemplateDemo'
@@ -12,6 +16,8 @@ type Props = { params: Promise<{ key: string; lang: string }> }
 
 export default async function TemplateDemoPage({ params }: Props) {
   const { key, lang } = await params
+  if (isAllyKey(key)) return <AllyDemo locale={lang} />
+  if (isReferenceKey(key)) return <ReferenceDemo templateKey={key} locale={lang} />
   if (isIndustryKey(key) && industryDemoLocales.some((locale) => locale === lang))
     return <IndustryDemo templateKey={key} locale={lang as Exclude<SiteLocale, 'ru'>} />
   if (key !== 'executive-industrial-pro-v1' || (lang !== 'zh' && lang !== 'en')) notFound()

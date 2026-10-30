@@ -1,0 +1,31 @@
+.clone-demo-k607 .inner-banner img { width: 100%; height: auto; }
+.clone-demo-k607 .inner-position { border-bottom: 1px solid #f3f2f2; padding-top: 5px; }
+.clone-demo-k607 .inner-position-row { padding-inline: 12px; display: flex; flex-direction: column-reverse; }
+.clone-demo-k607 .inner-tabs { display: flex; flex-wrap: wrap; gap: 15px; }
+.clone-demo-k607 .inner-tabs a { display: block; height: 40px; line-height: 40px; position: relative; }
+.clone-demo-k607 .inner-tabs a.active,.clone-demo-k607 .inner-tabs a:hover { color: var(--brand); }
+.clone-demo-k607 .inner-tabs a.active:after { content: ''; height: 2px; background: var(--brand);
+  position: absolute; inset: auto 0 0; }
+.clone-demo-k607 .inner-crumbs { display: flex; flex-wrap: wrap; gap: 3px; align-items: center;
+  min-height: 50px; font-size: 12px; color: #666; }
+.clone-demo-k607 .inner-crumbs svg { color: var(--brand); width: 18px; }
+.clone-demo-k607 .inner-crumbs a:hover { color: var(--brand); }
+@media(min-width:577px) {
+  .clone-demo-k607 .inner-tabs { gap: 30px; font-size: 16px; }
+  .clone-demo-k607 .inner-tabs a { height: 70px; line-height: 70px; }
+  .clone-demo-k607 .inner-crumbs { font-size: 14px; }
+  .clone-demo-k607 .inner-crumbs svg { width: 26px; margin-right: 10px; }
+}
+@media(min-width:993px) {
+  .clone-demo-k607 .inner-position-row { flex-direction: row; justify-content: space-between; align-items: start; }
+  .clone-demo-k607 .inner-crumbs { justify-content: flex-end; }
+}
+@media(min-width:1401px) { .clone-demo-k607 .inner-crumbs { min-height: 70px; } }
+.clone-demo-k607 .crumb-icon { font-size: 26px; color: var(--brand); margin-right: 10px; }
+@media(max-width:576px) { .clone-demo-k607 .crumb-icon { font-size: 16px; margin-right: 3px; } }
+
+/* Product listings override the shared source breakpoint from 992px to 1200px. */
+@media (min-width:993px) and (max-width:1200px) {
+  .clone-demo-k607 .catalog-position .inner-position-row { flex-direction: column-reverse; }
+  .clone-demo-k607 .catalog-position .inner-crumbs { justify-content: flex-start; }
+}

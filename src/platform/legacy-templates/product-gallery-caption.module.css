@@ -1,0 +1,9 @@
+.caption {
+  color: #596b61;
+  font-size: 11px;
+  line-height: 1.6;
+  margin: 12px 6px 0;
+  overflow-wrap: anywhere;
+}
+.caption p { font-size: inherit; line-height: inherit; margin: 0; }
+.caption a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }

@@ -42,6 +42,7 @@ export type IndustryPageModel = {
   intro?: { title: string; text: string; image?: string }
   modules?: { title: string; text?: string | null; image?: string }[]
   stats?: { label: string; value?: string | null; unit?: string | null; image?: string }[]
+  productGroups?: { label: string; href: string; items: IndustryCard[] }[]
   products?: IndustryCard[]
   cases?: IndustryCard[]
   news?: IndustryCard[]
@@ -52,6 +53,10 @@ export type IndustryPageModel = {
   faqs?: { id: string | number; question: string; answer: ReactNode; answerText?: string }[]
   content?: ReactNode
   images?: string[]
+  tags?: string[]
+  publishedAt?: string | null
+  previous?: IndustryLink
+  next?: IndustryLink
   model?: string | null
   parameters?: { label: string; value: string }[]
   datasheet?: string

@@ -55,12 +55,7 @@ describe('GEO material and source policies', () => {
     expect(
       parseMaterialValues({ name: '产品图', description: '', mediaIds: [2, 1] }).mediaIds,
     ).toEqual([2, 1])
-    expect(
-      parseMaterialValues({
-        name: '产品图',
-        mediaIds: Array.from({ length: 201 }, (_, i) => i + 1),
-      }).mediaIds,
-    ).toHaveLength(201)
+    expect(parseMaterialValues({ name: '产品图', mediaIds: Array.from({ length: 201 }, (_, i) => i + 1) }).mediaIds).toHaveLength(201)
     for (const mediaIds of [[1, 1], [-1], ['1']])
       expect(() => parseMaterialValues({ name: '产品图', mediaIds })).toThrow()
   })

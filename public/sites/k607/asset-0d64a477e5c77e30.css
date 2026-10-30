@@ -1,0 +1,140 @@
+@font-face {
+  font-family: 'iconfont';  /* Project id 3972234 */
+  src: url('/sites/k607/asset-19ade974f5c3f725.woff2') format('woff2'),
+       url('/sites/k607/asset-fdbe44f2fca2e500.woff') format('woff'),
+       url('/sites/k607/asset-c5a5f48f13f9249c.ttf') format('truetype');
+}
+.iconfont{
+    font-family:"iconfont" !important;
+    font-size:16px;font-style:normal;
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-stroke-width: 0.2px;
+    -moz-osx-font-smoothing: grayscale;}
+
+html{scroll-behavior:smooth;}
+body{color:#333;background:#fff;font-family:'Microsoft YaHei',Arial, Helvetica, Verdana;overflow-x:hidden;height:100%;font-size: 14px;width:100%;}
+*{-webkit-margin-before:0px;-webkit-margin-after:0px;-webkit-padding-start:0px;padding:0;margin:0;}
+a{text-decoration:none;}
+a:hover{text-decoration:none;}
+ul,li{list-style:none;margin:0;padding:0;}
+h1,h2,h3,h4,h5,h6,p{margin:0;padding:0;}
+input,i{border:none;outline:none;}
+*:focus{border:none;outline:none;}
+img{max-width: 100%;}
+
+/*ä¸»è²è° çº¢è² #c00d23*/
+body{--zhu-color:#c00d23;--pei-color:#de7518;}
+
+.fl{float: left;}
+.fr{float: right}
+.clear{clear: both;}
+.ellipsis{text-overflow: ellipsis;overflow: hidden;white-space:nowrap;}
+.clamp{text-overflow: ellipsis;display: -webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow: hidden;}
+.wrap{width:100%;margin:0 auto;overflow: hidden;}
+.wrapp{width:100%;margin:0 auto;position: relative;}
+.wrappp{width:100%;padding:0 50px;}
+.img{width:100%;position: relative;padding-bottom: 75%;overflow: hidden;}
+.img img{width:100%;height: 100%;position: absolute;top:0;left:0;object-fit: cover;}
+.fancynav-mainnav{position: fixed;z-index: 999!important;}
+@media(max-width: 1700px){
+	.wrappp{padding:0;}
+}
+@media(min-width: 1600px){
+	.wrap{width:1600px;}
+	.wrapp{width:1600px;}
+}
+@media(max-width: 1024px){
+	
+}
+
+
+/*èªå®ä¹æ»å¨æ¡*/
+body::-webkit-scrollbar {
+	/*æ»å¨æ¡æ´ä½æ ·å¼*/
+	width : 5px;  /*é«å®½åå«å¯¹åºæ¨ªç«æ»å¨æ¡çå°ºå¯¸*/
+	height: 1px;
+}
+body::-webkit-scrollbar-thumb {
+	/*æ»å¨æ¡éé¢å°æ¹å*/
+	border-radius: 5px;
+	box-shadow   : inset 0 0 5px rgba(0, 0, 0, 0.2);
+	background   : #918876;
+}
+body::-webkit-scrollbar-track {
+	/*æ»å¨æ¡éé¢è½¨é*/
+	box-shadow   : inset 0 0 5px rgba(0, 0, 0, 0.2);
+	border-radius: 5px;
+	background   : #ededed;
+}
+
+
+/*å¨çº¿å®¢æ*/
+.online_kefu{ position: fixed;  bottom: 30vh; right:1%; z-index: 9;}
+.online_kefu ul li{ border: 1px solid #efefef; list-style-type:none; width:80px; height:60px; padding-top: 7px;  text-align: center; position: relative; background-color: #fff; color: #666666; cursor: pointer; transition: background-color .2s linear 0s;perspective:1000;transform-style:preserve-3d;}
+.online_kefu li i{font-size: 20px;}
+.online_kefu ul li a{ color: #666666;}
+.online_kefu ul li .con{ position: relative; line-height:25px;display: flex;flex-direction: column;align-items: center;}
+.online_kefu ul li .hover_con{border-radius: 3px; position: absolute;	left:-100px;	width: 200px;	color: #ffffff !important; text-align: center;background-color: #918876;height:40px; line-height:40px; bottom: 7px; transform:rotateX(-90deg); transition: all .2s linear 0s; }
+.online_kefu ul li .hover_con img{ width:130px; height: 130px;}
+.online_kefu ul li.qrcode {  }
+.online_kefu ul li.qrcode .hover_con{ height: 170px;padding: 10px;width: 150px;left: -160px;}
+.online_kefu ul li.qrcode .hover_con p{ color: #fff; line-height:24px;}
+
+.online_kefu li:hover{background-color:#918876; color: #fff;border: 1px solid #918876;}
+.online_kefu li:hover i{ color: #fff;}
+.online_kefu li:hover span{ color: #fff;}
+.online_kefu li:hover p a{ color: #fff;}
+.online_kefu li:hover .hover_con{left:-210px; transform:rotateY(0deg);}
+.online_kefu li .hover_con:before{width: 0px;height: 0px;border: 8px solid transparent;border-left: 8px solid #918876; display: block; content: '';position: absolute; top: 12px;right: -16px; transition: top .2s linear ; transition-delay: .1s; }
+
+.online_kefu li.qrcode:hover .hover_con{  bottom: -55px;}
+.online_kefu li.qrcode:hover .hover_con:before{top: 48px;}
+
+.mobile_mob{ display: none !important;}
+@media (max-width: 1500px) {
+    .online_kefu{ display: none !important;}
+}
+
+@media (max-width: 767px) {
+    .online_kefu{bottom: 20vh;}
+	.mobile_mob { display: inline-block !important; }
+	.mobile_pc { display: none !important; }
+}
+/* æ¨¡æ¿æ°å¢åé¡µæ ·å¼ www.admibnuy.cn */
+.pagebar { padding:20px; overflow:hidden; clear:both}
+.pagebar .pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+.pagination a {
+  background: #fff;
+  border: 1px solid #ccc;
+  color: #333;
+  font-size: 12px;
+  padding: 8px 10px;
+  margin: 0 2px;
+  border-radius: 3px; line-height:100%
+}
+.pagination span {
+    color: #333;
+    font-size: 12px;
+    padding: 7px 2px;
+    margin: 0 2px;
+    border-radius: 3px;
+}
+.pagination a:hover {
+  color: #333;
+  border: 1px solid #333;
+}
+.pagination a.page-num-current {
+  color: #fff;
+  background: #333;
+  border: 1px solid #333;
+}
+.pagination .st{ font-family:å®ä½}
+.text-secondary{ text-align:center; padding:20px 0}
+
+.ab_img img{ max-width:100% !important; height:auto !important;display:inline-block;}
+.ab_img p{text-wrap: inherit !important;}
+.ab_img p span{text-wrap: inherit !important;}

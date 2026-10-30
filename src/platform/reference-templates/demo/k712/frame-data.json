@@ -1,0 +1,521 @@
+{
+  "logo": "/sites/k712/asset-187c1110ee1c2765.jpg",
+  "headerImage": "/sites/k712/asset-cd54135d7e99aa5a.png",
+  "menu": [
+    {
+      "text": "首页",
+      "href": "/",
+      "children": []
+    },
+    {
+      "text": "产品中心",
+      "href": "/product/",
+      "children": [
+        {
+          "text": "动物形象类",
+          "href": "/product/c1/",
+          "children": []
+        },
+        {
+          "text": "卡通形象类",
+          "href": "/product/c2/",
+          "children": []
+        },
+        {
+          "text": "创意水果类",
+          "href": "/product/c3/",
+          "children": []
+        },
+        {
+          "text": "三丽欧系列类",
+          "href": "/product/c14/",
+          "children": []
+        },
+        {
+          "text": "维尼熊IP",
+          "href": "/product/c15/",
+          "children": [
+            {
+              "text": "维尼维尼",
+              "href": "/product/c16/",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "text": "新闻资讯",
+      "href": "/article/",
+      "children": [
+        {
+          "text": "企业新闻",
+          "href": "/article/c11/",
+          "children": []
+        },
+        {
+          "text": "企业介绍",
+          "href": "/article/c12/",
+          "children": []
+        },
+        {
+          "text": "行业新闻",
+          "href": "/article/c30/",
+          "children": []
+        },
+        {
+          "text": "产品上新",
+          "href": "/article/c31/",
+          "children": []
+        }
+      ]
+    },
+    {
+      "text": "案例中心",
+      "href": "/case/",
+      "children": [
+        {
+          "text": "客户案例",
+          "href": "/case/c13/",
+          "children": []
+        },
+        {
+          "text": "南美案例",
+          "href": "/case/c17/",
+          "children": [
+            {
+              "text": "巴西案例",
+              "href": "/case/c18/",
+              "children": []
+            }
+          ]
+        },
+        {
+          "text": "北美案例",
+          "href": "/case/c32/",
+          "children": []
+        },
+        {
+          "text": "北欧案例",
+          "href": "/case/c33/",
+          "children": []
+        },
+        {
+          "text": "亚洲案例",
+          "href": "/case/c34/",
+          "children": []
+        }
+      ]
+    },
+    {
+      "text": "关于我们",
+      "href": "/about/",
+      "children": []
+    },
+    {
+      "text": "常见问题",
+      "href": "/faq/",
+      "children": []
+    },
+    {
+      "text": "联系我们",
+      "href": "/contact/",
+      "children": []
+    }
+  ],
+  "languages": [
+    {
+      "text": "简体中文",
+      "href": "//zh.heger.ltd",
+      "image": "/sites/k712/asset-a7553904246dfb9e.png",
+      "hidden": false
+    },
+    {
+      "text": "English",
+      "href": "//www.heger.ltd",
+      "image": "/sites/k712/asset-22942f121a357f59.png",
+      "hidden": false
+    },
+    {
+      "text": "हिन्दी",
+      "href": "//hi.heger.ltd",
+      "image": "/sites/k712/asset-efea940b1857c95c.png",
+      "hidden": false
+    },
+    {
+      "text": "Español",
+      "href": "//es.heger.ltd",
+      "image": "/sites/k712/asset-a7fda869ab37794d.png",
+      "hidden": false
+    },
+    {
+      "text": "العربية",
+      "href": "//ar.heger.ltd",
+      "image": "/sites/k712/asset-bc0fe99d9fa70ef5.png",
+      "hidden": false
+    },
+    {
+      "text": "Français",
+      "href": "//fr.heger.ltd",
+      "image": "/sites/k712/asset-cbbe05303c26d7a8.png",
+      "hidden": false
+    },
+    {
+      "text": "বাংলা",
+      "href": "//bn.heger.ltd",
+      "image": "/sites/k712/asset-6938774ed64aaec9.png",
+      "hidden": false
+    },
+    {
+      "text": "Русский",
+      "href": "//ru.heger.ltd",
+      "image": "/sites/k712/asset-69c27fd47d574a73.png",
+      "hidden": false
+    },
+    {
+      "text": "Português",
+      "href": "//pt.heger.ltd",
+      "image": "/sites/k712/asset-c94b39f68083f67b.png",
+      "hidden": false
+    },
+    {
+      "text": "Bahasa Indonesia",
+      "href": "//id.heger.ltd",
+      "image": "/sites/k712/asset-fc34aff017083cb3.png",
+      "hidden": false
+    },
+    {
+      "text": "Deutsch",
+      "href": "//de.heger.ltd",
+      "image": "/sites/k712/asset-55f9b0cdc5a38bd6.png",
+      "hidden": false
+    },
+    {
+      "text": "日本語",
+      "href": "//ja.heger.ltd",
+      "image": "/sites/k712/asset-defd87827e2abb69.png",
+      "hidden": false
+    },
+    {
+      "text": "اُردُو",
+      "href": "//ur.heger.ltd",
+      "image": "/sites/k712/asset-99d44970d09fd83e.png",
+      "hidden": true
+    },
+    {
+      "text": "Tiếng Việt",
+      "href": "//vi.heger.ltd",
+      "image": "/sites/k712/asset-6a25f9083da6aea2.png",
+      "hidden": true
+    },
+    {
+      "text": "Türkçe",
+      "href": "//tr.heger.ltd",
+      "image": "/sites/k712/asset-bea449b96f36b83e.png",
+      "hidden": true
+    },
+    {
+      "text": "한국어",
+      "href": "//ko.heger.ltd",
+      "image": "/sites/k712/asset-d6e783802a297624.png",
+      "hidden": true
+    },
+    {
+      "text": "فارسی",
+      "href": "//fa.heger.ltd",
+      "image": "/sites/k712/asset-267869b5e6fb944a.png",
+      "hidden": true
+    },
+    {
+      "text": "ภาษาไทย",
+      "href": "//th.heger.ltd",
+      "image": "/sites/k712/asset-f56e6d189dd826d4.png",
+      "hidden": true
+    },
+    {
+      "text": "Italiano",
+      "href": "//it.heger.ltd",
+      "image": "/sites/k712/asset-638c9476784c2409.png",
+      "hidden": true
+    },
+    {
+      "text": "Wikang Tagalog",
+      "href": "//tl.heger.ltd",
+      "image": "/sites/k712/asset-d8c22c2aabb99d26.png",
+      "hidden": true
+    },
+    {
+      "text": "Українська",
+      "href": "//uk.heger.ltd",
+      "image": "/sites/k712/asset-41aed63c7740cc6e.png",
+      "hidden": true
+    },
+    {
+      "text": "Polski",
+      "href": "//pl.heger.ltd",
+      "image": "/sites/k712/asset-7bb2236c91bf04a8.png",
+      "hidden": true
+    },
+    {
+      "text": "O'zbek",
+      "href": "//uz.heger.ltd",
+      "image": "/sites/k712/asset-5c0f72b4a8a989c6.png",
+      "hidden": true
+    },
+    {
+      "text": "မြန်မာဘာသာ",
+      "href": "//my.heger.ltd",
+      "image": "/sites/k712/asset-a672df89d7692af5.png",
+      "hidden": true
+    },
+    {
+      "text": "Bahasa Melayu",
+      "href": "//ms.heger.ltd",
+      "image": "/sites/k712/asset-2bc8760bcdb436d0.png",
+      "hidden": true
+    },
+    {
+      "text": "Nederlands",
+      "href": "//nl.heger.ltd",
+      "image": "/sites/k712/asset-3c625dfe9705c95f.png",
+      "hidden": true
+    },
+    {
+      "text": "Română",
+      "href": "//ro.heger.ltd",
+      "image": "/sites/k712/asset-1c91cb2c413870cc.png",
+      "hidden": true
+    },
+    {
+      "text": "ភាសាខ្មែរ",
+      "href": "//km.heger.ltd",
+      "image": "/sites/k712/asset-a42dbdba2800b0a4.png",
+      "hidden": true
+    },
+    {
+      "text": "Ελληνικά",
+      "href": "//el.heger.ltd",
+      "image": "/sites/k712/asset-5b66f2c6c1a38b4e.png",
+      "hidden": true
+    },
+    {
+      "text": "Magyar",
+      "href": "//hu.heger.ltd",
+      "image": "/sites/k712/asset-2226bbd958e10565.png",
+      "hidden": true
+    },
+    {
+      "text": "Čeština",
+      "href": "//cs.heger.ltd",
+      "image": "/sites/k712/asset-2693651ed8354943.png",
+      "hidden": true
+    },
+    {
+      "text": "Swedish",
+      "href": "//sv.heger.ltd",
+      "image": "/sites/k712/asset-1d577d20c15a98b6.png",
+      "hidden": true
+    },
+    {
+      "text": "Català",
+      "href": "//ca.heger.ltd",
+      "image": "/sites/k712/asset-98eee56bcf1eb518.png",
+      "hidden": true
+    },
+    {
+      "text": "Български",
+      "href": "//bg.heger.ltd",
+      "image": "/sites/k712/asset-76d26f554746b9de.png",
+      "hidden": true
+    },
+    {
+      "text": "Српски",
+      "href": "//sr.heger.ltd",
+      "image": "/sites/k712/asset-06f312eadc13aa28.png",
+      "hidden": true
+    },
+    {
+      "text": "עברית",
+      "href": "//he.heger.ltd",
+      "image": "/sites/k712/asset-b9b943bf917d5d4c.png",
+      "hidden": true
+    },
+    {
+      "text": "Dansk",
+      "href": "//da.heger.ltd",
+      "image": "/sites/k712/asset-53ec9a37bcf95105.png",
+      "hidden": true
+    },
+    {
+      "text": "Hrvatski",
+      "href": "//hr.heger.ltd",
+      "image": "/sites/k712/asset-e2bc4cfe80913f39.png",
+      "hidden": true
+    },
+    {
+      "text": "Bosanski",
+      "href": "//bs.heger.ltd",
+      "image": "/sites/k712/asset-66f9cea7d79d2244.png",
+      "hidden": true
+    },
+    {
+      "text": "Suomi",
+      "href": "//fi.heger.ltd",
+      "image": "/sites/k712/asset-e6b1ffe45ec82715.png",
+      "hidden": true
+    },
+    {
+      "text": "Norsk",
+      "href": "//no.heger.ltd",
+      "image": "/sites/k712/asset-adec10bb3da413cf.png",
+      "hidden": true
+    },
+    {
+      "text": "Slovenčina",
+      "href": "//sk.heger.ltd",
+      "image": "/sites/k712/asset-b07f9b35ba091799.png",
+      "hidden": true
+    },
+    {
+      "text": "Lietuvių",
+      "href": "//lt.heger.ltd",
+      "image": "/sites/k712/asset-569556b8c2e1492d.png",
+      "hidden": true
+    },
+    {
+      "text": "Latviešu",
+      "href": "//lv.heger.ltd",
+      "image": "/sites/k712/asset-7b7e332bb22bc91b.png",
+      "hidden": true
+    },
+    {
+      "text": "Slovenščina",
+      "href": "//sl.heger.ltd",
+      "image": "/sites/k712/asset-cc9697304d9f9b17.png",
+      "hidden": true
+    },
+    {
+      "text": "Eesti",
+      "href": "//et.heger.ltd",
+      "image": "/sites/k712/asset-4e166e30be3e406d.png",
+      "hidden": true
+    },
+    {
+      "text": "Cymraeg",
+      "href": "//cy.heger.ltd",
+      "image": "/sites/k712/asset-7b1628bc5f891efc.png",
+      "hidden": true
+    },
+    {
+      "text": "Malti",
+      "href": "//mt.heger.ltd",
+      "image": "/sites/k712/asset-585c30d1856386c9.png",
+      "hidden": true
+    }
+  ],
+  "headerStyles": "\n.clone-demo-k712 .head_lang .language-switcher {\n  position: relative;\n}\n.clone-demo-k712 .head_lang .language-btn {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n  cursor: pointer;\n  padding: 8px 12px;\n  color: #fff;\n  font-size: 14px;\n}\n.clone-demo-k712 .head_lang .language-btn:hover {\n  color: #e94e1b;\n}\n.clone-demo-k712 .head_lang .language-btn .globe-icon {\n  display: flex;\n  align-items: center;\n}\n.clone-demo-k712 .head_lang .language-btn .arrow-icon {\n  font-size: 10px;\n  transition: transform 0.3s;\n}\n.clone-demo-k712 .head_lang .language-switcher:hover .arrow-icon {\n  transform: rotate(180deg);\n}\n.clone-demo-k712 .head_lang .language-dropdown {\n  position: absolute;\n  top: 100%;\n  right: 0;\n  min-width: 220px;\n  background: #fff;\n  border: 1px solid #e5e5e5;\n  border-radius: 4px;\n  box-shadow: 0 2px 10px rgba(0,0,0,0.1);\n  opacity: 0;\n  visibility: hidden;\n  transform: translateY(10px);\n  transition: all 0.3s ease;\n  z-index: 9999;\n}\n.clone-demo-k712 .head_lang .language-switcher:hover .language-dropdown {\n  opacity: 1;\n  visibility: visible;\n  transform: translateY(0);\n}\n.clone-demo-k712 .head_lang .language-switcher.keep-open .language-dropdown {\n  opacity: 1 !important;\n  visibility: visible !important;\n  transform: translateY(0) !important;\n}\n.clone-demo-k712 .head_lang .language-switcher.keep-open .arrow-icon {\n  transform: rotate(180deg);\n}\n.clone-demo-k712 .head_lang .language-list {\n  max-height: 320px;\n  overflow-y: auto;\n  padding: 8px 0;\n}\n.clone-demo-k712 .head_lang .language-list::-webkit-scrollbar {\n  width: 6px;\n}\n.clone-demo-k712 .head_lang .language-list::-webkit-scrollbar-track {\n  background: #f1f1f1;\n}\n.clone-demo-k712 .head_lang .language-list::-webkit-scrollbar-thumb {\n  background: #c1c1c1;\n  border-radius: 3px;\n}\n.clone-demo-k712 .head_lang .language-item {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  padding: 10px 16px;\n  transition: background 0.2s;\n}\n.clone-demo-k712 .head_lang .language-item:hover {\n  background: #f5f5f5;\n}\n.clone-demo-k712 .head_lang .language-item img {\n  width: 24px;\n  height: 16px;\n  object-fit: cover;\n}\n.clone-demo-k712 .head_lang .language-item a {\n  color: #333;\n  text-decoration: none;\n  font-size: 14px;\n  flex: 1;\n}\n.clone-demo-k712 .head_lang .language-item a:hover {\n  color: #e94e1b;\n}\n.clone-demo-k712 .head_lang .more-languages {\n  padding: 12px 16px;\n  border-top: 1px solid #e5e5e5;\n  text-align: center;\n  font-size: 14px;\n  color: #666;\n  cursor: pointer;\n  transition: all 0.2s;\n}\n.clone-demo-k712 .head_lang .more-languages:hover {\n  background: #f5f5f5;\n  color: #e94e1b;\n}\n.clone-demo-k712 .head_lang .language-item.hidden {\n  display: none;\n}\n@media screen and (min-width: 991px) {\n  .clone-demo-k712 .main-header-logo {\n    height: 6vw;\n    max-height: 115px;\n    display: flex;\n    align-items: center;\n  }\n  .clone-demo-k712 .main-header-logo img {\n    height:6vw;\n    max-height: 115px;\n    width: auto;\n    object-fit: contain;\n  }\n  .clone-demo-k712 .main-menu-wrapper ul.main-menu-list > li ul.yiji li {\n    min-width: 185px;\n    width: auto;\n    white-space: nowrap;\n  }\n  .clone-demo-k712 .main-menu-wrapper ul.main-menu-list > li ul.yiji li {\n    position: relative;\n  }\n  .clone-demo-k712 .main-menu-wrapper ul.main-menu-list > li ul.yiji li .li_item {\n    position: relative;\n    padding-right: 25px;\n  }\n  .clone-demo-k712 .main-menu-wrapper ul.main-menu-list > li ul.yiji li.has-children .li_item::after {\n    content: '▶';\n    position: absolute;\n    right: 10px;\n    top: 50%;\n    transform: translateY(-50%);\n    font-size: 10px;\n    color: #666;\n  }\n  .clone-demo-k712 .main-menu-wrapper ul.main-menu-list > li ul.yiji li.has-children:hover .li_item::after {\n    color: #fff;\n  }\n  .clone-demo-k712 .main-menu-wrapper ul.main-menu-list > li ul.yiji li .li_item em {\n    display: none;\n  }\n  .clone-demo-k712 .main-menu-wrapper ul.main-menu-list > li ul.yiji > li > ul.erji {\n    display: none !important;\n    position: absolute;\n    left: 100%;\n    top: 0;\n    min-width: 145px;\n    width: auto;\n    background: #fff;\n    border: 1px solid #e5e5e5;\n    box-shadow: 2px 2px 10px rgba(0,0,0,0.1);\n    z-index: 100;\n  }\n  .clone-demo-k712 .main-menu-wrapper ul.main-menu-list > li ul.yiji > li:hover > ul.erji {\n    display: block !important;\n  }\n  .clone-demo-k712 .main-menu-wrapper ul.main-menu-list > li ul.yiji > li > ul.erji > li {\n    background: #fff !important;\n    height: 40px !important;\n    line-height: 40px !important;\n    text-align: left !important;\n    font-size: 14px !important;\n    padding: 0 20px !important;\n    white-space: nowrap !important;\n    min-width: 145px !important;\n    width: auto !important;\n    position: relative !important;\n  }\n  .clone-demo-k712 .main-menu-wrapper ul.main-menu-list > li ul.yiji > li > ul.erji > li > a {\n    color: #333 !important;\n    display: block !important;\n    padding: 0 !important;\n    background: none !important;\n    line-height: 40px !important;\n    height: 40px !important;\n  }\n  .clone-demo-k712 .main-menu-wrapper ul.main-menu-list > li ul.yiji > li > ul.erji > li:hover {\n    background: #007ED1 !important;\n  }\n  .clone-demo-k712 .main-menu-wrapper ul.main-menu-list > li ul.yiji > li > ul.erji > li:hover > a {\n    color: #fff !important;\n  }\n}\n@media screen and (max-width: 990px) {\n  .clone-demo-k712 .mobile-nav-content .main-menu-list .yiji > li.has-children .li_item {\n    display: flex;\n    align-items: center;\n    justify-content: space-between;\n  }\n  .clone-demo-k712 .mobile-nav-content .main-menu-list .yiji > li.has-children .li_item em {\n    width: 35px;\n    height: 35px;\n    background: url(/sites/k712/asset-3861cd41008f39b4.png) no-repeat center;\n    cursor: pointer;\n    flex-shrink: 0;\n  }\n  .clone-demo-k712 .mobile-nav-content .main-menu-list .yiji > li.has-children .li_item a {\n    width: calc(100% - 35px);\n  }\n  .clone-demo-k712 .mobile-nav-content .main-menu-list .erji {\n    display: none !important;\n  }\n  .clone-demo-k712 .mobile-nav-content .main-menu-list .erji.show {\n    display: block !important;\n    opacity: 1 !important;\n    visibility: visible !important;\n  }\n  .clone-demo-k712 .mobile-nav-content .main-menu-list .erji.show * {\n    opacity: 1 !important;\n    visibility: visible !important;\n  }\n  .clone-demo-k712 .mobile-nav-content .main-menu-list .erji > li {\n    padding: 0 !important;\n    display: block !important;\n    position: relative;\n    z-index: 10;\n    width: 100% !important;\n    min-height: 35px;\n    background: none !important;\n    border: none !important;\n  }\n  .clone-demo-k712 .mobile-nav-content .main-menu-list .erji > li > a {\n    display: block !important;\n    visibility: visible !important;\n    opacity: 1 !important;\n    height: 35px !important;\n    line-height: 35px !important;\n    padding: 0 15px 0 30px !important;\n    color: #fff !important;\n    font-size: 14px !important;\n    background: rgba(255,255,255,0.1) !important;\n    position: relative !important;\n    z-index: 10;\n    text-indent: 0 !important;\n    width: 100% !important;\n    border: none !important;\n  }\n  .clone-demo-k712 .mobile-nav-content .main-menu-list .yiji > li.has-children .li_item em {\n    transition: transform 0.3s;\n  }\n  .clone-demo-k712 .mobile-nav-content .main-menu-list .yiji > li.has-children.expanded .li_item em {\n    transform: rotate(90deg);\n  }\n  .clone-demo-k712 #header {\n    position: relative;\n  }\n  .clone-demo-k712 .main-header-logo {\n    height: 45px !important;\n    z-index: 30 !important;\n  }\n  .clone-demo-k712 .main-header-logo img {\n    height: 45px !important;\n    max-height: 45px !important;\n  }\n  .clone-demo-k712 .main-header-right {\n    display: block !important;\n  }\n  .clone-demo-k712 .main-header-right .primg,\n  .clone-demo-k712 .main-header-right .main-menu-wrapper {\n    display: none !important;\n  }\n  .clone-demo-k712 .main-header-other {\n    display: block !important;\n    position: absolute;\n    right:0%;\n    top: 0;\n    z-index: 20;\n  }\n  .clone-demo-k712 .head_lang {\n    display: block !important;\n    height: 60px;\n    background: #007ED1;\n  }\n  .clone-demo-k712 .head_lang .language-btn {\n    height: 60px;\n    padding: 0 10px;\n  }\n  .clone-demo-k712 .head_lang .language-dropdown {\n    top: 60px;\n    right: 0;\n  }\n}\n.clone-demo-k712 .main-menu-wrapper ul.main-menu-list > li ul.yiji {\n  width: max-content;\n  min-width: 100%;\n}\n.clone-demo-k712 .main-menu-wrapper ul.main-menu-list > li ul.yiji > li {\n  width: 100%;\n  white-space: nowrap;\n  padding: 0 20px;\n  box-sizing: border-box;\n  text-align: left;\n}\n.clone-demo-k712 .main-menu-wrapper ul.main-menu-list .yiji > li .li_item a {\n  white-space: nowrap;\n  overflow: visible;\n  text-overflow: clip;\n  text-align: left;\n}\n.clone-demo-k712 .main-menu-wrapper ul.main-menu-list > li ul.yiji li ul.erji {\n  width: max-content;\n  min-width: 100%;\n}\n.clone-demo-k712 .main-menu-wrapper ul.main-menu-list > li ul.yiji li:hover ul.erji li {\n  width: 100%;\n  white-space: nowrap;\n  padding: 0 20px;\n  box-sizing: border-box;\n  text-align: left;\n}\n",
+  "footerStyles": "\n.clone-demo-k712 .footerr .foot_item {\n  width: 15%;\n}\n.clone-demo-k712 .footerr .foot_item.foot1 {\n  width: 40%;\n}\n.clone-demo-k712 #suspension li:hover a {\n  width: auto !important;\n  padding-right: 15px !important;\n}\n.clone-demo-k712 #suspension li.tel:hover a {\n  width: auto !important;\n  padding-right: 15px !important;\n}\n.clone-demo-k712 #suspension li.email:hover a {\n  width: auto !important;\n  padding-right: 15px !important;\n}\n.clone-demo-k712 #suspension li.email .txt {\n  white-space: nowrap;\n}\n.clone-demo-k712 #suspension li.ewm .ewm-box {\n  width: 150px !important;\n  height: auto !important;\n  box-sizing: border-box;\n  padding: 10px !important;\n  text-align: center;\n}\n.clone-demo-k712 #suspension li.ewm .ewm-box a {\n  display: block !important;\n  position: static !important;\n  width: auto !important;\n  height: auto !important;\n  background: none !important;\n  color: #fff !important;\n  line-height: 1.5 !important;\n  font-size: 14px !important;\n}\n.clone-demo-k712 #suspension li.ewm .ewm-box img {\n  width: 150px !important;\n  object-fit: cover;\n  display: block;\n  margin: 5px auto 0;\n  max-width: 100%;\n}\n.clone-demo-k712 #suspension li.ewm:hover .fa {\n  background-color: #007ED1 !important;\n  color: #fff !important;\n}\n.clone-demo-k712 #suspension li.backtop:hover a {\n  width: 57px !important;\n}\n.clone-demo-k712 #suspension li.backtop a {\n  position: static !important;\n}\n",
+  "columns": [
+    {
+      "title": "快速导航",
+      "links": [
+        {
+          "text": "首页",
+          "href": "/"
+        },
+        {
+          "text": "产品中心",
+          "href": "/product/"
+        },
+        {
+          "text": "新闻资讯",
+          "href": "/article/"
+        },
+        {
+          "text": "案例中心",
+          "href": "/case/"
+        },
+        {
+          "text": "关于我们",
+          "href": "/about/"
+        },
+        {
+          "text": "常见问题",
+          "href": "/faq/"
+        },
+        {
+          "text": "联系我们",
+          "href": "/contact/"
+        }
+      ],
+      "contact": false
+    },
+    {
+      "title": "新闻资讯",
+      "links": [
+        {
+          "text": "企业新闻",
+          "href": "/article/c11/"
+        },
+        {
+          "text": "企业介绍",
+          "href": "/article/c12/"
+        },
+        {
+          "text": "行业新闻",
+          "href": "/article/c30/"
+        },
+        {
+          "text": "产品上新",
+          "href": "/article/c31/"
+        }
+      ],
+      "contact": false
+    },
+    {
+      "title": "产品中心",
+      "links": [
+        {
+          "text": "动物形象类",
+          "href": "/product/c1/"
+        },
+        {
+          "text": "卡通形象类",
+          "href": "/product/c2/"
+        },
+        {
+          "text": "创意水果类",
+          "href": "/product/c3/"
+        },
+        {
+          "text": "三丽欧系列类",
+          "href": "/product/c14/"
+        },
+        {
+          "text": "维尼熊IP",
+          "href": "/product/c15/"
+        }
+      ],
+      "contact": false
+    },
+    {
+      "title": "加入我们",
+      "links": [
+        {
+          "text": "联系我们",
+          "href": "/contact/"
+        },
+        {
+          "text": "关于我们",
+          "href": "/about/"
+        }
+      ],
+      "contact": false
+    },
+    {
+      "title": "联系我们",
+      "links": [],
+      "contact": true
+    }
+  ]
+}

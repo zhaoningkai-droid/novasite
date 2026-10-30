@@ -183,7 +183,8 @@ export default async function ProductPage({ params }: Props) {
     const gallery = Array.isArray(product.gallery)
       ? product.gallery.flatMap((image) =>
           typeof image === 'object' && image?.url
-            ? [{ url: image.url, alt: image.alt || product.title }]
+            ? [{ url: image.url, alt: image.alt || product.title,
+                caption: image.caption ? <RichText data={image.caption} enableGutter={false} /> : null }]
             : [],
         )
       : []

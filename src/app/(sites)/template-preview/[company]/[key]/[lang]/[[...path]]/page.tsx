@@ -1,3 +1,5 @@
+import { isAllyKey } from '@/platform/allynav-template/key'
+import { isReferenceKey } from '@/platform/reference-templates/keys'
 import { notFound, redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
@@ -23,6 +25,8 @@ export default async function TemplatePreview({ params, searchParams }: Props) {
   const template = getNewTemplate(key)
   const legacy = getLegacyTemplate(key)
   if (!template && !legacy) notFound()
+  // Template previews always use independent sample content, before any tenant/user lookup.
+  if (isAllyKey(key) || isReferenceKey(key)) redirect(`/template-demo/${key}/zh`)
   const { user } = await getMeUser({ nullUserRedirect: '/login' })
   const company = await getAccessibleWorkspaceCompanyBySlug(user, slug)
   if (!company) notFound()

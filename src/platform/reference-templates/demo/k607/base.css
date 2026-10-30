@@ -1,0 +1,732 @@
+/*
+  1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)
+  2. Remove default margins and padding
+  3. Reset all borders.
+*/
+
+.clone-demo-k607 *,
+.clone-demo-k607 ::after,
+.clone-demo-k607 ::before,
+.clone-demo-k607 ::backdrop,
+.clone-demo-k607 ::file-selector-button {
+  box-sizing: border-box; /* 1 */
+  margin: 0; /* 2 */
+  padding: 0; /* 2 */
+  border: 0 solid; /* 3 */
+}
+
+/*
+  1. Use a consistent sensible line-height in all browsers.
+  2. Prevent adjustments of font size after orientation changes in iOS.
+  3. Use a more readable tab size.
+  4. Use the user's configured `sans` font-family by default.
+  5. Use the user's configured `sans` font-feature-settings by default.
+  6. Use the user's configured `sans` font-variation-settings by default.
+  7. Disable tap highlights on iOS.
+*/
+
+.clone-demo-k607,
+.clone-demo-k607 :host {
+  line-height: 1.5; /* 1 */
+  -webkit-text-size-adjust: 100%; /* 2 */
+  tab-size: 4; /* 3 */
+  font-family: --theme(
+    --default-font-family,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    'Noto Sans',
+    Arial,
+    sans-serif,
+    'Apple Color Emoji',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol',
+    'Noto Color Emoji'
+  ); /* 4 */
+  font-feature-settings: --theme(--default-font-feature-settings, normal); /* 5 */
+  font-variation-settings: --theme(--default-font-variation-settings, normal); /* 6 */
+  -webkit-tap-highlight-color: transparent; /* 7 */
+}
+
+/*
+  1. Add the correct height in Firefox.
+  2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)
+  3. Reset the default border style to a 1px solid border.
+*/
+
+.clone-demo-k607 hr {
+  height: 0; /* 1 */
+  color: inherit; /* 2 */
+  border-top-width: 1px; /* 3 */
+}
+
+/*
+  Add the correct text decoration in Chrome, Edge, and Safari.
+*/
+
+.clone-demo-k607 abbr:where([title]) {
+  -webkit-text-decoration: underline dotted;
+  text-decoration: underline dotted;
+}
+
+/*
+  Remove the default font size and weight for headings.
+*/
+
+.clone-demo-k607 h1,
+.clone-demo-k607 h2,
+.clone-demo-k607 h3,
+.clone-demo-k607 h4,
+.clone-demo-k607 h5,
+.clone-demo-k607 h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+/*
+  Reset links to optimize for opt-in styling instead of opt-out.
+*/
+
+.clone-demo-k607 a {
+  color: inherit;
+  -webkit-text-decoration: inherit;
+  text-decoration: inherit;
+}
+
+/*
+  Add the correct font weight in Edge and Safari.
+*/
+
+.clone-demo-k607 b,
+.clone-demo-k607 strong {
+  font-weight: bolder;
+}
+
+/*
+  1. Use the user's configured `mono` font-family by default.
+  2. Use the user's configured `mono` font-feature-settings by default.
+  3. Use the user's configured `mono` font-variation-settings by default.
+  4. Correct the odd `em` font sizing in all browsers.
+*/
+
+.clone-demo-k607 code,
+.clone-demo-k607 kbd,
+.clone-demo-k607 samp,
+.clone-demo-k607 pre {
+  font-family: --theme(
+    --default-mono-font-family,
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    'Liberation Mono',
+    'Courier New',
+    monospace
+  ); /* 1 */
+  font-feature-settings: --theme(--default-mono-font-feature-settings, normal); /* 2 */
+  font-variation-settings: --theme(--default-mono-font-variation-settings, normal); /* 3 */
+  font-size: 1em; /* 4 */
+}
+
+/*
+  Add the correct font size in all browsers.
+*/
+
+.clone-demo-k607 small {
+  font-size: 80%;
+}
+
+/*
+  Prevent `sub` and `sup` elements from affecting the line height in all browsers.
+*/
+
+.clone-demo-k607 sub,
+.clone-demo-k607 sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+.clone-demo-k607 sub {
+  bottom: -0.25em;
+}
+
+.clone-demo-k607 sup {
+  top: -0.5em;
+}
+
+/*
+  1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)
+  2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)
+  3. Remove gaps between table borders by default.
+*/
+
+.clone-demo-k607 table {
+  text-indent: 0; /* 1 */
+  border-color: inherit; /* 2 */
+  border-collapse: collapse; /* 3 */
+}
+
+/*
+  Use the modern Firefox focus style for all focusable elements.
+*/
+
+.clone-demo-k607 :-moz-focusring:where(:not(iframe)) {
+  outline: auto;
+}
+
+/*
+  Add the correct vertical alignment in Chrome and Firefox.
+*/
+
+.clone-demo-k607 progress {
+  vertical-align: baseline;
+}
+
+/*
+  Add the correct display in Chrome and Safari.
+*/
+
+.clone-demo-k607 summary {
+  display: list-item;
+}
+
+/*
+  Make lists unstyled by default.
+*/
+
+.clone-demo-k607 ol,
+.clone-demo-k607 ul,
+.clone-demo-k607 menu {
+  list-style: none;
+}
+
+/*
+  1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)
+  2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)
+      This can trigger a poorly considered lint error in some tools but is included by design.
+*/
+
+.clone-demo-k607 img,
+.clone-demo-k607 svg,
+.clone-demo-k607 video,
+.clone-demo-k607 canvas,
+.clone-demo-k607 audio,
+.clone-demo-k607 iframe,
+.clone-demo-k607 embed,
+.clone-demo-k607 object {
+  display: block; /* 1 */
+  vertical-align: middle; /* 2 */
+}
+
+/*
+  Constrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)
+*/
+
+.clone-demo-k607 img,
+.clone-demo-k607 video {
+  max-width: 100%;
+  height: auto;
+}
+
+/*
+  1. Inherit font styles in all browsers.
+  2. Remove border radius in all browsers.
+  3. Remove background color in all browsers.
+  4. Ensure consistent opacity for disabled states in all browsers.
+*/
+
+.clone-demo-k607 button,
+.clone-demo-k607 input,
+.clone-demo-k607 select,
+.clone-demo-k607 optgroup,
+.clone-demo-k607 textarea,
+.clone-demo-k607 ::file-selector-button {
+  font: inherit; /* 1 */
+  font-feature-settings: inherit; /* 1 */
+  font-variation-settings: inherit; /* 1 */
+  letter-spacing: inherit; /* 1 */
+  color: inherit; /* 1 */
+  border-radius: 0; /* 2 */
+  background-color: transparent; /* 3 */
+  opacity: 1; /* 4 */
+}
+
+/*
+  Restore default font weight.
+*/
+
+.clone-demo-k607 :where(select:is([multiple], [size])) optgroup {
+  font-weight: bolder;
+}
+
+/*
+  Restore indentation.
+*/
+
+.clone-demo-k607 :where(select:is([multiple], [size])) optgroup option {
+  padding-inline-start: 20px;
+}
+
+/*
+  Restore space after button.
+*/
+
+.clone-demo-k607 ::file-selector-button {
+  margin-inline-end: 4px;
+}
+
+/*
+  Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)
+*/
+
+.clone-demo-k607 ::placeholder {
+  opacity: 1;
+}
+
+/*
+  Set the default placeholder color to a semi-transparent version of the current text color in browsers that do not
+  crash when using `color-mix(…)` with `currentcolor`. (https://github.com/tailwindlabs/tailwindcss/issues/17194)
+*/
+
+@supports (not (-webkit-appearance: -apple-pay-button)) /* Not Safari */ or
+  (contain-intrinsic-size: 1px) /* Safari 17+ */ {
+  .clone-demo-k607 ::placeholder {
+    color: color-mix(in oklab, currentcolor 50%, transparent);
+  }
+}
+
+/*
+  Prevent resizing textareas horizontally by default.
+*/
+
+.clone-demo-k607 textarea {
+  resize: vertical;
+}
+
+/*
+  Remove the inner padding in Chrome and Safari on macOS.
+*/
+
+.clone-demo-k607 ::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+/*
+  1. Ensure date/time inputs have the same height when empty in iOS Safari.
+  2. Ensure text alignment can be changed on date/time inputs in iOS Safari.
+*/
+
+.clone-demo-k607 ::-webkit-date-and-time-value {
+  min-height: 1lh; /* 1 */
+  text-align: inherit; /* 2 */
+}
+
+/*
+  Prevent height from changing on date/time inputs in macOS Safari when the input is set to `display: block`.
+*/
+
+.clone-demo-k607 ::-webkit-datetime-edit {
+  display: inline-flex;
+}
+
+/*
+  Remove excess padding from pseudo-elements in date/time inputs to ensure consistent height across browsers.
+*/
+
+.clone-demo-k607 ::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+
+.clone-demo-k607 ::-webkit-datetime-edit,
+.clone-demo-k607 ::-webkit-datetime-edit-year-field,
+.clone-demo-k607 ::-webkit-datetime-edit-month-field,
+.clone-demo-k607 ::-webkit-datetime-edit-day-field,
+.clone-demo-k607 ::-webkit-datetime-edit-hour-field,
+.clone-demo-k607 ::-webkit-datetime-edit-minute-field,
+.clone-demo-k607 ::-webkit-datetime-edit-second-field,
+.clone-demo-k607 ::-webkit-datetime-edit-millisecond-field,
+.clone-demo-k607 ::-webkit-datetime-edit-meridiem-field {
+  padding-block: 0;
+}
+
+/*
+  Center dropdown marker shown on inputs with paired `<datalist>`s in Chrome. (https://github.com/tailwindlabs/tailwindcss/issues/18499)
+*/
+
+.clone-demo-k607 ::-webkit-calendar-picker-indicator {
+  line-height: 1;
+}
+
+/*
+  Remove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)
+*/
+
+.clone-demo-k607 :-moz-ui-invalid {
+  box-shadow: none;
+}
+
+/*
+  Correct the inability to style the border radius in iOS Safari.
+*/
+
+.clone-demo-k607 button,
+.clone-demo-k607 input:where([type='button'], [type='reset'], [type='submit']),
+.clone-demo-k607 ::file-selector-button {
+  appearance: button;
+}
+
+/*
+  Correct the cursor style of increment and decrement buttons in Safari.
+*/
+
+.clone-demo-k607 ::-webkit-inner-spin-button,
+.clone-demo-k607 ::-webkit-outer-spin-button {
+  height: auto;
+}
+
+/*
+  Make elements with the HTML hidden attribute stay hidden by default.
+*/
+
+.clone-demo-k607 [hidden]:where(:not([hidden='until-found'])) {
+  display: none !important;
+}
+
+.clone-demo-k607 { --brand: #918876; --ink: #333; --muted: #666; --surface: #f5f5f5; }
+.clone-demo-k607 * { box-sizing: border-box; }
+.clone-demo-k607 { scroll-behavior: smooth; }
+.clone-demo-k607 { margin: 0; color: var(--ink); background: white;
+  font-family: "Microsoft YaHei", Arial, Helvetica, Verdana, sans-serif; font-size: 14px; }
+.clone-demo-k607::-webkit-scrollbar { width: 5px; }
+.clone-demo-k607::-webkit-scrollbar-thumb { background: var(--brand); border-radius: 5px; }
+.clone-demo-k607 h1,.clone-demo-k607 h2,.clone-demo-k607 h3,.clone-demo-k607 p { margin: 0; }
+.clone-demo-k607 a { color: inherit; text-decoration: none; }
+.clone-demo-k607 button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+.clone-demo-k607 a,.clone-demo-k607 button { -webkit-tap-highlight-color: transparent; }
+.clone-demo-k607 img { display: block; max-width: 100%; }
+.clone-demo-k607 button:disabled { opacity: .4; cursor: default; }
+.clone-demo-k607 :focus-visible { outline: 3px solid #326bad; outline-offset: 4px; }
+.clone-demo-k607 section { scroll-margin-top: 90px; }
+.clone-demo-k607 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.clone-demo-k607 .skip-link { position: fixed; top: -100px; left: 20px; z-index: 60; background: #fff; padding: 12px; }
+.clone-demo-k607 .skip-link:focus { top: 10px; }
+.clone-demo-k607 .page-width { width: 100%; max-width: 1600px; margin-inline: auto; }
+.clone-demo-k607 .header { position: fixed; inset: 0 0 auto; height: 60px; z-index: 30; background: white;
+  display: flex; align-items: center; box-shadow: 0 2px 15px #0000000d; }
+.clone-demo-k607 .logo { margin-left: 15px; flex-shrink: 0; width: 160px; }
+.clone-demo-k607 .logo img { width: auto; height: 44px; }
+.clone-demo-k607 .desktop-nav { display: none; }
+.clone-demo-k607 .language { margin-left: auto; margin-right: 64px; position: relative; }
+.clone-demo-k607 .language > button { display: flex; align-items: center; gap: 8px; padding: 15px 0; }
+.clone-demo-k607 .language img { object-fit: contain; }
+.clone-demo-k607 .language-list { position: absolute; top: 100%; right: 0; background: white; width: 235px;
+  box-shadow: 0 8px 24px #0002; max-height: 65vh; overflow-y: auto; padding: 10px; }
+.clone-demo-k607 .language-list a { display: flex; gap: 10px; align-items: center; padding: 9px 10px; }
+.clone-demo-k607 .language-list a:hover { color: var(--brand); background: #f6f6f6; }
+.clone-demo-k607 .language-list button { width: 100%; padding: 10px; color: var(--brand); }
+.clone-demo-k607 .menu-toggle { position: absolute; right: 0; top: 0; width: 60px; height: 100%;
+  display: grid; place-items: center; background: var(--brand); color: white; }
+.clone-demo-k607 .menu-toggle:hover { background: #7c7464; }
+.clone-demo-k607 .full-menu { position: fixed; inset: 0; z-index: 50; background: white; overflow-y: auto; }
+.clone-demo-k607 .menu-top { height: 90px; display: flex; align-items: center; justify-content: space-between;
+  padding: 15px 25px; border-bottom: 1px solid #eee; }
+.clone-demo-k607 .menu-top button { display: flex; gap: 15px; align-items: center; }
+.clone-demo-k607 .menu-column { border-bottom: 1px solid #eee; }
+.clone-demo-k607 .menu-column-title { display: flex; align-items: center; justify-content: space-between; }
+.clone-demo-k607 .menu-column-title a { padding: 20px; font-size: 18px; display: block; flex: 1; }
+.clone-demo-k607 .menu-column-title button { padding: 20px; }
+.clone-demo-k607 .menu-sub { display: none; background: #fafafa; }
+.clone-demo-k607 .menu-sub.expanded { display: block; }
+.clone-demo-k607 .menu-sub a { display: block; padding: 12px 35px; color: #777; }
+.clone-demo-k607 main { padding-top: 60px; overflow: hidden; }
+.clone-demo-k607 .hero { position: relative; overflow: hidden; }
+.clone-demo-k607 .hero-track { display: flex; transition: transform .8s ease; }
+.clone-demo-k607 .hero-track img { width: 100%; min-width: 100%; height: auto; aspect-ratio: 7/3; object-fit: cover; }
+.clone-demo-k607 .hero-prev,.clone-demo-k607 .hero-next { display: none; position: absolute; top: 50%; transform: translateY(-50%);
+  color: white; padding: 0; transition: opacity .2s; }
+.clone-demo-k607 .hero-prev { left: 5.5%; } .clone-demo-k607 .hero-next { right: 5.5%; }
+.clone-demo-k607 .hero-prev:hover,.clone-demo-k607 .hero-next:hover { opacity: .65; }
+.clone-demo-k607 .dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px; }
+.clone-demo-k607 .dots button { width: 12px; height: 12px; padding: 0; background: #ffffff80;
+  border-radius: 12px; transition: width .3s; }
+.clone-demo-k607 .dots button.active { width: 30px; background: var(--brand); }
+.clone-demo-k607 .scroll-down { position: absolute; color: white; bottom: 28px; left: 50%;
+  transform: translateX(-50%); }
+.clone-demo-k607 .about { background: var(--surface); padding-bottom: 30px; }
+.clone-demo-k607 .about-copy { position: relative; padding: 18px 15px 30px; }
+.clone-demo-k607 .about-copy h2 { font-size: 20px; font-weight: 700; position: relative; }
+.clone-demo-k607 .about-copy p { color: #666; font-size: 14px; line-height: 30px; margin-top: 20px;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden;
+  position: relative; }
+.clone-demo-k607 .about-word { display: none; }
+.clone-demo-k607 .about-image { position: relative; padding-top: 85px; }
+.clone-demo-k607 .about-image img { width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; }
+.clone-demo-k607 .about-more { background: var(--brand); color: white; display: grid; place-items: center;
+  width: 150px; height: 40px; position: absolute; top: 0; left: calc(50% - 75px); border-radius: 3px; }
+.clone-demo-k607 .about-more:hover { background: #7c7464; }
+.clone-demo-k607 .section-title { text-align: center; position: relative; margin: 15px 0; }
+.clone-demo-k607 .section-title > span { display: none; color: #333; opacity: .04; position: absolute; inset: 0;
+  font: bold 72px Impact, "Arial Narrow", sans-serif; pointer-events: none; }
+.clone-demo-k607 .section-title h2 { font-size: 26px; font-weight: 700; position: relative; }
+.clone-demo-k607 .products { padding: 20px 0; }
+.clone-demo-k607 .product-region { background: var(--surface); margin-top: 30px; }
+.clone-demo-k607 .product-layout { padding: 15px 0 0; }
+.clone-demo-k607 .product-sidebar { padding: 0 2px 15px; }
+.clone-demo-k607 .product-sidebar nav { border: 1px solid #dedede; }
+.clone-demo-k607 .product-sidebar nav a { display: flex; align-items: center; height: 60px;
+  padding: 0 30px; border-bottom: 1px solid #d5d4d4; transition: all .25s; }
+.clone-demo-k607 .product-sidebar nav a:last-child { border: 0; }
+.clone-demo-k607 .product-sidebar nav a:hover { background: #a29c8f; color: white; }
+.clone-demo-k607 .product-sidebar nav a:first-child { background: var(--brand); color: white; }
+.clone-demo-k607 .hotline,.clone-demo-k607 .vertical-word { display: none; }
+.clone-demo-k607 .product-gallery { position: relative; padding: 15px 0 80px;
+  background: #a19b8d url('/sites/k607/ipro-bd-bg.jpg') center/cover; }
+.clone-demo-k607 .featured-product { display: block; width: 100%; }
+.clone-demo-k607 .featured-product img { width: 100%; height: auto; max-height: 391px; object-fit: cover; }
+.clone-demo-k607 .product-strip { background: white; padding: 10px; display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr)); gap: 15px; margin-top: 18px; position: relative; }
+.clone-demo-k607 .product-strip > a { display: block; position: relative; overflow: hidden; }
+.clone-demo-k607 .product-strip img { aspect-ratio: 1; width: 100%; height: auto; object-fit: cover;
+  transition: transform .5s; }
+.clone-demo-k607 .product-strip a:hover img { transform: scale(1.05); }
+.clone-demo-k607 .product-strip span { position: absolute; bottom: 0; left: 0; width: 100%; color: white;
+  background: #0008; padding: 5px 10px; }
+.clone-demo-k607 .strip-prev,.clone-demo-k607 .strip-next { position: absolute; top: calc(50% - 18px); width: 36px;
+  height: 36px; background: #918876d9; border-radius: 50%; color: white;
+  display: grid; place-items: center; }
+.clone-demo-k607 .strip-prev { left: 12px; } .clone-demo-k607 .strip-next { right: 12px; }
+.clone-demo-k607 .official-video { padding: 60px 7% 80px; }
+.clone-demo-k607 .official-video h2 { text-align: center; font-size: 26px; font-weight: 700; margin-bottom: 45px; }
+.clone-demo-k607 .official-video video { display: block; width: 100%; height: auto; aspect-ratio: 16/9;
+  max-width: 1440px; margin: auto; object-fit: contain; background: #eee; }
+.clone-demo-k607 .consultation { display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 350px; padding: 0 15px; text-align: center; color: white;
+  background: #a5a091 url('/sites/k607/izixun-bg.jpg') center/cover; margin: 8px 0 15px; }
+.clone-demo-k607 .consultation-label { font-size: 20px; letter-spacing: 4px; }
+.clone-demo-k607 .consultation h2 { font-size: 30px; letter-spacing: 2px; margin: 20px 0 30px; font-weight: 700; }
+.clone-demo-k607 .consultation-description { font-size: 14px; line-height: 1.5; letter-spacing: 1px;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.clone-demo-k607 .consultation > a { display: grid; place-items: center; height: 50px; background: var(--brand);
+  border-radius: 30px; width: 185px; font-size: 18px; margin-top: 30px; transition: width .3s; }
+.clone-demo-k607 .consultation > a:hover { width: 200px; }
+.clone-demo-k607 .cases { padding: 30px 0 50px; }
+.clone-demo-k607 .case-layout { display: flex; flex-direction: column-reverse; }
+.clone-demo-k607 .case-image { width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; }
+.clone-demo-k607 .case-copy { padding: 30px 15px; }
+.clone-demo-k607 .case-heading { display: flex; align-items: center; gap: 10px; margin: 10px 0 25px; }
+.clone-demo-k607 .case-heading > span { border-radius: 50%; display: grid; place-items: center; flex-shrink: 0;
+  width: 45px; height: 45px; background: var(--brand); color: white; }
+.clone-demo-k607 .case-heading h3 { font-size: 20px; font-weight: 400; line-height: 1.2;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.clone-demo-k607 .case-copy > p { font-size: 14px; line-height: 30px; display: -webkit-box;
+  -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+.clone-demo-k607 .case-controls { display: flex; gap: 15px; margin-top: 30px; }
+.clone-demo-k607 .case-controls button { width: 48px; height: 48px; display: grid; place-items: center;
+  color: white; border-radius: 50%; background: var(--brand); }
+.clone-demo-k607 .case-controls button:hover:not(:disabled) { background: #222; }
+.clone-demo-k607 .case-dots { display: flex; gap: 16px; margin-top: 30px; }
+.clone-demo-k607 .case-dots button { width: 54px; text-align: left; color: #999; position: relative; }
+.clone-demo-k607 .case-dots button.active { color: var(--brand); }
+.clone-demo-k607 .case-dots button.active:after { content: ''; width: 32px; height: 1px;
+  background: var(--brand); position: absolute; left: 20px; top: 50%; }
+.clone-demo-k607 .news-cards { display: grid; grid-template-columns: minmax(0,1fr); padding: 15px 10px 30px; }
+.clone-demo-k607 .news-card { position: relative; overflow: hidden; transition: box-shadow .4s; }
+.clone-demo-k607 .news-card:not(:first-child) { display: none; }
+.clone-demo-k607 .news-background { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transition: opacity .4s; }
+.clone-demo-k607 .news-content { position: relative; padding: 30px; transition: background .4s; }
+.clone-demo-k607 .news-content h3 { font-size: 20px; font-weight: 700; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; }
+.clone-demo-k607 .news-content p { font-size: 16px; line-height: 30px; color: #999; margin-top: 20px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  height: 60px; }
+.clone-demo-k607 .news-date { display: flex; justify-content: space-between; align-items: center;
+  border-top: 1px solid #eae5e6; margin-top: 35px; padding-top: 20px; }
+.clone-demo-k607 .news-date time { font: bold 20px Impact, "Arial Narrow", sans-serif; color: #737373; }
+.clone-demo-k607 .news-date > span { width: 32px; height: 32px; background: #9a9a9a; color: white;
+  display: grid; place-items: center; border-radius: 50%; }
+.clone-demo-k607 .news-card:hover { box-shadow: 0 0 10px #666; }
+.clone-demo-k607 .news-card:hover .news-background { opacity: 1; }
+.clone-demo-k607 .news-card:hover .news-content { background: #5559; color: white; }
+.clone-demo-k607 .news-card:hover p,.clone-demo-k607 .news-card:hover time { color: white; }
+.clone-demo-k607 .news-pagination { display: flex; justify-content: center; gap: 8px; padding: 20px 0 60px; }
+.clone-demo-k607 .news-pagination button { width: 25px; height: 5px; background: #eaeaea; padding: 0; }
+.clone-demo-k607 .news-pagination button.active { background: var(--brand); width: 30px; }
+.clone-demo-k607 footer { color: white; padding: 30px 0;
+  background: #20272c url('/sites/k607/footer-bg.jpg') center/cover; }
+.clone-demo-k607 .footer-inner { padding: 0 15px; }
+.clone-demo-k607 .footer-service { padding: 10px 5px; }
+.clone-demo-k607 .footer-service > p { font-size: 16px; padding: 10px 0; }
+.clone-demo-k607 .footer-service > a:not(.message) { font: bold 36px Impact, "Arial Narrow", sans-serif; }
+.clone-demo-k607 .message { display: flex; align-items: center; padding: 12px; background: white; color: #333;
+  width: 245px; gap: 6px; margin-top: 35px; height: 47px; }
+.clone-demo-k607 .message svg:last-child { margin-left: auto; color: var(--brand); }
+.clone-demo-k607 .footer-links { display: none; }
+.clone-demo-k607 .footer-contact { margin-top: 30px; padding: 0 5px; }
+.clone-demo-k607 .socials { display: flex; gap: 24px; margin-bottom: 30px; }
+.clone-demo-k607 .socials img { object-fit: contain; }
+.clone-demo-k607 .footer-contact address { font-style: normal; color: #ffffff80; font-size: 12px; line-height: 27px; }
+.clone-demo-k607 .footer-contact address a { display: block; }
+.clone-demo-k607 .footer-contact address a:hover { color: white; }
+.clone-demo-k607 .qr-codes { display: flex; gap: 15px; margin-top: 20px; }
+.clone-demo-k607 .qr-codes button { padding: 0; }
+.clone-demo-k607 .qr-codes span { display: block; margin-top: 5px; }
+.clone-demo-k607 .copyright { background: black; color: white; padding: 20px 15px; text-align: center; }
+.clone-demo-k607 .copyright a { margin-left: 8px; }
+.clone-demo-k607 .qr-dialog { border: 0; border-radius: 8px; padding: 45px 25px 25px; margin: auto;
+  max-width: 90vw; text-align: center; }
+.clone-demo-k607 .qr-dialog::backdrop { background: #000a; }
+.clone-demo-k607 .qr-dialog > button { position: absolute; right: 12px; top: 12px; }
+.clone-demo-k607 .qr-dialog p { margin-top: 15px; }
+.clone-demo-k607 .floating-contact { position: fixed; right: 12px; bottom: 25px; display: flex;
+  flex-direction: column; background: var(--brand); color: white; z-index: 20; }
+.clone-demo-k607 .floating-contact > * { display: flex; align-items: center; justify-content: center;
+  width: 45px; height: 45px; position: relative; border-bottom: 1px solid #fff4; }
+.clone-demo-k607 .floating-contact span { display: none; position: absolute; right: 45px; background: var(--brand);
+  white-space: nowrap; padding: 12px; }
+.clone-demo-k607 .floating-contact a:hover span { display: block; }
+@media (min-width: 577px) {
+  .clone-demo-k607 .header { height: 90px; } .clone-demo-k607 main { padding-top: 90px; }
+  .clone-demo-k607 .logo img { height: 58px; }
+  .clone-demo-k607 .language { margin-right: 105px; }
+  .clone-demo-k607 .about-copy h2 { font-size: 24px; } .clone-demo-k607 .about-copy p { font-size: 16px; }
+  .clone-demo-k607 .about-copy { padding-top: 46px; }
+  .clone-demo-k607 .section-title { margin: 30px 0 50px; height: 82px; }
+  .clone-demo-k607 .section-title > span { display: block; font-size: 65px; }
+  .clone-demo-k607 .section-title h2 { padding-top: 25px; font-size: 28px; }
+  .clone-demo-k607 .products { padding-top: 20px; } .clone-demo-k607 .product-region { margin-top: 45px; }
+  .clone-demo-k607 .product-layout { padding-top: 45px; }
+  .clone-demo-k607 .product-sidebar nav a { height: 80px; font-size: 16px; }
+  .clone-demo-k607 .product-gallery { padding: 30px; }
+  .clone-demo-k607 .product-strip { padding: 30px; }
+  .clone-demo-k607 .product-strip { gap: 30px; }
+  .clone-demo-k607 .consultation { height: 552px; margin: 15px 0 30px; }
+  .clone-demo-k607 .consultation { background-size: auto; }
+  .clone-demo-k607 .consultation-label { font-size: 24px; }
+  .clone-demo-k607 .consultation h2 { font-size: 40px; }
+  .clone-demo-k607 .consultation-description { font-size: 20px; }
+  .clone-demo-k607 .consultation > a { margin-top: 45px; }
+}
+@media (min-width: 993px) {
+  .clone-demo-k607 .hero-prev,.clone-demo-k607 .hero-next { display: block; }
+  .clone-demo-k607 .about { padding-bottom: 0; } .clone-demo-k607 .about-inner { display: flex; }
+  .clone-demo-k607 .about-copy { width: 50%; padding: 140px 40px 80px; }
+  .clone-demo-k607 .about-word { display: block; position: absolute; left: 40px; top: 110px;
+    color: #efeeee; font: italic 900 200px/1 Arial,sans-serif; letter-spacing: -10px; }
+  .clone-demo-k607 .about-copy p { -webkit-line-clamp: 4; }
+  .clone-demo-k607 .about-image { padding: 0; width: 50%; }
+  .clone-demo-k607 .about-image img { height: 100%; }
+  .clone-demo-k607 .about-more { top: auto; bottom: 0; left: -54px; width: 54px; height: 54px; border-radius: 0; }
+  .clone-demo-k607 .section-title > span { font-size: 72px; } .clone-demo-k607 .section-title h2 { font-size: 38px; }
+  .clone-demo-k607 .case-layout { flex-direction: row; min-height: 500px; }
+  .clone-demo-k607 .case-copy { width: 475px; flex-shrink: 0; padding: 30px 60px 30px 30px; }
+  .clone-demo-k607 .case-heading { margin: 35px 0; align-items: flex-start; }
+  .clone-demo-k607 .case-heading > span { width: 60px; height: 60px; }
+  .clone-demo-k607 .case-heading h3 { font-size: 36px; line-height: 1; }
+  .clone-demo-k607 .case-image { width: calc(100% - 475px); align-self: start; }
+  .clone-demo-k607 .case-controls { margin-top: 35px; } .clone-demo-k607 .case-dots { margin-top: 50px; }
+  .clone-demo-k607 .news-cards { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .clone-demo-k607 .news-card:not(:first-child) { display: block; }
+  .clone-demo-k607 .news-content { padding: 45px 60px; }
+  .clone-demo-k607 .official-video { padding: 60px 5% 80px; }
+  .clone-demo-k607 .official-video h2 { font-size: 32px; margin-bottom: 45px; }
+  .clone-demo-k607 footer { padding: 95px 0 45px; }
+  .clone-demo-k607 .footer-inner { display: flex; }
+  .clone-demo-k607 .footer-service { width: 22%; }
+  .clone-demo-k607 .footer-links { display: flex; width: 55%; justify-content: space-between;
+    padding: 25px 40px; border-inline: 1px dashed #ffffff80; }
+  .clone-demo-k607 .footer-links h3 { font-size: 14px; margin-bottom: 15px; font-weight: 400; }
+  .clone-demo-k607 .footer-links a { display: block; opacity: .5; margin-bottom: 10px; }
+  .clone-demo-k607 .footer-links a:hover { opacity: 1; }
+  .clone-demo-k607 .footer-contact { width: 25%; margin: 0; padding: 7px 25px 0; }
+  .clone-demo-k607 .message { width: 90%; }
+}
+@media (min-width: 1025px) {
+  .clone-demo-k607 .desktop-nav { display: flex; margin-left: auto; width: calc(100% - 600px);
+    justify-content: space-between; height: 100%; }
+  .clone-demo-k607 .nav-item > a { display: grid; align-items: center; height: 100%; font-size: 16px;
+    border-bottom: 3px solid transparent; }
+  .clone-demo-k607 .nav-item:hover > a { color: var(--brand); border-bottom-color: var(--brand); }
+  .clone-demo-k607 .language { margin-left: auto; margin-right: 105px; }
+  .clone-demo-k607 .mega-menu { display: none; position: absolute; top: 90px; left: 0; right: 0;
+    background: #fffffff5; box-shadow: 0 10px 15px #0002; min-height: 250px; }
+  .clone-demo-k607 .nav-item:hover .mega-menu,.clone-demo-k607 .nav-item:focus-within .mega-menu { display: flex; }
+  .clone-demo-k607 .mega-heading { width: 30%; padding: 40px; color: var(--brand); }
+  .clone-demo-k607 .mega-heading strong { display: block; font-size: 32px; }
+  .clone-demo-k607 .mega-heading span { display: block; margin-top: 15px; font-size: 22px; opacity: .4; }
+  .clone-demo-k607 .mega-links { padding: 30px 40px; width: 70%; border-left: 1px solid #eee; }
+  .clone-demo-k607 .mega-links a { display: flex; gap: 15px; padding: 10px; font-size: 16px; }
+  .clone-demo-k607 .mega-links a:hover { color: var(--brand); }
+}
+@media (min-width: 1200px) {
+  .clone-demo-k607 .menu-toggle { width: 80px; }
+  .clone-demo-k607 .menu-columns { display: flex; min-height: calc(100vh - 90px); }
+  .clone-demo-k607 .menu-column { flex: 1; text-align: center; padding-top: 150px;
+    border-right: 1px solid #f1f1f1; transition: background .4s; }
+  .clone-demo-k607 .menu-column:hover { background: #999; color: white; }
+  .clone-demo-k607 .menu-column-title { display: block; }
+  .clone-demo-k607 .menu-column-title a { font-weight: 700; }
+  .clone-demo-k607 .menu-column-title a:after { content: ''; width: 32px; height: 2px; background: #b8afa0;
+    display: block; margin: 14px auto 0; }
+  .clone-demo-k607 .menu-column-title button { display: none; }
+  .clone-demo-k607 .menu-sub { display: block; background: none; }
+  .clone-demo-k607 .menu-sub a { padding: 6px 15px; }
+  .clone-demo-k607 .menu-column:hover .menu-sub a { color: white; }
+}
+@media (min-width: 1201px) {
+  .clone-demo-k607 .product-layout { display: flex; padding: 0; }
+  .clone-demo-k607 .product-sidebar { width: 350px; flex-shrink: 0; padding: 0; }
+  .clone-demo-k607 .product-sidebar nav { width: 250px; border: 0; }
+  .clone-demo-k607 .product-sidebar nav a { height: 100px; font-size: 18px; }
+  .clone-demo-k607 .product-sidebar nav a:hover { font-size: 24px; }
+  .clone-demo-k607 .hotline { display: flex; gap: 10px; color: var(--brand); margin-top: 45px; padding-left: 15px; }
+  .clone-demo-k607 .hotline strong { font-size: 28px; display: block; }
+  .clone-demo-k607 .vertical-word { display: block; width: 110px; font-size: 140px; color: #e2dfe0;
+    opacity: .4; writing-mode: vertical-rl; font-weight: 700; padding-top: 30px; }
+  .clone-demo-k607 .product-gallery { width: calc(100% - 460px); padding: 50px 0 50px 60px; }
+  .clone-demo-k607 .featured-product img { height: 391px; }
+}
+@media (min-width: 1401px) {
+  .clone-demo-k607 .product-sidebar { width: 443px; }
+  .clone-demo-k607 .product-sidebar nav { width: 350px; }
+  .clone-demo-k607 .product-gallery { width: calc(100% - 553px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .clone-demo-k607 { scroll-behavior: auto; }
+  .clone-demo-k607 *,.clone-demo-k607 *:before,.clone-demo-k607 *:after { animation: none !important; transition: none !important; }
+}
+@media (min-width: 1025px) and (max-width: 1400px) {
+  .clone-demo-k607 .desktop-nav { width: calc(100% - 550px); }
+}
+@media (min-width: 1025px) and (max-width: 1200px) {
+  .clone-demo-k607 .desktop-nav { width: calc(100% - 450px); }
+}
+@font-face {
+  font-family: 'K607 Icons';
+  src: url('/sites/k607/asset-19ade974f5c3f725.woff2') format('woff2');
+  font-display: block;
+}
+.clone-demo-k607 .source-icon { font-family: 'K607 Icons',sans-serif; font-style: normal;
+  font-weight: 400; -webkit-font-smoothing: antialiased; }
+.clone-demo-k607 .menu-icon { font-size: 30px; line-height: 1; }
+
+/* Keep customer international numbers inside the original service column. */
+.clone-demo-k607 .footer-service{container-type:inline-size;min-width:0}
+.clone-demo-k607 .footer-service>a:not(.message){display:inline-block;white-space:nowrap;max-width:100%}
+.clone-demo-k607 .footer-service>a.footer-phone-long{font-size:clamp(18px,9cqw,30px)}
+.clone-demo-k607 .footer-contact{min-width:0}
+.clone-demo-k607 .footer-contact address{overflow-wrap:anywhere}
+.clone-demo-k607 .qr-codes{flex-wrap:wrap}
+@media(min-width:768px){
+ .clone-demo-k607 .footer-service{width:22%;flex:0 0 22%}
+ .clone-demo-k607 .footer-links{width:48%;flex:0 0 48%;padding-inline:clamp(15px,2.5vw,40px);gap:20px;min-width:0}
+ .clone-demo-k607 .footer-links>div{min-width:0}
+ .clone-demo-k607 .footer-contact{width:30%;flex:0 0 30%;padding-inline:clamp(15px,2vw,25px)}
+}

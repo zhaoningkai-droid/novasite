@@ -1,0 +1,46 @@
+/* Keep the two imported resets inside their own root; never touch the workspace body. */
+.clone-demo-root.clone-demo-k607,
+.clone-demo-root.clone-demo-k712 {
+  padding: 0;
+  min-height: 100vh;
+  width: 100%;
+  isolation: isolate;
+}
+@media (min-width: 989px) {
+  html.k712-home-document:has(.clone-demo-k712 .k712-home-shell),
+  html.k712-home-document:has(.clone-demo-k712 .k712-home-shell) body {
+    overflow: hidden;
+    height: 100%;
+  }
+}
+@media (max-width: 988px) {
+  body:has(.clone-demo-k712 .mobile-nav-wrapper.expanded) {
+    overflow: hidden;
+  }
+}
+
+.reference-demo-notice {
+  position: fixed;
+  bottom: 5px;
+  left: 5px;
+  max-width: 80vw;
+  font:
+    11px/1.6 Arial,
+    sans-serif;
+  padding: 4px 9px;
+  border-radius: 4px;
+  background: #ffffffde;
+  color: #555;
+  z-index: 100;
+  box-shadow: 0 1px 5px #0002;
+  pointer-events: none;
+}
+
+/* Short customer lists still use the shared frame: keep its footer at the viewport bottom. */
+.clone-demo-root.clone-demo-k607 {
+  display: flex;
+  flex-direction: column;
+}
+.clone-demo-root.clone-demo-k607 > main {
+  flex: 1;
+}

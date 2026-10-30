@@ -1,0 +1,175 @@
+/* Customer data resilience within the original K712 layout. */
+.clone-demo-k712 .k712-banner-copy {
+  position: absolute;
+  left: 10%;
+  top: 30%;
+  max-width: 75%;
+  color: #fff;
+  text-shadow: 0 1px 8px #0005;
+  z-index: 2;
+}
+.clone-demo-k712 .k712-banner-copy h1 {
+  font-size: clamp(24px, 3.5vw, 60px);
+  line-height: 1.3;
+}
+.clone-demo-k712 .k712-banner-copy p {
+  margin-top: 15px;
+  font-size: 18px;
+}
+.clone-demo-k712 .k712-banner-copy a {
+  display: inline-block;
+  padding: 8px 24px;
+  border: 1px solid currentColor;
+  margin-top: 20px;
+}
+.clone-demo-k712 .pcimg {
+  position: relative;
+}
+.clone-demo-k712 .pcimg picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.clone-demo-k712 .k712-strength-value {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  min-height: 180px;
+  font-size: 40px;
+}
+.clone-demo-k712 .k712-inner .about-box.k712-no-image > div {
+  width: 100%;
+  float: none;
+}
+.clone-demo-k712 .k712-inner :is(.prodetailtxt2, .innerrightxq) :is(img, table) {
+  max-width: 100%;
+}
+.clone-demo-k712 .k712-inner .prodetailtxt2 table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.clone-demo-k712 .k712-inner .prodetailtxt2 :is(th, td) {
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+.clone-demo-k712 .k712-inner .k712-contact-table :is(p, a) {
+  overflow-wrap: anywhere;
+}
+.clone-demo-k712 .main-header-logo strong {
+  font-size: 18px;
+  line-height: 1.3;
+  display: block;
+}
+.clone-demo-k712 .ab_con > p {
+  overflow-y: auto;
+  max-height: 45vh;
+}
+.clone-demo-k712 .video-banner iframe {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border: 0;
+  max-height: 65vh;
+}
+
+.clone-demo-k712 .k712-inner .k712-about-block {
+  margin-bottom: 60px;
+}
+@media (max-width: 767px) {
+  .clone-demo-k712 .k712-inner .k712-about-block .about-box {
+    flex-direction: column;
+  }
+  .clone-demo-k712 .k712-inner .k712-about-block .about-box > div {
+    width: 100%;
+    float: none;
+  }
+  .clone-demo-k712 .k712-inner .k712-about-block .ab_img {
+    order: 1;
+    margin-bottom: 20px;
+  }
+  .clone-demo-k712 .k712-inner .k712-about-block .about-box > div:not(.ab_img) {
+    order: 2;
+  }
+}
+
+.clone-demo-k712 .k712-empty-banner {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #918876;
+  color: #fff;
+  font-size: 32px;
+}
+.clone-demo-k712 .k712-strength-caption {
+  display: block;
+  font-size: 26px;
+  margin-top: 8px;
+}
+
+/* Keep the source category rail within one fullpage scene for larger catalogs. */
+@media (min-width: 989px) {
+  .clone-demo-k712 .homePg3 .gallery-thumbs {
+    max-height: min(420px, calc(100vh - 240px));
+    overflow-y: auto;
+  }
+  .clone-demo-k712 .homePg3 .gallery-thumbs .swiper-slide {
+    flex-shrink: 0;
+    height: auto;
+  }
+}
+
+/* Category labels keep their source button shape when a tenant has more categories. */
+.clone-demo-k712 .k712-inner .pro_nav .wal .pro_nav_txt {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.clone-demo-k712 .k712-inner .pro_nav .wal .pro_nav_txt .p1 {
+  flex: 1 0 150px;
+  width: auto;
+  margin: 0;
+}
+.clone-demo-k712 .k712-inner .pro_nav .wal .pro_nav_txt .p1 a {
+  width: 100%;
+  white-space: nowrap;
+}
+
+/* Nested product sliders must reflow after images or the viewport change. */
+.clone-demo-k712 .k712-home-shell .gallery-top > .swiper-wrapper {
+  height: auto !important;
+  align-items: flex-start;
+}
+.clone-demo-k712 .k712-home-shell .gallery-top > .swiper-wrapper > .swiper-slide {
+  height: auto;
+}
+
+/* Breadcrumb icon and text share a row; long titles can wrap without clipping. */
+.clone-demo-k712 .k712-inner .innerrtitle {
+  height: auto;
+  min-height: 50px;
+  line-height: 24px;
+  overflow: visible;
+}
+.clone-demo-k712 .k712-inner .innerrtitle .navpost {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 6px;
+  min-height: 50px;
+  padding: 10px 20px;
+  line-height: 24px;
+  overflow-wrap: anywhere;
+}
+.clone-demo-k712 .k712-inner .innerrtitle .navpost > img {
+  flex: 0 0 25px;
+  width: 25px;
+  height: auto;
+  margin: 0;
+}
+
+/* Keep contact icons and QR codes aligned with their centered source cards. */
+.clone-demo-k712 .k712-inner .k712-contact-table .lianxi img {
+  display: inline-block;
+  vertical-align: middle;
+  max-width: 100%;
+  height: auto;
+}

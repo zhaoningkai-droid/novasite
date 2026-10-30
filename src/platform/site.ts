@@ -4,7 +4,7 @@ import { headers } from 'next/headers'
 
 import type { Tenant } from '@/payload-types'
 import { isSiteLocale, locales, type SiteLocale } from './site-locales'
-import { classifyPlatformHost, platformDomainsEnabled, temporarySiteOrigin } from './platform-hosts'
+import { classifyPlatformHost, configuredCustomerOrigin, platformDomainsEnabled, temporarySiteOrigin } from './platform-hosts'
 import { userHasRole } from '@/access/roles'
 import { optionalSiteOrigin } from './site-url'
 
@@ -46,6 +46,8 @@ export const getSite = async (slug: string, locale: SiteLocale): Promise<Tenant 
 }
 
 export const getBaseURL = (site: Tenant, slug: string): string => {
+  const custom = configuredCustomerOrigin(slug)
+  if (custom) return custom
   const temporary = temporarySiteOrigin(slug)
   if (temporary) return temporary
   const primary = optionalSiteOrigin(site.primaryDomain)

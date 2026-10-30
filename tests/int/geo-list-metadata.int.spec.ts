@@ -46,9 +46,7 @@ function savedTask(count = 3) {
       terms: ['低压配电柜'],
       website: 'https://fixture.example/',
       blog: '',
-      termLinks: [
-        { term: '低压配电柜', website: 'https://fixture.example/products/cabinet', blog: '' },
-      ],
+      termLinks: [{ term: '低压配电柜', website: 'https://fixture.example/products/cabinet', blog: '' }],
     },
     materialGroup: {
       id: groupID,

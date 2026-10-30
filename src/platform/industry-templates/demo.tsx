@@ -442,7 +442,7 @@ export function IndustryDemo({
     contact: {
       phone: '+86 000 0000 0000',
       whatsapp: '+86 000 0000 0000',
-      email: power ? 'demo@example.invalid' : 'demo@example.invalid',
+      email: power ? 'hello@power.example' : 'hello@fasteners.example',
       address: copy.address,
     },
     inquiryDescription: body,

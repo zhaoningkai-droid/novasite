@@ -1,0 +1,366 @@
+{
+  "assets": {
+    "//shanghai.waimao.o668.com/upload/preview/202608/827788a8dccee28cf0e9b1baf0d6d47d.jpg": "/sites/k607/827788a8dccee28cf0e9b1baf0d6d47d.jpg",
+    "http://shanghai.waimao.o668.com/upload/preview/202608/827788a8dccee28cf0e9b1baf0d6d47d.jpg": "/sites/k607/827788a8dccee28cf0e9b1baf0d6d47d.jpg",
+    "/site/images/lang_imgs/zh.png": "/sites/k607/zh.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/zh.png": "/sites/k607/zh.png",
+    "/site/images/lang_imgs/en.png": "/sites/k607/en.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/en.png": "/sites/k607/en.png",
+    "/site/images/lang_imgs/hi.png": "/sites/k607/hi.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/hi.png": "/sites/k607/hi.png",
+    "/site/images/lang_imgs/es.png": "/sites/k607/es.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/es.png": "/sites/k607/es.png",
+    "/site/images/lang_imgs/ar.png": "/sites/k607/ar.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/ar.png": "/sites/k607/ar.png",
+    "/site/images/lang_imgs/fr.png": "/sites/k607/fr.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/fr.png": "/sites/k607/fr.png",
+    "/site/images/lang_imgs/bn.png": "/sites/k607/bn.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/bn.png": "/sites/k607/bn.png",
+    "/site/images/lang_imgs/ru.png": "/sites/k607/ru.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/ru.png": "/sites/k607/ru.png",
+    "/site/images/lang_imgs/pt.png": "/sites/k607/pt.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/pt.png": "/sites/k607/pt.png",
+    "/site/images/lang_imgs/id.png": "/sites/k607/id.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/id.png": "/sites/k607/id.png",
+    "/site/images/lang_imgs/de.png": "/sites/k607/de.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/de.png": "/sites/k607/de.png",
+    "/site/images/lang_imgs/ja.png": "/sites/k607/ja.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/ja.png": "/sites/k607/ja.png",
+    "/site/images/lang_imgs/ur.png": "/sites/k607/ur.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/ur.png": "/sites/k607/ur.png",
+    "/site/images/lang_imgs/vi.png": "/sites/k607/vi.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/vi.png": "/sites/k607/vi.png",
+    "/site/images/lang_imgs/tr.png": "/sites/k607/tr.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/tr.png": "/sites/k607/tr.png",
+    "/site/images/lang_imgs/ko.png": "/sites/k607/ko.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/ko.png": "/sites/k607/ko.png",
+    "/site/images/lang_imgs/fa.png": "/sites/k607/fa.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/fa.png": "/sites/k607/fa.png",
+    "/site/images/lang_imgs/th.png": "/sites/k607/th.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/th.png": "/sites/k607/th.png",
+    "/site/images/lang_imgs/it.png": "/sites/k607/it.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/it.png": "/sites/k607/it.png",
+    "/site/images/lang_imgs/tl.png": "/sites/k607/tl.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/tl.png": "/sites/k607/tl.png",
+    "/site/images/lang_imgs/uk.png": "/sites/k607/uk.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/uk.png": "/sites/k607/uk.png",
+    "/site/images/lang_imgs/pl.png": "/sites/k607/pl.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/pl.png": "/sites/k607/pl.png",
+    "/site/images/lang_imgs/uz.png": "/sites/k607/uz.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/uz.png": "/sites/k607/uz.png",
+    "/site/images/lang_imgs/my.png": "/sites/k607/my.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/my.png": "/sites/k607/my.png",
+    "/site/images/lang_imgs/ms.png": "/sites/k607/ms.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/ms.png": "/sites/k607/ms.png",
+    "/site/images/lang_imgs/nl.png": "/sites/k607/nl.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/nl.png": "/sites/k607/nl.png",
+    "/site/images/lang_imgs/ro.png": "/sites/k607/ro.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/ro.png": "/sites/k607/ro.png",
+    "/site/images/lang_imgs/km.png": "/sites/k607/km.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/km.png": "/sites/k607/km.png",
+    "/site/images/lang_imgs/el.png": "/sites/k607/el.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/el.png": "/sites/k607/el.png",
+    "/site/images/lang_imgs/hu.png": "/sites/k607/hu.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/hu.png": "/sites/k607/hu.png",
+    "/site/images/lang_imgs/cs.png": "/sites/k607/cs.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/cs.png": "/sites/k607/cs.png",
+    "/site/images/lang_imgs/sv.png": "/sites/k607/sv.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/sv.png": "/sites/k607/sv.png",
+    "/site/images/lang_imgs/ca.png": "/sites/k607/ca.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/ca.png": "/sites/k607/ca.png",
+    "/site/images/lang_imgs/bg.png": "/sites/k607/bg.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/bg.png": "/sites/k607/bg.png",
+    "/site/images/lang_imgs/sr.png": "/sites/k607/sr.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/sr.png": "/sites/k607/sr.png",
+    "/site/images/lang_imgs/he.png": "/sites/k607/he.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/he.png": "/sites/k607/he.png",
+    "/site/images/lang_imgs/da.png": "/sites/k607/da.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/da.png": "/sites/k607/da.png",
+    "/site/images/lang_imgs/hr.png": "/sites/k607/hr.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/hr.png": "/sites/k607/hr.png",
+    "/site/images/lang_imgs/bs.png": "/sites/k607/bs.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/bs.png": "/sites/k607/bs.png",
+    "/site/images/lang_imgs/fi.png": "/sites/k607/fi.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/fi.png": "/sites/k607/fi.png",
+    "/site/images/lang_imgs/no.png": "/sites/k607/no.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/no.png": "/sites/k607/no.png",
+    "/site/images/lang_imgs/sk.png": "/sites/k607/sk.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/sk.png": "/sites/k607/sk.png",
+    "/site/images/lang_imgs/lt.png": "/sites/k607/lt.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/lt.png": "/sites/k607/lt.png",
+    "/site/images/lang_imgs/lv.png": "/sites/k607/lv.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/lv.png": "/sites/k607/lv.png",
+    "/site/images/lang_imgs/sl.png": "/sites/k607/sl.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/sl.png": "/sites/k607/sl.png",
+    "/site/images/lang_imgs/et.png": "/sites/k607/et.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/et.png": "/sites/k607/et.png",
+    "/site/images/lang_imgs/cy.png": "/sites/k607/cy.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/cy.png": "/sites/k607/cy.png",
+    "/site/images/lang_imgs/mt.png": "/sites/k607/mt.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lang_imgs/mt.png": "/sites/k607/mt.png",
+    "//shanghai.waimao.o668.com/upload/hegeer/202604/45da08f7e41bf49465d76510725edd11.webp": "/sites/k607/45da08f7e41bf49465d76510725edd11.webp",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202604/45da08f7e41bf49465d76510725edd11.webp": "/sites/k607/45da08f7e41bf49465d76510725edd11.webp",
+    "//shanghai.waimao.o668.com/upload/hegeer/202604/bdc186b3eb040a66319a80047747c310.webp": "/sites/k607/bdc186b3eb040a66319a80047747c310.webp",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202604/bdc186b3eb040a66319a80047747c310.webp": "/sites/k607/bdc186b3eb040a66319a80047747c310.webp",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/6d5e62da37e5952cd66e2fd627cd77c1.webp": "/sites/k607/6d5e62da37e5952cd66e2fd627cd77c1.webp",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/6d5e62da37e5952cd66e2fd627cd77c1.webp": "/sites/k607/6d5e62da37e5952cd66e2fd627cd77c1.webp",
+    "//shanghai.waimao.o668.com/upload/preview/202608/d486bde351a9eb29705cda5b4caa4f27.webp": "/sites/k607/d486bde351a9eb29705cda5b4caa4f27.webp",
+    "http://shanghai.waimao.o668.com/upload/preview/202608/d486bde351a9eb29705cda5b4caa4f27.webp": "/sites/k607/d486bde351a9eb29705cda5b4caa4f27.webp",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/35b2040caa9ad9f468c1a3c04f22eb82.png": "/sites/k607/35b2040caa9ad9f468c1a3c04f22eb82.png",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/35b2040caa9ad9f468c1a3c04f22eb82.png": "/sites/k607/35b2040caa9ad9f468c1a3c04f22eb82.png",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/663fdfbfb31ac941340ef3f84c75fe47.jpg": "/sites/k607/663fdfbfb31ac941340ef3f84c75fe47.jpg",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/663fdfbfb31ac941340ef3f84c75fe47.jpg": "/sites/k607/663fdfbfb31ac941340ef3f84c75fe47.jpg",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/bf1994c89d6d9422fd2396495a08ac3b.jpg": "/sites/k607/bf1994c89d6d9422fd2396495a08ac3b.jpg",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/bf1994c89d6d9422fd2396495a08ac3b.jpg": "/sites/k607/bf1994c89d6d9422fd2396495a08ac3b.jpg",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/cda66e77c437657aef6984c7c6c32c1d.jpg": "/sites/k607/cda66e77c437657aef6984c7c6c32c1d.jpg",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/cda66e77c437657aef6984c7c6c32c1d.jpg": "/sites/k607/cda66e77c437657aef6984c7c6c32c1d.jpg",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/953e7f4e3cc94a39a4a38da967cb2690.jpg": "/sites/k607/953e7f4e3cc94a39a4a38da967cb2690.jpg",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/953e7f4e3cc94a39a4a38da967cb2690.jpg": "/sites/k607/953e7f4e3cc94a39a4a38da967cb2690.jpg",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/1370674d509915af1c80ff8986ad7d69.jpg": "/sites/k607/1370674d509915af1c80ff8986ad7d69.jpg",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/1370674d509915af1c80ff8986ad7d69.jpg": "/sites/k607/1370674d509915af1c80ff8986ad7d69.jpg",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/1073063fc73b4b39ea7757b7c9f9ba23.png": "/sites/k607/1073063fc73b4b39ea7757b7c9f9ba23.png",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/1073063fc73b4b39ea7757b7c9f9ba23.png": "/sites/k607/1073063fc73b4b39ea7757b7c9f9ba23.png",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/6267209aa970045cc6b2f4ff2c8e591b.png": "/sites/k607/6267209aa970045cc6b2f4ff2c8e591b.png",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/6267209aa970045cc6b2f4ff2c8e591b.png": "/sites/k607/6267209aa970045cc6b2f4ff2c8e591b.png",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/22f38b1da38dd70aae79f2e8b0ebafb0.png": "/sites/k607/22f38b1da38dd70aae79f2e8b0ebafb0.png",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/22f38b1da38dd70aae79f2e8b0ebafb0.png": "/sites/k607/22f38b1da38dd70aae79f2e8b0ebafb0.png",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/00a9416314b8714e671ca0374cef8f30.png": "/sites/k607/00a9416314b8714e671ca0374cef8f30.png",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/00a9416314b8714e671ca0374cef8f30.png": "/sites/k607/00a9416314b8714e671ca0374cef8f30.png",
+    "//shanghai.waimao.o668.com/upload/hegeer/202605/248be47a19ac8090f4a898dcb5203705.mp4": "/sites/k607/248be47a19ac8090f4a898dcb5203705.mp4",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202605/248be47a19ac8090f4a898dcb5203705.mp4": "/sites/k607/248be47a19ac8090f4a898dcb5203705.mp4",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/39dac4734ae4897fb20c00b6608b2b02.jpg": "/sites/k607/39dac4734ae4897fb20c00b6608b2b02.jpg",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/39dac4734ae4897fb20c00b6608b2b02.jpg": "/sites/k607/39dac4734ae4897fb20c00b6608b2b02.jpg",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/19de111b9d3fd0509efa2056cf8386bb.webp": "/sites/k607/19de111b9d3fd0509efa2056cf8386bb.webp",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/19de111b9d3fd0509efa2056cf8386bb.webp": "/sites/k607/19de111b9d3fd0509efa2056cf8386bb.webp",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/30c010ccb2f4f249b881845475d6f8d0.webp": "/sites/k607/30c010ccb2f4f249b881845475d6f8d0.webp",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/30c010ccb2f4f249b881845475d6f8d0.webp": "/sites/k607/30c010ccb2f4f249b881845475d6f8d0.webp",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/3c7322d84be56111f69378635b67f0fe.jpg": "/sites/k607/3c7322d84be56111f69378635b67f0fe.jpg",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/3c7322d84be56111f69378635b67f0fe.jpg": "/sites/k607/3c7322d84be56111f69378635b67f0fe.jpg",
+    "//shanghai.waimao.o668.com/upload/preview/202608/24eee3decf7738710d85030ad4080d70.webp": "/sites/k607/24eee3decf7738710d85030ad4080d70.webp",
+    "http://shanghai.waimao.o668.com/upload/preview/202608/24eee3decf7738710d85030ad4080d70.webp": "/sites/k607/24eee3decf7738710d85030ad4080d70.webp",
+    "http://file.zshglobal.net/image/default/0690D417C8384E2EB81DC9B688049838-6-2.jpg?auth_key=1775546832-bb13e76f39ede5d7f670c55e2a77a87d-0-2c1a404c974b43673b2ad43efc6fedfa": "/sites/k607/0690D417C8384E2EB81DC9B688049838-6-2.jpg",
+    "http://file.zshglobal.net/image/default/0690D417C8384E2EB81DC9B688049838-6-2.jpg": "/sites/k607/0690D417C8384E2EB81DC9B688049838-6-2.jpg",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/5e4d75d08ba1f07af4eec44f66886efe.jpg": "/sites/k607/5e4d75d08ba1f07af4eec44f66886efe.jpg",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/5e4d75d08ba1f07af4eec44f66886efe.jpg": "/sites/k607/5e4d75d08ba1f07af4eec44f66886efe.jpg",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/851634e86cee43866e026f1ec201eea9.jpg": "/sites/k607/851634e86cee43866e026f1ec201eea9.jpg",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/851634e86cee43866e026f1ec201eea9.jpg": "/sites/k607/851634e86cee43866e026f1ec201eea9.jpg",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/c955fa93351e5a26245b9bdbbd26b108.jpg": "/sites/k607/c955fa93351e5a26245b9bdbbd26b108.jpg",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/c955fa93351e5a26245b9bdbbd26b108.jpg": "/sites/k607/c955fa93351e5a26245b9bdbbd26b108.jpg",
+    "/site/images/ytb.png": "/sites/k607/ytb.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/ytb.png": "/sites/k607/ytb.png",
+    "/site/images/lin.png": "/sites/k607/lin.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/lin.png": "/sites/k607/lin.png",
+    "/site/images/blog.png": "/sites/k607/blog.png",
+    "http://zh.preview.k607.temp.o668.com/site/images/blog.png": "/sites/k607/blog.png",
+    "//shanghai.waimao.o668.com/upload/hegeer/202603/18cf43ad70a9b6487e432d995fd22ccf.png": "/sites/k607/18cf43ad70a9b6487e432d995fd22ccf.png",
+    "http://shanghai.waimao.o668.com/upload/hegeer/202603/18cf43ad70a9b6487e432d995fd22ccf.png": "/sites/k607/18cf43ad70a9b6487e432d995fd22ccf.png",
+    "/site/k607/images/whatsapp.png": "/sites/k607/whatsapp.png",
+    "http://zh.preview.k607.temp.o668.com/site/k607/images/whatsapp.png": "/sites/k607/whatsapp.png",
+    "/site/k607/images/whatsapp1.png": "/sites/k607/whatsapp1.png",
+    "http://zh.preview.k607.temp.o668.com/site/k607/images/whatsapp1.png": "/sites/k607/whatsapp1.png"
+  },
+  "banners": [
+    {
+      "src": "//shanghai.waimao.o668.com/upload/hegeer/202604/45da08f7e41bf49465d76510725edd11.webp",
+      "local": "/sites/k607/45da08f7e41bf49465d76510725edd11.webp",
+      "alt": ""
+    },
+    {
+      "src": "//shanghai.waimao.o668.com/upload/hegeer/202604/bdc186b3eb040a66319a80047747c310.webp",
+      "local": "/sites/k607/bdc186b3eb040a66319a80047747c310.webp",
+      "alt": ""
+    },
+    {
+      "src": "//shanghai.waimao.o668.com/upload/hegeer/202603/6d5e62da37e5952cd66e2fd627cd77c1.webp",
+      "local": "/sites/k607/6d5e62da37e5952cd66e2fd627cd77c1.webp",
+      "alt": ""
+    }
+  ],
+  "products": [
+    {
+      "title": "苹果水豚",
+      "href": "/product/5.html",
+      "image": {
+        "src": "//shanghai.waimao.o668.com/upload/hegeer/202603/35b2040caa9ad9f468c1a3c04f22eb82.png",
+        "local": "/sites/k607/35b2040caa9ad9f468c1a3c04f22eb82.png",
+        "alt": "苹果水豚"
+      }
+    },
+    {
+      "title": "西瓜",
+      "href": "/product/14.html",
+      "image": {
+        "src": "//shanghai.waimao.o668.com/upload/hegeer/202603/663fdfbfb31ac941340ef3f84c75fe47.jpg",
+        "local": "/sites/k607/663fdfbfb31ac941340ef3f84c75fe47.jpg",
+        "alt": "西瓜"
+      }
+    },
+    {
+      "title": "背包维尼",
+      "href": "/product/17.html",
+      "image": {
+        "src": "//shanghai.waimao.o668.com/upload/hegeer/202603/bf1994c89d6d9422fd2396495a08ac3b.jpg",
+        "local": "/sites/k607/bf1994c89d6d9422fd2396495a08ac3b.jpg",
+        "alt": "背包维尼"
+      }
+    },
+    {
+      "title": "飞机鲨鱼",
+      "href": "/product/15.html",
+      "image": {
+        "src": "//shanghai.waimao.o668.com/upload/hegeer/202603/cda66e77c437657aef6984c7c6c32c1d.jpg",
+        "local": "/sites/k607/cda66e77c437657aef6984c7c6c32c1d.jpg",
+        "alt": "飞机鲨鱼"
+      }
+    },
+    {
+      "title": "KT猫公仔",
+      "href": "/product/13.html",
+      "image": {
+        "src": "//shanghai.waimao.o668.com/upload/hegeer/202603/953e7f4e3cc94a39a4a38da967cb2690.jpg",
+        "local": "/sites/k607/953e7f4e3cc94a39a4a38da967cb2690.jpg",
+        "alt": "KT猫公仔"
+      }
+    },
+    {
+      "title": "奶茶KT",
+      "href": "/product/12.html",
+      "image": {
+        "src": "//shanghai.waimao.o668.com/upload/hegeer/202603/1370674d509915af1c80ff8986ad7d69.jpg",
+        "local": "/sites/k607/1370674d509915af1c80ff8986ad7d69.jpg",
+        "alt": "奶茶KT"
+      }
+    },
+    {
+      "title": "草莓熊",
+      "href": "/product/6.html",
+      "image": {
+        "src": "//shanghai.waimao.o668.com/upload/hegeer/202603/1073063fc73b4b39ea7757b7c9f9ba23.png",
+        "local": "/sites/k607/1073063fc73b4b39ea7757b7c9f9ba23.png",
+        "alt": "草莓熊"
+      }
+    },
+    {
+      "title": "派大星",
+      "href": "/product/4.html",
+      "image": {
+        "src": "//shanghai.waimao.o668.com/upload/hegeer/202603/6267209aa970045cc6b2f4ff2c8e591b.png",
+        "local": "/sites/k607/6267209aa970045cc6b2f4ff2c8e591b.png",
+        "alt": "派大星"
+      }
+    },
+    {
+      "title": "唐老鸭",
+      "href": "/product/3.html",
+      "image": {
+        "src": "//shanghai.waimao.o668.com/upload/hegeer/202603/22f38b1da38dd70aae79f2e8b0ebafb0.png",
+        "local": "/sites/k607/22f38b1da38dd70aae79f2e8b0ebafb0.png",
+        "alt": "唐老鸭"
+      }
+    },
+    {
+      "title": "围巾猴",
+      "href": "/product/2.html",
+      "image": {
+        "src": "//shanghai.waimao.o668.com/upload/hegeer/202603/00a9416314b8714e671ca0374cef8f30.png",
+        "local": "/sites/k607/00a9416314b8714e671ca0374cef8f30.png",
+        "alt": "围巾猴"
+      }
+    }
+  ],
+  "cases": [
+    {
+      "title": "新加坡 Shopee 头部毛绒玩具跨境电商卖家",
+      "description": "新加坡 Shopee 头部毛绒玩具跨境电商卖家，采用赫格尔跨境电商专供毛绒玩具解决方案，获得全品类 CE/CPC 国际认证，平台上架通过率 100%；跨境物流综合成本降低 19%，清关时效从 7 天缩短至 2 天，半年内订单量增长 70%，跻身东南亚毛绒玩具品类 TOP10 卖家。",
+      "image": {
+        "src": "//shanghai.waimao.o668.com/upload/hegeer/202603/39dac4734ae4897fb20c00b6608b2b02.jpg",
+        "local": "/sites/k607/39dac4734ae4897fb20c00b6608b2b02.jpg",
+        "alt": "新加坡 Shopee 头部毛绒玩具跨境电商卖家"
+      }
+    },
+    {
+      "title": "德国柏林 Steiff 授权复古玩具店",
+      "description": "德国柏林 Steiff 授权复古玩具店，采用赫格尔高端定制化毛绒玩具解决方案，4 天完成复古泰迪熊联名款打样，18 天批量交付 4000 件，定制成本较行业平均降低 22%；产品上市后带动门店周年庆销量增长 30%，会员复购率提升 48%，成为欧洲高端礼品市场标杆。",
+      "image": {
+        "src": "//shanghai.waimao.o668.com/upload/hegeer/202603/19de111b9d3fd0509efa2056cf8386bb.webp",
+        "local": "/sites/k607/19de111b9d3fd0509efa2056cf8386bb.webp",
+        "alt": "德国柏林 Steiff 授权复古玩具店"
+      }
+    },
+    {
+      "title": "日本东京 Sanrio 授权精品集合店",
+      "description": "日本东京 Sanrio 授权精品集合店，采用赫格尔 IP 联名毛绒玩具解决方案，2 天完成限定款打样，10 天批量交付 3000 件，定制成本较行业平均降低25%；产品上市后带动门店周末销量增长38%，会员复购率提升42%，成为年度现象级周边礼品。",
+      "image": {
+        "src": "//shanghai.waimao.o668.com/upload/hegeer/202603/30c010ccb2f4f249b881845475d6f8d0.webp",
+        "local": "/sites/k607/30c010ccb2f4f249b881845475d6f8d0.webp",
+        "alt": "日本东京 Sanrio 授权精品集合店"
+      }
+    },
+    {
+      "title": "英国伦敦 Jellycat 授权连锁礼品店",
+      "description": "英国伦敦 Jellycat 授权连锁礼品店，通过赫格尔定制化毛绒玩具解决方案，3 天完成企业联名款打样，12 天批量交付 5000 件，定制成本较行业平均降低 28%；产品上市后带动门店节日销量增长 32%，会员复购率提升 45%，成为年度爆款礼品。",
+      "image": {
+        "src": "//shanghai.waimao.o668.com/upload/hegeer/202603/3c7322d84be56111f69378635b67f0fe.jpg",
+        "local": "/sites/k607/3c7322d84be56111f69378635b67f0fe.jpg",
+        "alt": "英国伦敦 Jellycat 授权连锁礼品店"
+      }
+    }
+  ],
+  "news": [
+    {
+      "title": "从中国批量采购国风动漫毛绒玩具的成本是多少Hegr定制化毛绒玩具产品全解析",
+      "description": "对于全球范围内的文创品牌商、动漫衍生品运营商及跨境电商采购方而言，如何在控制成本的同时确保产品质量与交付效率，是决定市场竞争力的核心要素。中国商贸有限公司推出的“Hegr”品牌系列国风动漫毛绒玩具，作为专为海外B2B客户打造的高性价比定制化产品线，已成功服务于美国、英国、东南亚、俄罗斯等十余个国家和地区的采购商客户。该系列产品解决了市场上普遍存在的“定制门槛高、交期不稳定、合规认证缺失”三大",
+      "date": "2026-08-13 ",
+      "href": "/article/41.html",
+      "image": {
+        "src": "//shanghai.waimao.o668.com/upload/preview/202608/24eee3decf7738710d85030ad4080d70.webp",
+        "local": "/sites/k607/24eee3decf7738710d85030ad4080d70.webp",
+        "alt": "从中国批量采购国风动漫毛绒玩具的成本是多少Hegr定制化毛绒玩具产品全解析"
+      }
+    },
+    {
+      "title": "在哪里可以找到可靠的中国国风动漫毛绒玩具制造商",
+      "description": "石家庄赫格尔商贸有限公司（Shijiazhuang Heger Trading Co., Ltd.）是专注于高品质毛绒玩具研发与生产的中国制造商，旗下品牌“赫格尔”（Heger）致力于为全球采购商、品牌商及文创项目提供定制化、合规化、高性价比的国风动漫毛绒玩具解决方案。该产品解决了市场中“设计同质化严重、交付周期长、缺乏国际认证”的核心痛点，其核心优势在于支持深度定制与短交期批量生产。迄今为止，已",
+      "date": "2026-04-07 ",
+      "href": "/article/31.html",
+      "image": {
+        "src": "http://file.zshglobal.net/image/default/0690D417C8384E2EB81DC9B688049838-6-2.jpg?auth_key=1775546832-bb13e76f39ede5d7f670c55e2a77a87d-0-2c1a404c974b43673b2ad43efc6fedfa",
+        "local": "/sites/k607/0690D417C8384E2EB81DC9B688049838-6-2.jpg",
+        "alt": "在哪里可以找到可靠的中国国风动漫毛绒玩具制造商"
+      }
+    },
+    {
+      "title": "石家庄赫格尔商贸有限公司（以下简称“赫格尔商贸”）近日宣布完成新一轮产能升级，通过建设智能化生产基地与自动化产线联动，整体产能提升约45%，进一步增强企业在毛绒玩具领域的国际竞争力。",
+      "description": "赫格尔商贸、产能升级、智能制造、毛绒玩具、跨境出海",
+      "date": "2026-08-20 ",
+      "href": "/article/20.html",
+      "image": {
+        "src": "//shanghai.waimao.o668.com/upload/hegeer/202603/5e4d75d08ba1f07af4eec44f66886efe.jpg",
+        "local": "/sites/k607/5e4d75d08ba1f07af4eec44f66886efe.jpg",
+        "alt": "石家庄赫格尔商贸有限公司（以下简称“赫格尔商贸”）近日宣布完成新一轮产能升级，通过建设智能化生产基地与自动化产线联动，整体产能提升约45%，进一步增强企业在毛绒玩具领域的国际竞争力。"
+      }
+    },
+    {
+      "title": "赫格尔商贸与新加坡 Shopee 头部卖家达成战略合作，深耕东南亚毛绒玩具市场",
+      "description": "石家庄赫格尔商贸与新加坡 Shopee 头部毛绒玩具卖家达成深度合作，提供 CE/CPC 认证产品、物流对接及合规报关服务，将跨境物流成本降低 19%，清关时效缩短至 2 天，助力卖家拓展东南亚 6 国市场，实现订单量大幅增长。",
+      "date": "2026-08-20 ",
+      "href": "/article/11.html",
+      "image": {
+        "src": "//shanghai.waimao.o668.com/upload/hegeer/202603/851634e86cee43866e026f1ec201eea9.jpg",
+        "local": "/sites/k607/851634e86cee43866e026f1ec201eea9.jpg",
+        "alt": "赫格尔商贸与新加坡 Shopee 头部卖家达成战略合作，深耕东南亚毛绒玩具市场"
+      }
+    },
+    {
+      "title": "赫格尔商贸产能升级，新增卫星生产基地助力毛绒玩具跨境出海",
+      "description": "石家庄赫格尔商贸新增 3 个卫星生产基地，与核心厂区协同联动，年产能提升 40%，总产值预计突破 4200 万元。产品通过 CE/CPC 认证，交付时效进一步压缩，将为全球采购商提供更高效、稳定的毛绒玩具定制及批发服务，助力中国毛绒玩具产业出海。",
+      "date": "2026-08-20 ",
+      "href": "/article/10.html",
+      "image": {
+        "src": "//shanghai.waimao.o668.com/upload/hegeer/202603/c955fa93351e5a26245b9bdbbd26b108.jpg",
+        "local": "/sites/k607/c955fa93351e5a26245b9bdbbd26b108.jpg",
+        "alt": "赫格尔商贸产能升级，新增卫星生产基地助力毛绒玩具跨境出海"
+      }
+    }
+  ]
+}

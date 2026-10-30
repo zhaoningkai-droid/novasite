@@ -1,5 +1,6 @@
 allowBuilds:
   esbuild: set this to true or false
+  swiper: set this to true or false
   unrs-resolver: set this to true or false
 minimumReleaseAgeExclude:
   - nodemailer@10.0.13

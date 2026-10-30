@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 
 import '@/app/(frontend)/globals.css'
 import './executive-demo.css'
+import { getNewTemplate } from '@/platform/new-templates/registry'
 
 export async function generateMetadata({
   params,
@@ -10,12 +11,12 @@ export async function generateMetadata({
   params: Promise<{ key: string; lang: string }>
 }): Promise<Metadata> {
   const { key } = await params
-  const title =
+  const title = getNewTemplate(key)?.name || (
     key === 'power-705-v1'
       ? '配电柜 · 工业'
       : key === 'autoparts-571-v1'
         ? '紧固件 · 标准件'
-        : '商务工业 · 专业｜古建'
+        : '商务工业 · 专业｜古建')
   return {
     title: `${title}｜模板演示`,
     description: '独立站模板效果预览。品牌、产品、图片和资料仅作演示，不导入客户站。',

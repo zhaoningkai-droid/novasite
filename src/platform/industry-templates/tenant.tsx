@@ -64,6 +64,7 @@ export async function loadIndustryTenantPage(options: Options): Promise<Industry
     id: item.id,
     title: item.title,
     summary: item.summary,
+    category: String(typeof item.category === 'number' ? item.category : item.category?.id || ''),
     image: productCoverURL(item, ''),
     href: href(`/products/${item.slug}`),
   })

@@ -1,6 +1,6 @@
 {
   "templateKey": "executive-industrial-pro-v1",
-  "demoBrand": "NovaSite 古建演示 / NovaSite Heritage Demo",
+  "demoBrand": "匠境古建 / JIANGJING HERITAGE",
   "createdAt": "2026-09-29",
   "updatedAt": "2026-09-29",
   "dataBoundary": "These assets are referenced only by the public template demo component. They are not written to tenant records, Payload media, product collections, or customer uploads.",
@@ -163,8 +163,8 @@
   },
   "demoDocuments": [
     {
-      "file": "novasite-heritage-roof-demo.pdf",
-      "path": "/template-demos/executive-industrial-pro-v1/novasite-heritage-roof-demo.pdf",
+      "file": "jiangjing-heritage-roof-sample.pdf",
+      "path": "/template-demos/executive-industrial-pro-v1/jiangjing-heritage-roof-sample.pdf",
       "type": "template-demo-product-sheet",
       "product": "仿古灰瓦屋面组合 / Traditional grey roof set",
       "warning": "Sample only. Not a real product specification. Never use as tenant content or a customer product PDF."

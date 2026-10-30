@@ -27,3 +27,8 @@ NovaSite 的部分结构和初始文件来自 Payload CMS 的 Website Template�
 ## 设计参考
 
 若干早期管理后台参考截图不属于生产运行时素材，权利来源无法仅凭仓库确认，因此它们已从本候选的当前文件树移除。保留的历史 Git commits 中仍可能包含这些旧二进制对象；本次没有改写 Git 历史。公开同步前应由仓库负责人确认是否需要另行处理历史对象和通知。
+
+
+## Reference website templates added in v1.3.0
+
+K607 and K712 use reference layouts and selected publicly served sample assets from their template preview sites. AllyNav uses a reference layout and a limited selection of images, logo and fonts from https://www.allynav.com/. These assets are for template demonstration and remain subject to the original owners' rights; the project MIT license does not grant rights to third-party branding or media. Replace reference branding and ensure appropriate media permissions before public commercial use. The AllyNav video player loads an external YouTube embed rather than redistributing video files.

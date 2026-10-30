@@ -1,3 +1,4 @@
+import * as migration_geo_detection_storage from './20261023_010000_geo_detection_storage'
 import * as migration_enterprise_knowledge from './20261022_010000_enterprise_knowledge'
 import * as migration_geo_publishing from './20261017_040000_geo_publishing'
 import * as migration_geo_articles from './20261017_030000_geo_articles'
@@ -257,5 +258,10 @@ export const migrations = [
     up: migration_enterprise_knowledge.up,
     down: migration_enterprise_knowledge.down,
     name: '20261022_010000_enterprise_knowledge',
+  },
+  {
+    up: migration_geo_detection_storage.up,
+    down: migration_geo_detection_storage.down,
+    name: '20261023_010000_geo_detection_storage',
   },
 ]

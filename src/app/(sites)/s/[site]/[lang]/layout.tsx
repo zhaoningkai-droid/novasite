@@ -16,6 +16,7 @@ import {
 } from '@/platform/legacy-templates/ExecutiveTenantHeader'
 import { ExecutiveTenantQuoteDialog } from '@/platform/legacy-templates/ExecutiveTenantQuoteDialog'
 import { CustomerBrand } from '@/platform/components/CustomerBrand/CustomerBrand'
+import { ContactQRCodes } from '@/platform/components/ContactQRCodes/ContactQRCodes'
 import { sortedNavigation } from '@/platform/navigation-model'
 import { GeistSans } from 'geist/font/sans'
 import { headers } from 'next/headers'
@@ -445,34 +446,20 @@ export default async function SiteLayout({ children, params }: Props) {
                       {platform}
                     </a>
                   ))}
+                  <ContactQRCodes
+                    items={([
+                      ['WhatsApp', site.contact?.whatsappQRCode],
+                      ['WeChat', site.contact?.wechatInternationalQRCode],
+                      [lang === 'zh' ? '微信' : 'WeChat', site.contact?.wechatQRCode],
+                    ] as const).flatMap(([label, image]) =>
+                      typeof image === 'object' && image?.url
+                        ? [{ label, src: image.url }]
+                        : [],
+                    )}
+                    locale={lang}
+                  />
                 </div>
-                {site.contact?.whatsappQRCode &&
-                typeof site.contact.whatsappQRCode === 'object' &&
-                site.contact.whatsappQRCode.url ? (
-                  <div className="ed-footer__qr">
-                    <Image
-                      alt="WhatsApp QR code"
-                      height={112}
-                      src={site.contact.whatsappQRCode.url}
-                      unoptimized
-                      width={112}
-                    />
-                    <strong>WhatsApp</strong>
-                  </div>
-                ) : site.contact?.wechatQRCode &&
-                  typeof site.contact.wechatQRCode === 'object' &&
-                  site.contact.wechatQRCode.url ? (
-                  <div className="ed-footer__qr">
-                    <Image
-                      alt="WeChat QR code"
-                      height={112}
-                      src={site.contact.wechatQRCode.url}
-                      unoptimized
-                      width={112}
-                    />
-                    <strong>WeChat</strong>
-                  </div>
-                ) : null}
+
               </div>
               <div className="ed-container ed-footer__bottom">
                 <span>

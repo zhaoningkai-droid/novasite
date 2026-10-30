@@ -7,8 +7,8 @@ const video = 'https://videos.pexels.com/video-files/36382228/15429802_3840_2160
 
 const chinese = {
   languageName: '简体中文',
-  brand: 'NovaSite 古建演示',
-  brandEnglish: 'NovaSite Heritage Demo',
+  brand: '匠境古建',
+  brandEnglish: 'JIANGJING HERITAGE',
   demoNotice: '模板演示 · 示例内容不会导入客户网站',
   nav: {
     home: '主页', products: '产品', news: '新闻', cases: '案例',
@@ -29,7 +29,7 @@ const chinese = {
   heroSecondary: '获取项目建议',
   slideLabel: '首屏图片',
   advantagesHeading: '把复杂的古建配套，做得更清楚',
-  advantagesKicker: 'TEMPLATE DEMONSTRATION',
+  advantagesKicker: 'WHY JIANGJING',
   advantages: [
     { title: '按图梳理构件', description: '围绕项目图纸与建筑部位，协助整理构件清单。', icon: 'drawing' },
     { title: '材料选择清晰', description: '比较常见屋面、木作与石作材料的适用场景。', icon: 'material' },
@@ -49,7 +49,7 @@ const chinese = {
   ],
   aboutKicker: 'ABOUT THE CRAFT',
   aboutTitle: '以构件为起点，\n把古建之美带进当代空间',
-  aboutText: '本页是 NovaSite 古建行业模板的演示内容。页面围绕屋面瓦件、木作构件、砖石细部与庭院场景展开，用于预览产品展示和项目介绍的排版。',
+  aboutText: '匠境古建是一套用于展示古建筑材料与营造配套的模板演示内容。页面围绕屋面瓦件、木作构件、砖石细部与庭院场景展开，帮助访客先看懂产品，再了解项目如何组合。',
   aboutButton: '了解配套方式',
   videoLabel: '古建空间影像 · 模板演示',
   videoPlay: '播放建筑影像',
@@ -143,7 +143,7 @@ const chinese = {
   footerText: '本页面中的品牌、项目、产品图片与数字均为模板展示示例，不代表客户或实际工程资料。',
   footerNav: '快速导航',
   footerContact: '联系展示位',
-  footerContactNote: '电话 +86 0000-0000-0000 · WhatsApp +86 0000-0000-0000 · demo@example.invalid · 演示信息',
+  footerContactNote: '电话 +86 000-0000-0000 · WhatsApp +86 000-0000-0000 · hello@jiangjing-demo.example · 演示信息',
   footerQr: '二维码展示位',
   footerQrNote: '演示示意，不可扫码',
   copyright: '古建模板演示页面 · 示例内容不导入客户网站',
@@ -153,8 +153,8 @@ const chinese = {
 
 const english = {
   languageName: 'English',
-  brand: 'NovaSite Heritage Demo',
-  brandEnglish: 'NovaSite Heritage Demo',
+  brand: 'Jiangjing Heritage',
+  brandEnglish: 'JIANGJING HERITAGE',
   demoNotice: 'Template preview · Sample content never enters customer sites',
   nav: {
     home: 'Home', products: 'Products', news: 'News', cases: 'Cases',
@@ -173,7 +173,7 @@ const english = {
   ],
   heroPrimary: 'Explore elements', heroSecondary: 'Discuss a project', slideLabel: 'Hero image',
   advantagesHeading: 'Thoughtful support for complex heritage projects',
-  advantagesKicker: 'TEMPLATE DEMONSTRATION',
+  advantagesKicker: 'WHY JIANGJING',
   advantages: [
     { title: 'Start with drawings', description: 'Organize an element list around plans, elevations and key details.', icon: 'drawing' },
     { title: 'Clear material choices', description: 'Compare common roof, timber and stone options by application.', icon: 'material' },
@@ -192,7 +192,7 @@ const english = {
   ],
   aboutKicker: 'ABOUT THE CRAFT',
   aboutTitle: 'Start with the elements.\nBring heritage into today.',
-  aboutText: 'This is demonstration content for the NovaSite heritage industry template. It previews sections for roof tiles, timber details, brick and stone, and courtyard applications.',
+  aboutText: 'Jiangjing Heritage is sample content for a template focused on traditional building materials and coordinated architectural elements. Explore roof tiles, timber details, brick and stone, and courtyard applications before reviewing how the pieces work together.',
   aboutButton: 'How coordination works', videoLabel: 'Architectural film · template preview',
   videoPlay: 'Play architecture film', videoTitle: 'Discover the rhythm of eaves and courtyards',
   strengthKicker: 'CRAFT & CAPABILITY', strengthTitle: 'Every element in its proper place',
@@ -276,7 +276,7 @@ const english = {
   footerLabel: 'Template demo',
   footerText: 'The brand, projects, product imagery and figures on this page are examples for the template, not customer or project records.',
   footerNav: 'Quick links', footerContact: 'Contact area',
-  footerContactNote: 'Phone +86 0000-0000-0000 · WhatsApp +86 0000-0000-0000 · demo@example.invalid · Sample details',
+  footerContactNote: 'Phone +86 000-0000-0000 · WhatsApp +86 000-0000-0000 · hello@jiangjing-demo.example · Sample details',
   footerQr: 'QR display area', footerQrNote: 'Demo artwork · not scannable',
   copyright: 'Heritage template demo · sample content is never imported into customer sites',
   imageCredit: 'Photography: Pexels community contributors', video,

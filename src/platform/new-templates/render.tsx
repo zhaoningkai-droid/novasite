@@ -1,3 +1,7 @@
+import { renderAllyTenantPage } from '@/platform/allynav-template'
+import { isAllyKey } from '@/platform/allynav-template/key'
+import { renderReferenceTenantPage } from '@/platform/reference-templates/tenant'
+import { isReferenceKey } from '@/platform/reference-templates/keys'
 import { getPayload, type Where } from 'payload'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -63,6 +67,12 @@ function Cards({ items, kind = 'products' }: { items: Card[]; kind?: string }) {
   )
 }
 export async function renderTemplatePage(options: Options) {
+  if (isAllyKey(options.template.key)) return renderAllyTenantPage(options)
+  if (isReferenceKey(options.template.key))
+    return renderReferenceTenantPage({
+      ...options,
+      template: { ...options.template, key: options.template.key },
+    })
   if (isIndustryKey(options.template.key)) return renderIndustryTenantPage(options)
   const { site, locale, template, base, preview, user, search = {} } = options
   const path = options.path || []

@@ -2,7 +2,8 @@
 
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
+import styles from './product-gallery-caption.module.css'
 
 import type { SiteLocale } from '@/platform/site-locales'
 
@@ -52,7 +53,7 @@ export function ExecutiveTenantProductGallery({
   title,
   locale = 'en',
 }: {
-  images: Array<{ url: string; alt: string }>
+  images: Array<{ url: string; alt: string; caption?: ReactNode }>
   title: string
   locale?: SiteLocale
 }) {
@@ -86,6 +87,7 @@ export function ExecutiveTenantProductGallery({
               unoptimized
             />
           </div>
+          {current.caption ? <div className={styles.caption}>{current.caption}</div> : null}
           {images.length > 1 ? (
             <button
               aria-label={t.next}
