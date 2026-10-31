@@ -111,7 +111,7 @@ function hostedRequest(request: NextRequest) {
       return NextResponse.redirect(destination)
     }
     // Legacy shared /search, /posts and arbitrary /[slug] are not part of V1.
-    const allowed = ['/login', '/logout', '/workspace', '/api', '/health', '/_next', '/s', '/template-demo', '/template-preview', '/template-demos', '/images', '/fonts', '/assets']
+    const allowed = ['/login', '/logout', '/workspace', '/api', '/health', '/_next', '/s', '/template-demo', '/template-preview', '/template-demos', '/sites', '/images', '/fonts', '/assets']
     if (!allowed.some((prefix) => atPath(path, prefix)) && !['/favicon.ico', '/favicon.svg', '/logo.svg', '/logo.png', '/robots.txt'].includes(path)) return unavailable()
     const response = next()
     response.headers.set('X-Robots-Tag', 'noindex, nofollow')
@@ -131,7 +131,7 @@ function hostedRequest(request: NextRequest) {
     if ((origin && origin !== `https://${entry.host}`) || !['POST', 'OPTIONS'].includes(request.method)) return unavailable(403)
     return next()
   }
-  if (readOnly && (atPath(path, '/_next/static') || path === '/_next/image' || atPath(path, '/api/media/file') || ['/template-demos', '/images', '/fonts', '/assets'].some((prefix) => atPath(path, prefix)) || ['/favicon.ico', '/favicon.svg', '/logo.svg', '/logo.png'].includes(path))) return next()
+  if (readOnly && (atPath(path, '/_next/static') || path === '/_next/image' || atPath(path, '/api/media/file') || ['/template-demos', '/sites', '/images', '/fonts', '/assets'].some((prefix) => atPath(path, prefix)) || ['/favicon.ico', '/favicon.svg', '/logo.svg', '/logo.png'].includes(path))) return next()
   if (!readOnly || /%(?:2f|5c)/i.test(path) || path.includes('\\')) return unavailable()
   if (path === '/sitemap.xml') return rewrite(`/s/${entry.slug}/sitemap.xml`)
   if (path === '/robots.txt') return rewrite(`/s/${entry.slug}/robots.txt`)

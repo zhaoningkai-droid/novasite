@@ -60,3 +60,9 @@ describe('operator-approved customer domains: requested Toheno binding and tenan
     expect(configuredCustomerOrigin('huadong-fasteners')).toBeNull()
   })
 })
+
+it.each(["admin.o669.com", "www.toheno.com", "huadong-fasteners.o669.com"])("serves bundled template assets on %s", (host) => {
+ for (const path of ["/sites/k607/banner.jpg", "/sites/k712/banner.webp", "/sites/allynav/product-steer.png"]) {
+ const response=proxy(request(host,path)); expect(response.headers.get("x-middleware-next")).toBe("1"); expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+ }
+});
