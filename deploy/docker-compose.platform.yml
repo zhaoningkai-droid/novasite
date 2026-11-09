@@ -1,0 +1,162 @@
+name: novasite-platform
+
+services:
+  app:
+    image: ${APP_IMAGE:?Set a versioned APP_IMAGE}
+    build:
+      context: ..
+      target: runner
+      args:
+        NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL}
+    env_file: ${PLATFORM_ENV_FILE:-.env.platform}
+    environment:
+      NODE_ENV: production
+      NOVASITE_IMAGE_BUILD: "false"
+      DATABASE_CA_FILE: /run/novasite/database-ca.pem
+      DATABASE_POOL_MAX: ${DATABASE_WEB_POOL_MAX:-10}
+      DATABASE_APPLICATION_NAME: novasite-web
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 40s
+    expose: ["3000"]
+    mem_limit: 3g
+    cpus: 2
+    volumes:
+      - web_cache:/app/.next/cache
+      - type: bind
+        source: ${DATABASE_CA_FILE:?Set the provider CA certificate absolute path}
+        target: /run/novasite/database-ca.pem
+        read_only: true
+        bind: { create_host_path: false }
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  translation-worker:
+    image: ${TRANSLATION_WORKER_IMAGE:?Set a versioned TRANSLATION_WORKER_IMAGE}
+    build:
+      context: ..
+      target: translation-worker
+      args:
+        NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL}
+    env_file: ${PLATFORM_ENV_FILE:-.env.platform}
+    environment:
+      NODE_ENV: production
+      NOVASITE_IMAGE_BUILD: "false"
+      DATABASE_CA_FILE: /run/novasite/database-ca.pem
+      DATABASE_POOL_MAX: ${DATABASE_TRANSLATION_POOL_MAX:-4}
+      DATABASE_APPLICATION_NAME: novasite-translation
+      TRANSLATION_WORKER_HEARTBEAT_FILE: /tmp/novasite-translation-heartbeat
+    volumes:
+      - type: bind
+        source: ${DATABASE_CA_FILE:?Set the provider CA certificate absolute path}
+        target: /run/novasite/database-ca.pem
+        read_only: true
+        bind: { create_host_path: false }
+    depends_on:
+      app: { condition: service_healthy }
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 5m
+    mem_limit: 2g
+    cpus: 1
+    healthcheck:
+      test: ["CMD", "node", "-e", "const fs=require('fs');try{const n=Number(fs.readFileSync('/tmp/novasite-translation-heartbeat','utf8'));process.exit(Number.isFinite(n)&&Date.now()-n<60000?0:1)}catch{process.exit(1)}"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  # Opt-in only; reuses the worker image, but runs a separate process.
+  inquiry-notification-worker:
+    profiles: ["notifications"]
+    image: ${TRANSLATION_WORKER_IMAGE:?Set a versioned TRANSLATION_WORKER_IMAGE}
+    command: ["node", "--import", "./scripts/verify-v1-node-style-hook.mjs", "--import", "tsx", "scripts/run-inquiry-notifications.mts"]
+    env_file: ${PLATFORM_ENV_FILE:-.env.platform}
+    environment:
+      NODE_ENV: production
+      NOVASITE_IMAGE_BUILD: "false"
+      DATABASE_CA_FILE: /run/novasite/database-ca.pem
+      DATABASE_POOL_MAX: ${DATABASE_NOTIFICATION_POOL_MAX:-2}
+      DATABASE_APPLICATION_NAME: novasite-notification
+      INQUIRY_WORKER_HEARTBEAT_FILE: /tmp/novasite-inquiry-heartbeat
+    volumes:
+      - type: bind
+        source: ${DATABASE_CA_FILE:?Set the provider CA certificate absolute path}
+        target: /run/novasite/database-ca.pem
+        read_only: true
+        bind: { create_host_path: false }
+    depends_on:
+      app: { condition: service_healthy }
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 2m
+    mem_limit: 512m
+    cpus: 0.5
+    healthcheck:
+      test: ["CMD", "node", "-e", "const fs=require('fs');try{const n=Number(fs.readFileSync('/tmp/novasite-inquiry-heartbeat','utf8'));process.exit(Number.isFinite(n)&&Date.now()-n<60000?0:1)}catch{process.exit(1)}"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  caddy:
+    image: ${CADDY_IMAGE:-caddy:2-alpine}
+    environment:
+      PLATFORM_ROOT_DOMAIN: ${PLATFORM_ROOT_DOMAIN}
+      TLS_CONTACT_EMAIL: ${TLS_CONTACT_EMAIL}
+      ACME_CA: ${ACME_CA:-https://acme-staging-v02.api.letsencrypt.org/directory}
+    depends_on:
+      app: { condition: service_healthy }
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 0.5
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./Caddyfile.platform:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  # Operator-only: never runs as a side effect of starting the application.
+  migrator:
+    profiles: ["database-tools"]
+    image: ${MIGRATOR_IMAGE:?Set a versioned MIGRATOR_IMAGE}
+    build:
+      context: ..
+      target: migrator
+      args:
+        NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL}
+    env_file: ${PLATFORM_ENV_FILE:-.env.platform}
+    environment:
+      NODE_ENV: production
+      NOVASITE_IMAGE_BUILD: "false"
+      DATABASE_CA_FILE: /run/novasite/database-ca.pem
+      DATABASE_POOL_MAX: ${DATABASE_MIGRATOR_POOL_MAX:-2}
+      DATABASE_APPLICATION_NAME: novasite-migrator
+    volumes:
+      - type: bind
+        source: ${DATABASE_CA_FILE:?Set the provider CA certificate absolute path}
+        target: /run/novasite/database-ca.pem
+        read_only: true
+        bind: { create_host_path: false }
+    restart: "no"
+
+volumes:
+  web_cache:
+  caddy_data:
+  caddy_config:

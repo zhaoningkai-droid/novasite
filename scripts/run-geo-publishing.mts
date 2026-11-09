@@ -7,6 +7,7 @@ if (process.env.NODE_ENV !== 'production' || process.env.GEO_PUBLISH_WORKER_ENAB
 const { getPayload } = await import('payload')
 const { default: config } = await import('../src/payload.config')
 const { userHasRole } = await import('../src/access/roles')
+const { createGeoPublishAuthorization } = await import('../src/platform/geo/publish-authorization')
 const { runOneGeoPublication } = await import('../src/platform/geo/publish-runner')
 const { dispatchOneGeoPlan } = await import('../src/platform/geo/plan-store')
 const payload = await getPayload({ config })
@@ -20,16 +21,7 @@ process.on('SIGINT', () => { stopping = true }); process.on('SIGTERM', () => { s
 const heartbeat = async () => { await writeFile(file, String(Date.now()), { mode: 0o600 }) }
 await heartbeat()
 const timer = setInterval(() => { void heartbeat().catch(() => { stopping = true }) }, 10000)
-const authorize = async (actorID: number, tenantID: number) => {
-  try {
-    const user = await payload.findByID({ collection: 'users', id: actorID, depth: 0, overrideAccess: true })
-    await payload.findByID({ collection: 'tenants', id: tenantID, depth: 0, overrideAccess: true })
-    if (user.expiresAt && new Date(user.expiresAt).getTime() <= Date.now()) return null
-    const allowed=userHasRole(user, ['super-admin']) || (userHasRole(user, ['site-admin','editor']) && !!user.tenants?.some((t) =>
-      Number(typeof t.tenant === 'object' && t.tenant ? t.tenant.id : t.tenant) === tenantID))
-    return allowed ? user : null
-  } catch { return null }
-}
+const authorize = createGeoPublishAuthorization(payload)
 process.stdout.write('GEO publish worker ready; only explicitly queued jobs will run.\n')
 try {
   do {

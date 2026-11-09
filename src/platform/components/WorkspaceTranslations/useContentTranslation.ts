@@ -4,15 +4,19 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { ProductTranslationView } from '../../product-translation/job-view'
 import type { TranslationResource } from '../../content-translation/resources'
+import { submitTranslationBatch, translationBatchSize, translationSubmissionNotice } from '../../product-translation/submission'
 
 export function useContentTranslation(companySlug: string, resource: TranslationResource, ids: number[], refreshKey = '') {
   const router = useRouter()
-  const endpoint = `/api/workspace/${companySlug}/translations/${resource}`
+  const endpoint = `/api/workspace/${encodeURIComponent(companySlug)}/translations/${resource}`
   const idsKey = ids.join(',')
   const [views, setViews] = useState<Record<number, ProductTranslationView>>({})
   const [error, setError] = useState('')
+  const [submitError, setSubmitError] = useState('')
+  const [notice, setNotice] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [ready, setReady] = useState(false)
+  const [readRevision, setReadRevision] = useState(0)
   const submission = useRef<AbortController | undefined>(undefined)
   const scopeGeneration = useRef(0)
   const submissionRevision = useRef(0)
@@ -23,6 +27,8 @@ export function useContentTranslation(companySlug: string, resource: Translation
     // Aborting the browser request does not cancel an already persisted job.
     ++scopeGeneration.current
     setSubmitting(false)
+    setSubmitError('')
+    setNotice('')
     return () => {
       ++scopeGeneration.current
       submission.current?.abort()
@@ -33,7 +39,7 @@ export function useContentTranslation(companySlug: string, resource: Translation
     setViews({}); setReady(false); setError(''); active.current = new Set()
   }, [companySlug, resource, idsKey, refreshKey])
   useEffect(() => {
-    if (!idsKey) return
+    if (!idsKey || submitting) return
     let disposed = false
     let timer: ReturnType<typeof setTimeout>
     const controller = new AbortController()
@@ -56,9 +62,7 @@ export function useContentTranslation(companySlug: string, resource: Translation
         active.current = new Set(result.views.filter((view) => view.locked).map((view) => view.productID))
         setViews(Object.fromEntries(result.views.map((view) => [view.productID, view])))
         setReady(Boolean(result.enabled))
-        setError(result.views.some((view) => view.status === 'failed' || view.status === 'partial')
-          ? '上次翻译未完成，请重新选择相应内容后点击翻译。'
-          : '')
+        setError('')
         if (completed) router.refresh()
       } catch (reason) {
         if (!disposed && ownGeneration === generation.current
@@ -72,41 +76,62 @@ export function useContentTranslation(companySlug: string, resource: Translation
     }
     void read()
     return () => { disposed = true; controller.abort(); clearTimeout(timer) }
-  }, [endpoint, idsKey, refreshKey, submitting, router])
+  }, [endpoint, idsKey, refreshKey, submitting, readRevision, router])
   const translate = async (selectedIDs: number[]) => {
-    if (submission.current || !ready || !selectedIDs.length) return
+    if (submission.current || !ready || !selectedIDs.length) return false
     const eligible = [...new Set(selectedIDs)].filter((id) => views[id]?.canTranslate && !views[id]?.locked)
-    if (!eligible.length) return
+    if (!eligible.length) return false
+    setSubmitError(''); setNotice('')
+    if (eligible.length > translationBatchSize) {
+      setSubmitError(`每批最多提交 ${translationBatchSize} 项，本批还未提交。请减少选择后再试。`)
+      return false
+    }
     const controller = new AbortController()
     const ownScopeGeneration = scopeGeneration.current
     submission.current = controller
+    ++submissionRevision.current
     const isCurrent = () => !controller.signal.aborted
       && ownScopeGeneration === scopeGeneration.current && submission.current === controller
-    setSubmitting(true); setError('')
+    setSubmitting(true)
     try {
-      for (let offset = 0; offset < eligible.length; offset += 50) {
-        if (!isCurrent()) return
-        const response = await fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ids: eligible.slice(offset, offset + 50) }), signal: AbortSignal.any([controller.signal, AbortSignal.timeout(20_000)]) })
-        const result = await response.json() as { message?: string; accepted?: Array<{ productID: number; jobID: string }> }
-        if (!isCurrent()) return
-        if (!response.ok) throw new Error(result.message || '任务提交失败。')
-        if (result.accepted?.length) ++submissionRevision.current
-        for (const item of result.accepted || []) active.current.add(item.productID)
-        setViews((previous) => {
-          if (ownScopeGeneration !== scopeGeneration.current || controller.signal.aborted) return previous
-          const next = { ...previous }
-          for (const item of result.accepted || []) next[item.productID] = { ...previous[item.productID], productID: item.productID, jobID: item.jobID, locked: true, canTranslate: false, status: 'queued', completed: previous[item.productID]?.completed || 0, total: previous[item.productID]?.total || 0, languages: previous[item.productID]?.languages || [] }
-          return next
-        })
-      }
+      const result = await submitTranslationBatch(endpoint, eligible, controller.signal)
+      if (!isCurrent()) return false
+      ++submissionRevision.current
+      for (const item of result.accepted) active.current.add(item.productID)
+      setViews((previous) => {
+        if (ownScopeGeneration !== scopeGeneration.current || controller.signal.aborted) return previous
+        const next = { ...previous }
+        for (const item of result.accepted) next[item.productID] = { ...previous[item.productID], productID: item.productID, jobID: item.jobID, locked: true, canTranslate: false, status: 'queued', completed: previous[item.productID]?.completed || 0, total: previous[item.productID]?.total || 0, languages: previous[item.productID]?.languages || [] }
+        return next
+      })
+      setNotice(translationSubmissionNotice(result))
+      return true
     } catch (reason) {
-      if (isCurrent()) setError(reason instanceof Error ? reason.message : '翻译任务提交失败。')
+      if (isCurrent()) {
+        // Re-read current-source status before allowing another submission. Never automatically POST again.
+        setReady(false)
+        setSubmitError(reason instanceof Error ? reason.message : '翻译任务提交失败。')
+      }
+      return false
     } finally {
       if (isCurrent()) {
         submission.current = undefined
         setSubmitting(false)
+        setReadRevision((revision) => revision + 1)
       }
     }
   }
-  return { views, error, ready, submitting, translate, locked: (id: number) => Boolean(views[id]?.locked) }
+  const markReviewed = (id: number, jobID: string) => {
+    ++submissionRevision.current
+    active.current.add(id)
+    setViews((previous) => {
+      const view = previous[id]
+      if (!view || view.jobID !== jobID) return previous
+      return { ...previous, [id]: { ...view, status: 'queued', locked: true, canTranslate: false, needsAction: false, review: undefined } }
+    })
+    setNotice('已重新排队，可以离开此页面。')
+    setSubmitError('')
+    router.refresh()
+  }
+  return { views, error: [submitError, error].filter(Boolean).join(' '), notice, ready, submitting, translate, markReviewed, locked: (id: number) => Boolean(views[id]?.locked) }
 }

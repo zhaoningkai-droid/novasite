@@ -1,0 +1,136 @@
+name: novasite-single
+
+x-log: &log
+  driver: json-file
+  options: { max-size: "10m", max-file: "3" }
+
+x-runtime: &runtime
+  env_file: ${PLATFORM_ENV_FILE:?Set the private runtime env file}
+  init: true
+  volumes:
+    - type: bind
+      source: ${DATABASE_CA_FILE:?Set database CA path}
+      target: /run/novasite/database-ca.pem
+      read_only: true
+      bind: { create_host_path: false }
+    - type: bind
+      source: ${MEDIA_HOST_DIRECTORY:?Set private media directory}
+      target: /srv/novasite-media
+      bind: { create_host_path: false }
+  logging: *log
+
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE:?Set fixed PostgreSQL image}
+    env_file: ${POSTGRES_ENV_FILE:?Set private PostgreSQL env file}
+    command: ["postgres", "-c", "ssl=on", "-c", "ssl_cert_file=/run/postgres-tls/server.crt", "-c", "ssl_key_file=/run/postgres-tls/server.key", "-c", "hba_file=/etc/postgresql/pg_hba.conf", "-c", "max_connections=30", "-c", "shared_buffers=128MB", "-c", "work_mem=4MB", "-c", "maintenance_work_mem=64MB"]
+    volumes:
+      - type: bind
+        source: ${POSTGRES_DATA_DIRECTORY:?Set persistent PostgreSQL directory}
+        target: /var/lib/postgresql/data
+        bind: { create_host_path: false }
+      - type: bind
+        source: ${POSTGRES_TLS_DIRECTORY:?Set private PostgreSQL TLS directory}
+        target: /run/postgres-tls
+        read_only: true
+        bind: { create_host_path: false }
+      - ./pg_hba.single-ecs.conf:/etc/postgresql/pg_hba.conf:ro
+    restart: unless-stopped
+    mem_limit: 768m
+    cpus: 1
+    shm_size: 128m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    logging: *log
+
+  app:
+    <<: *runtime
+    image: ${APP_IMAGE:?Set fixed web image}
+    environment:
+      NODE_ENV: production
+      NOVASITE_IMAGE_BUILD: "false"
+      DATABASE_CA_FILE: /run/novasite/database-ca.pem
+      DATABASE_POOL_MAX: ${DATABASE_WEB_POOL_MAX:-5}
+      DATABASE_APPLICATION_NAME: novasite-web
+      NODE_OPTIONS: --max-old-space-size=1024
+    depends_on:
+      postgres: { condition: service_healthy }
+    expose: ["3000"]
+    restart: unless-stopped
+    stop_grace_period: 40s
+    mem_limit: 1536m
+    cpus: 1.5
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  translation-worker:
+    <<: *runtime
+    image: ${TRANSLATION_WORKER_IMAGE:?Set fixed worker image}
+    environment:
+      NODE_ENV: production
+      NOVASITE_IMAGE_BUILD: "false"
+      DATABASE_CA_FILE: /run/novasite/database-ca.pem
+      DATABASE_POOL_MAX: ${DATABASE_TRANSLATION_POOL_MAX:-2}
+      DATABASE_APPLICATION_NAME: novasite-translation
+      TRANSLATION_WORKER_CONCURRENCY: "1"
+      TRANSLATION_WORKER_HEARTBEAT_FILE: /tmp/novasite-translation-heartbeat
+      NODE_OPTIONS: --max-old-space-size=512
+    depends_on:
+      app: { condition: service_healthy }
+    restart: unless-stopped
+    stop_grace_period: 5m
+    mem_limit: 768m
+    cpus: 0.75
+    healthcheck:
+      test: ["CMD", "node", "-e", "const fs=require('fs');try{const n=Number(fs.readFileSync('/tmp/novasite-translation-heartbeat','utf8'));process.exit(Number.isFinite(n)&&Date.now()-n<60000?0:1)}catch{process.exit(1)}"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  caddy:
+    image: ${CADDY_IMAGE:?Set fixed Caddy image}
+    environment:
+      PLATFORM_ROOT_DOMAIN: ${PLATFORM_ROOT_DOMAIN}
+      PLATFORM_CUSTOM_HOSTS: ${PLATFORM_CUSTOM_HOSTS:-}
+      TLS_CONTACT_EMAIL: ${TLS_CONTACT_EMAIL}
+      ACME_CA: ${ACME_CA:-https://acme-v02.api.letsencrypt.org/directory}
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./Caddyfile.platform:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app: { condition: service_healthy }
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 0.5
+    logging: *log
+
+  migrator:
+    <<: *runtime
+    profiles: ["database-tools"]
+    image: ${MIGRATOR_IMAGE:?Set fixed migrator image}
+    command: ["node", "--import", "./scripts/verify-v1-node-style-hook.mjs", "node_modules/payload/bin.js", "migrate"]
+    environment:
+      NODE_ENV: production
+      NOVASITE_IMAGE_BUILD: "false"
+      DATABASE_CA_FILE: /run/novasite/database-ca.pem
+      DATABASE_POOL_MAX: ${DATABASE_MIGRATOR_POOL_MAX:-2}
+      DATABASE_APPLICATION_NAME: novasite-migrator
+      NODE_OPTIONS: --max-old-space-size=1024
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: "no"
+    mem_limit: 1536m
+
+volumes:
+  caddy_data:
+  caddy_config:

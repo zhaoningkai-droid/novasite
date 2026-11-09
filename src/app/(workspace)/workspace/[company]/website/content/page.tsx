@@ -206,6 +206,7 @@ export default async function ProductsManagementPage({
       <WorkspaceTable
         ariaLabel="产品列表"
         asyncTranslation={translationQueueEnabled()}
+        translationCompanySlug={slug}
         bulkDeleteURL={canDelete ? '/api/workspace/' + slug + '/products/bulk' : undefined}
         bulkTranslateURL={
           canEdit ? '/api/workspace/' + slug + '/products/bulk-translate' : undefined
@@ -240,7 +241,13 @@ export default async function ProductsManagementPage({
         rows={records.docs.map((item) => {
           const title = item.title?.trim() || '未命名产品'
           const imageURL =
-            item.gallery?.map(contentMediaURL).find(Boolean) || item.externalImages?.[0]?.url || ''
+            item.gallery
+              ?.map((media) =>
+                media && typeof media === 'object'
+                  ? media.sizes?.thumbnail?.url || contentMediaURL(media)
+                  : '',
+              )
+              .find(Boolean) || item.externalImages?.[0]?.url || ''
           const categoryName =
             typeof item.category === 'object' && item.category
               ? item.category.name || '未分类'

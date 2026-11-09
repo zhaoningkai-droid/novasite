@@ -171,7 +171,7 @@ describe('product background translation rules', () => {
       total: 3,
       languages: [],
     }
-    expect(translationViewLabel(view)).toBe('未翻译')
+    expect(translationViewLabel(view)).toBe('部分完成')
     expect(translationViewLabel({ ...view, total: 0 })).toBe('未翻译')
   })
 })

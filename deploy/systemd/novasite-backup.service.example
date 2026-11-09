@@ -1,0 +1,26 @@
+[Unit]
+Description=NovaSite encrypted database and media backup
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=novasite-backup
+Group=novasite-backup
+# Required only when using Docker PostgreSQL tools; review Docker privileges.
+SupplementaryGroups=docker
+WorkingDirectory=/srv/novasite
+Environment=PLATFORM_ENV_FILE=/srv/novasite/deploy/.env.backup
+ExecStart=/bin/bash /srv/novasite/deploy/platform.sh backup-run
+TimeoutStartSec=255min
+TimeoutStopSec=30s
+KillMode=control-group
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+# Docker bind mounts need host-visible private temporary credential directories.
+PrivateTmp=false
+ReadWritePaths=/srv/novasite-backups /tmp
+StandardOutput=journal
+StandardError=journal

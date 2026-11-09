@@ -3,6 +3,7 @@ import { type CollectionConfig, type CollectionBeforeChangeHook } from 'payload'
 import { assignedTenants, siteAdmins, superAdmins, superAdminField } from '../access/roles'
 import { ga4MeasurementId, ga4PropertyId } from '../platform/analytics/ga4-config'
 import { localeOptions } from '../platform/site-locales'
+import { localizedAboutDescriptionValidation, localizedTenantTextValidation } from '../platform/content-translation/tenant-validation'
 
 const guardTemplateSelection: CollectionBeforeChangeHook = ({ data, operation, originalDoc, req }) => {
   // Payload may supply an empty originalDoc during create. Initial selection
@@ -135,7 +136,7 @@ export const Tenants: CollectionConfig = {
       label: '品牌信息',
       type: 'group',
       fields: [
-        { name: 'companyName', label: '公司名称', type: 'text', localized: true, required: true },
+        { name: 'companyName', label: '公司名称', type: 'text', localized: true, required: true, validate: localizedTenantTextValidation('settings') },
         { name: 'headerText', label: 'Logo 旁展示文字', type: 'text', localized: true },
         { name: 'tagline', label: '品牌标语', type: 'text', localized: true },
         { name: 'logo', label: '网站 Logo', type: 'upload', relationTo: 'media' },
@@ -234,7 +235,7 @@ export const Tenants: CollectionConfig = {
                 { name: 'image', label: '展示图片', type: 'upload', relationTo: 'media' },
                 { name: 'value', label: '数字', type: 'text', required: true },
                 { name: 'unit', label: '单位', type: 'text' },
-                { name: 'label', label: '说明', type: 'text', localized: true, required: true },
+                { name: 'label', label: '说明', type: 'text', localized: true, required: true, validate: localizedTenantTextValidation('homepage') },
                 { name: 'sortOrder', label: '排序', type: 'number', defaultValue: 0 },
               ],
             },
@@ -304,8 +305,8 @@ export const Tenants: CollectionConfig = {
             {
               name: 'modules', label: '企业介绍模块', type: 'array', fields: [
                 { name: 'image', label: '模块图片', type: 'upload', relationTo: 'media' },
-                { name: 'title', label: '模块名称', type: 'text', localized: true, required: true },
-                { name: 'description', label: '模块描述', type: 'textarea', localized: true, required: true },
+                { name: 'title', label: '模块名称', type: 'text', localized: true, required: true, validate: localizedTenantTextValidation('about') },
+                { name: 'description', label: '模块描述', type: 'textarea', localized: true, required: true, validate: localizedAboutDescriptionValidation },
                 { name: 'sortOrder', label: '排序', type: 'number', defaultValue: 0 },
               ],
             },

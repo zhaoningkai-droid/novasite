@@ -15,7 +15,7 @@
 }
 
 :80 {
-  @platform host {$PLATFORM_ROOT_DOMAIN} *.{$PLATFORM_ROOT_DOMAIN}
+  @platform host {$PLATFORM_ROOT_DOMAIN} *.{$PLATFORM_ROOT_DOMAIN} {$PLATFORM_CUSTOM_HOSTS}
   handle @platform {
     redir https://{host}{uri} 308
   }

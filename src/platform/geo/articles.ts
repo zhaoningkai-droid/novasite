@@ -1,6 +1,8 @@
 import { GeoError, geoObject, type GeoTermLink } from './keywords'
 import { geoTaskText, type GeoQuestion, type GeoTaskValues } from './tasks'
 // Shared with the browser editor: no Node/network imports in this module.
+export const MAX_GEO_ARTICLE_HTML_LENGTH = 4 * 1024 * 1024
+export const MAX_GEO_ARTICLE_SUMMARY_LENGTH = 12000
 const decodeSourceText = (value: string) =>
   value
     .replace(
@@ -334,16 +336,13 @@ export function validateGeoArticle(content: ArticleContent, context: ArticleCont
   )
   const issues = [...clean.issues],
     text = `${content.title} ${content.summary} ${clean.plain}`
-  const words =
-    context.settings.locale === 'zh'
-      ? clean.plain.replace(/\s/gu, '').length
-      : [
-          ...new Intl.Segmenter(context.settings.locale, { granularity: 'word' }).segment(
-            clean.plain,
-          ),
-        ].filter((s) => s.isWordLike).length
+  let words = 0
+  if (context.settings.locale === 'zh') words = clean.plain.replace(/\s/gu, '').length
+  else {
+    const segmenter = new Intl.Segmenter(context.settings.locale, { granularity: 'word' })
+    for (const segment of segmenter.segment(clean.plain)) if (segment.isWordLike) words++
+  }
   if (!context.writingMode && context.settings.name !== '手动创作') {
-    const maximum = context.settings.length === 'short' ? 1000 : 2000
     const minimum =
       context.settings.length === 'short'
         ? context.settings.locale === 'zh'
@@ -352,9 +351,9 @@ export function validateGeoArticle(content: ArticleContent, context: ArticleCont
         : context.settings.locale === 'zh'
           ? 750
           : 450
-    if (words < minimum || words > maximum)
+    if (words < minimum)
       issues.push(
-        `正文长度应在${minimum}至${maximum}${context.settings.locale === 'zh' ? '字符' : '词'}之间，当前${words}。`,
+        `正文长度至少应有${minimum}${context.settings.locale === 'zh' ? '字符' : '词'}，当前${words}。`,
       )
   }
   if (!context.writingMode && !clean.usedLinks.length)
@@ -401,11 +400,13 @@ export function validateGeoArticle(content: ArticleContent, context: ArticleCont
 }
 export function parseArticleContent(value: unknown): ArticleContent {
   const b = geoObject(value)
-  if (typeof b.html !== 'string' || !b.html.trim() || b.html.length > 100000)
-    throw new GeoError('INVALID_CONTENT', '请填写正文，最多100000字符。')
+  if (typeof b.html !== 'string' || !b.html.trim())
+    throw new GeoError('INVALID_CONTENT', '请填写正文。')
+  if (b.html.length > MAX_GEO_ARTICLE_HTML_LENGTH)
+    throw new GeoError('BODY_TOO_LARGE', '正文数据超过处理容量。', 413)
   return {
     title: geoTaskText(b.title, '文章标题', 180),
-    summary: geoTaskText(b.summary ?? '', '摘要', 1600, true),
+    summary: geoTaskText(b.summary ?? '', '摘要', MAX_GEO_ARTICLE_SUMMARY_LENGTH, true),
     html: b.html,
   }
 }

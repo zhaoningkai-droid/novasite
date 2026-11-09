@@ -85,6 +85,8 @@ CMD ["node", "server.js"]
 FROM builder AS migrator
 ENV NODE_ENV=production
 ENV NOVASITE_IMAGE_BUILD=false
+# The GEO worker also uses this image, with UID 1001 in production.
+RUN chown -R 1001:1001 /app/src /app/scripts /app/package.json /app/tsconfig.json
 CMD ["npm", "run", "payload", "--", "migrate"]
 
 # A separate persistent worker image. The standalone web trace does not include

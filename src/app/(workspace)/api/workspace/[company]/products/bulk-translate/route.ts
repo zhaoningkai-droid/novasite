@@ -6,15 +6,10 @@ import {
   queueProductTranslations,
   runOneProductTranslation,
 } from '@/platform/product-translation/jobs'
+import { translationBatchSize, validTranslationIDs } from '@/platform/product-translation/submission'
 
 type Context = { params: Promise<{ company: string }> }
 export const maxDuration = 240
-const validIDs = (value: unknown): value is number[] =>
-  Array.isArray(value) &&
-  value.length > 0 &&
-  value.length <= 50 &&
-  value.every((id) => Number.isSafeInteger(id) && id > 0)
-
 export async function GET(request: Request, { params }: Context) {
   const { company: slug } = await params
   const scope = await workspaceSettingsScope(slug, settingsEditorRoles)
@@ -27,7 +22,7 @@ export async function GET(request: Request, { params }: Context) {
     user: scope.user,
   })
   const ids = (new URL(request.url).searchParams.get('ids') || '').split(',').map(Number)
-  if (!validIDs(ids)) return NextResponse.json({ message: '产品编号无效。' }, { status: 422 })
+  if (!validTranslationIDs(ids, 50)) return NextResponse.json({ message: '产品编号无效。' }, { status: 422 })
   try {
     const result = await productTranslationViews(scope.payload, company, scope.user, [
       ...new Set(ids),
@@ -57,10 +52,10 @@ export async function POST(request: Request, { params }: Context) {
   if (Number(request.headers.get('content-length') || 0) > 5000)
     return NextResponse.json({ message: '提交内容过大。' }, { status: 413 })
   const body = await request.json().catch(() => null)
-  if (!validIDs(body?.ids))
-    return NextResponse.json({ message: '请选择1至50个产品。' }, { status: 422 })
+  if (!validTranslationIDs(body?.ids, translationBatchSize))
+    return NextResponse.json({ message: `请选择 1 至 ${translationBatchSize} 个有效产品。` }, { status: 422 })
   const response = await queueProductTranslations({ ...scope, company, productIDs: body.ids })
-  if (response.status === 202) {
+  if (response.status === 202 && process.env.TRANSLATION_WEB_ASSIST_ENABLED === 'true') {
     // An immediate kick improves local responsiveness; the independent worker ensures restart recovery.
     after(async () => {
       try {

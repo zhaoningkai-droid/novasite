@@ -26,24 +26,6 @@ function options() {
   return result
 }
 
-function policy() {
-  const definitions = {
-    globalDay: ['TRANSLATION_GLOBAL_DAILY_UNITS', 1_000_000_000],
-    globalMonth: ['TRANSLATION_GLOBAL_MONTHLY_UNITS', 10_000_000_000],
-    companyDay: ['TRANSLATION_COMPANY_DAILY_UNITS', 1_000_000_000],
-    companyMonth: ['TRANSLATION_COMPANY_MONTHLY_UNITS', 10_000_000_000],
-    perJobRequests: ['TRANSLATION_MAX_REQUESTS_PER_JOB', 1000],
-  }
-  const limits = {}
-  for (const [key, [variable, maximum]] of Object.entries(definitions)) {
-    const value = process.env[variable] || ''
-    if (!/^\d+$/.test(value) || !Number.isSafeInteger(Number(value)) || Number(value) < 1 || Number(value) > maximum) return { valid: false, limits: null }
-    limits[key] = Number(value)
-  }
-  const valid = limits.globalDay <= limits.globalMonth && limits.companyDay <= limits.companyMonth && limits.companyDay <= limits.globalDay && limits.companyMonth <= limits.globalMonth
-  return { valid, limits: valid ? limits : null }
-}
-
 function outsidePublic(directory) {
   const location = relative(join(root, 'public'), directory)
   if (!location || (!isAbsolute(location) && location !== '..' && !location.startsWith(`..${sep}`))) throw new OperatorError('用量报告不能放在网站 public 目录内。')
@@ -99,17 +81,6 @@ function reportQuery(company) {
   )::text;`
 }
 
-function allowance(value, limit) {
-  if (typeof value !== 'string' || !/^\d+$/.test(value)) throw new OperatorError('用量合计格式无效。')
-  if (!limit) return { usedUnits: value, limitUnits: null, remainingUnits: null, level: 'unconfigured' }
-  const used = BigInt(value)
-  const maximum = BigInt(limit)
-  return {
-    usedUnits: value, limitUnits: String(limit), remainingUnits: (used < maximum ? maximum - used : 0n).toString(),
-    level: used >= maximum ? 'limit_reached' : used * 5n >= maximum * 4n ? 'near_limit' : 'within_limit',
-  }
-}
-
 async function main() {
   if (process.argv.length === 3 && process.argv[2] === '--help') {
     process.stdout.write('用法：bash deploy/platform.sh translation-usage [--company 公司数字编号] [--directory 私有绝对目录]\n只读取内部用量汇总，不调用 AI、不写数据库、不安装新表。\n')
@@ -131,36 +102,16 @@ async function main() {
     if (availability.installed !== true) throw new OperatorError('翻译用量表尚未安装；不会自动安装，也不会把未记录用量报告为零。')
     const totals = await readJSON(session, reportQuery(input.company), 'usage.stderr.private.log')
     if (totals.database !== connection.database || totals.timeZone !== 'Asia/Shanghai' || !Array.isArray(totals.companies) || !Array.isArray(totals.models)) throw new OperatorError('用量汇总不完整，未记录为成功。')
-    const configured = policy()
-    const limits = configured.limits
-    const protectionEnabled = process.env.TRANSLATION_BUDGET_ENABLED === 'true'
-    const queueEnabled = process.env.PRODUCT_TRANSLATION_QUEUE_ENABLED === 'true'
     const report = {
-      reportVersion: 1, ...totals, protectionConfigured: protectionEnabled && queueEnabled && configured.valid,
-      protectionEnabled, queueEnabled, policyValid: configured.valid, limits,
+      reportVersion: 2, ...totals, quotaEnforced: false,
       selectedCompany: input.company ? Number(input.company) : null,
-      coverage: 'Only requests recorded by this platform ledger. Earlier requests, other applications and provider invoice totals are not included. Missing provider usage remains a reservation, never zero.',
-      globalAllowance: {
-        day: allowance(totals.globalDaily?.chargedUnits, limits?.globalDay),
-        month: allowance(totals.globalMonthly?.chargedUnits, limits?.globalMonth),
-      },
-      companyAllowance: totals.companies.map((company) => ({
-        companyID: company.companyID,
-        day: allowance(company.dailyUnits, limits?.companyDay),
-        month: allowance(company.monthly?.chargedUnits, limits?.companyMonth),
-      })),
+      coverage: 'Only requests recorded by this platform ledger. Earlier requests, other applications and provider invoice totals are not included. Missing provider usage remains an estimate, never zero.',
       runtimeAttested: false, providerInvoiceReconciled: false,
     }
     const reportPath = join(work, 'usage.json')
     await writePrivateJSON(reportPath, report)
     process.stdout.write(`翻译用量报告已保存：${reportPath}\n统计周期：北京时间 ${totals.accountingDay}，月份 ${totals.accountingMonth}\n`)
-    process.stdout.write(`平台当天占用单位：${report.globalAllowance.day.usedUnits}；本月：${report.globalAllowance.month.usedUnits}\n`)
-    if (!report.protectionConfigured) process.stdout.write('注意：当前配置未完整启用用量保护；本报告不能证明任何运行进程已加载新版本或新开关。\n')
-    const alerts = [
-      ['平台每日', report.globalAllowance.day], ['平台每月', report.globalAllowance.month],
-      ...report.companyAllowance.flatMap((company) => [[`公司 ${company.companyID} 每日`, company.day], [`公司 ${company.companyID} 每月`, company.month]]),
-    ].filter(([, value]) => ['near_limit', 'limit_reached'].includes(value.level))
-    for (const [label, value] of alerts) process.stdout.write(`${label}：${value.level === 'limit_reached' ? '达到限制' : '占用达到 80%'}，剩余 ${value.remainingUnits} 单位。\n`)
+    process.stdout.write(`平台当天用量单位：${totals.globalDaily.chargedUnits}；本月：${totals.globalMonthly.chargedUnits}\n`)
     process.stdout.write('只汇总内部用量；未知用量不视为零，实际费用以服务商账单为准。没有调用 AI 或修改数据库。\n')
   } finally { await session.cleanup() }
 }

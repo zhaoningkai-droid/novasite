@@ -69,12 +69,12 @@ describe('GEO task and AI authenticated boundaries', () => {
     expect((await handleGeoTasks(new Request(url + '?locale=en&page=2'), 'fixture')).status).toBe(
       200,
     )
-    expect(fixture.query.mock.calls[0][1]).toEqual([101, '', 10, 'en', 10])
+    expect(fixture.query.mock.calls[0][1]).toEqual([101, '', 10, 'en', 10, expect.arrayContaining(['image/jpeg'])])
     fixture.query.mockResolvedValueOnce({ rows: [{ total: 0, items: [] }] })
     expect(
       (await handleGeoTasks(new Request(url + '?locale=en&page=2&pageSize=20'), 'fixture')).status,
     ).toBe(200)
-    expect(fixture.query.mock.calls[1][1]).toEqual([101, '', 20, 'en', 20])
+    expect(fixture.query.mock.calls[1][1]).toEqual([101, '', 20, 'en', 20, expect.arrayContaining(['image/jpeg'])])
     fixture.query.mockClear()
     expect(
       (await handleGeoTasks(new Request(url + '?locale=not-a-language'), 'fixture')).status,

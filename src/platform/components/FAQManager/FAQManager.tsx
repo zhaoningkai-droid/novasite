@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { useWorkspaceUnsaved } from '../WorkspaceEditor/useWorkspaceUnsaved'
 import { useWorkspacePermissions } from '../WorkspaceShell/WorkspacePermissions'
 import { TENANT_FAQ_LIMIT } from '@/platform/faq-config'
+import { TranslationReviewAction } from '../WorkspaceTranslations/TranslationReviewAction'
 import { useContentTranslation } from '../WorkspaceTranslations/useContentTranslation'
 import { translationViewLabel } from '../../product-translation/job-view'
 import '../WorkspaceTranslations/content-translation.scss'
@@ -145,7 +146,11 @@ export function FAQManager({
           <h1>常见问题</h1>
         </div>
         <div className="content-translation-header-actions">
-        <button className="content-translation-batch" disabled={!canEditContent || busy || !translation.ready || translation.submitting || !selectedIDs.some((id) => translation.views[id]?.canTranslate)} type="button" onClick={() => { void translation.translate(selectedIDs); setSelectedIDs([]) }}><Languages size={17} />翻译</button>
+        <button className="content-translation-batch" disabled={!canEditContent || busy || !translation.ready || translation.submitting || !selectedIDs.some((id) => translation.views[id]?.canTranslate)} type="button" onClick={() => {
+          void translation.translate(selectedIDs).then((confirmed) => {
+            if (confirmed) setSelectedIDs((current) => current.filter((id) => !selectedIDs.includes(id)))
+          })
+        }}><Languages size={17} />{translation.submitting ? '提交中…' : '翻译'}</button>
         <button
           disabled={busy || !canEditContent || count >= TENANT_FAQ_LIMIT}
           onClick={() => open(blank(Math.max(0, ...items.map((item) => item.sortOrder)) + 1))}
@@ -170,6 +175,7 @@ export function FAQManager({
         </p>
       )}
       {translation.error && <p className="faq-manager__feedback is-error" role="alert">{translation.error}</p>}
+      {translation.notice && <p className="faq-manager__feedback" role="status">{translation.notice}</p>}
       <section className="faq-manager__panel">
         <div className="faq-manager__toolbar">
           <label className="faq-manager__search">
@@ -234,6 +240,7 @@ export function FAQManager({
                     </td>
                     <td>
                       <span>{translationViewLabel(translation.views[item.id])}</span>
+                      <TranslationReviewAction companySlug={companySlug} resource={'faqs'} documentID={item.id} review={translation.views[item.id]?.review} disabled={busy} onQueued={translation.markReviewed} />
                     </td>
                     <td>
                       <div className="faq-manager__actions">

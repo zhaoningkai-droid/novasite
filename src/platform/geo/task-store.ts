@@ -3,7 +3,8 @@ import { GeoError, geoID, normalizeGeoText } from './keywords'
 import { geoImageTypes } from './materials'
 import type { GeoTask, GeoTaskValues } from './tasks'
 import { parseGeoTask } from './tasks'
-import { buildArticleContext } from './article-context'
+import { buildArticleContext, generationSnapshotProblem } from './article-context'
+import type { ArticleContext } from './articles'
 import { geoArticleFingerprint } from './article-store'
 type Pool = Pick<PostgresAdapter['pool'], 'query' | 'connect'>
 type Row = {
@@ -27,12 +28,18 @@ export type GeoTaskListItem = {
   count: number
   generated_count: number
   used_count: number
-  generation_state: 'queued' | 'running' | 'failed' | 'unknown' | 'succeeded' | 'idle'
+  generation_state: 'queued' | 'running' | 'failed' | 'partial' | 'unknown' | 'succeeded' | 'idle'
   related_plan_count: number
   available_count: number
+  generation_blocker?: { code: string; message: string }
 }
 type TaskListRow = Omit<GeoTaskListItem, 'available_count'> & {
   settings: unknown
+  optimization_version: number | null
+  group_version: number | null
+  group_type: string | null
+  group_archived: boolean | null
+  media_changed: boolean
   snapshot: Record<string, unknown>
 }
 const dto = (row: Row): GeoTask => ({
@@ -68,7 +75,7 @@ function savedTaskCandidates(
   }
   return { keys, maximum, repeat }
 }
-/** Same saved-snapshot eligibility as enqueue; excludes live rechecks and the daily provider limit. */
+/** Same saved-snapshot eligibility as enqueue; excludes live rechecks. */
 export function geoTaskAvailableCount(
   values: unknown,
   snapshot: Record<string, unknown>,
@@ -116,23 +123,44 @@ export function createGeoTaskStore(pool: Pool, tenantID: number, actorID: number
             t.settings->>'locale' AS locale,jsonb_array_length(t.settings->'questions') AS questions,
             t.settings->>'direction' AS direction,coalesce((t.settings->>'count')::int,0) AS count,
             a.generated_count,a.used_count,j.generation_state,
+            o.version AS optimization_version,g.version AS group_version,
+            g.entry_type AS group_type,g.archived AS group_archived,
+            EXISTS (
+              SELECT 1 FROM jsonb_array_elements(
+                CASE WHEN jsonb_typeof(t.snapshot->'materialGroup'->'images')='array'
+                  THEN t.snapshot->'materialGroup'->'images' ELSE '[]'::jsonb END
+              ) image
+              WHERE NOT EXISTS (
+                SELECT 1 FROM platform_geo.material_items i
+                JOIN public.media m ON m.tenant_id=i.tenant_id AND m.id=i.media_id
+                WHERE i.tenant_id=t.tenant_id AND i.group_id=t.material_group_id
+                  AND m.id::text=image->>'id' AND m.url=image->>'url'
+                  AND m.mime_type=ANY($6::text[]) AND coalesce(m.filesize,0)<=512000
+              )
+            ) AS media_changed,
             (SELECT count(*)::int FROM platform_geo.publish_plans p WHERE p.tenant_id=t.tenant_id AND p.archived_at IS NULL AND p.state='active' AND (
               (p.config->>'sourceMode'='tasks' AND (p.config->'sourceIDs') ? t.id::text) OR
               (p.config->>'sourceMode'='articles' AND EXISTS(SELECT 1 FROM platform_geo.articles source
                 WHERE source.tenant_id=t.tenant_id AND source.task_id=t.id AND (p.config->'sourceIDs') ? source.id::text))
             )) AS related_plan_count
           FROM current_page t
+          LEFT JOIN platform_geo.optimizations o ON o.tenant_id=t.tenant_id AND o.id=t.optimization_id
+          LEFT JOIN platform_geo.material_groups g ON g.tenant_id=t.tenant_id AND g.id=t.material_group_id
           CROSS JOIN LATERAL (SELECT count(*)::int AS generated_count,
             count(*) FILTER(WHERE EXISTS(SELECT 1 FROM platform_geo.publish_intents p
               WHERE p.tenant_id=t.tenant_id AND p.article_id=article.id AND p.state='published'))::int AS used_count
             FROM platform_geo.articles article WHERE article.tenant_id=t.tenant_id AND article.task_id=t.id) a
           CROSS JOIN LATERAL (SELECT CASE WHEN bool_or(state='running') THEN 'running'
-            WHEN bool_or(state='queued') THEN 'queued' WHEN bool_or(state='unknown') THEN 'unknown'
-            WHEN bool_or(state='failed') THEN 'failed' WHEN bool_or(state='succeeded') THEN 'succeeded'
-            ELSE 'idle' END AS generation_state FROM platform_geo.generation_jobs
-            WHERE tenant_id=t.tenant_id AND task_id=t.id) j
+            WHEN bool_or(state='queued') THEN 'queued'
+            WHEN bool_or(state='unknown' AND request_id=latest_request) THEN 'unknown'
+            WHEN bool_or(state='failed' AND request_id=latest_request) THEN
+              CASE WHEN bool_or(state='succeeded' AND request_id=latest_request) THEN 'partial' ELSE 'failed' END
+            WHEN bool_or(state='succeeded' AND request_id=latest_request) THEN 'succeeded'
+            ELSE 'idle' END AS generation_state
+            FROM (SELECT state,request_id,first_value(request_id) OVER (ORDER BY created_at DESC,id DESC) AS latest_request
+              FROM platform_geo.generation_jobs WHERE tenant_id=t.tenant_id AND task_id=t.id) attempts) j
         ) item),'[]'::jsonb) AS items`,
-          [tenantID, normalizeGeoText(query), (page - 1) * pageSize, locale, pageSize],
+          [tenantID, normalizeGeoText(query), (page - 1) * pageSize, locale, pageSize, geoImageTypes],
         )
       ).rows[0]
       const candidates = result.items.map((item) =>
@@ -156,12 +184,19 @@ export function createGeoTaskStore(pool: Pool, tenantID: number, actorID: number
           : [],
       )
       const items: GeoTaskListItem[] = result.items.map(
-        ({ settings: _settings, snapshot: _snapshot, ...item }, index) => {
+        ({ settings: _settings, snapshot, optimization_version, group_version, group_type, group_archived, media_changed, ...item }, index) => {
+          const blocker = generationSnapshotProblem(snapshot as Pick<ArticleContext, 'optimization' | 'materialGroup'>, {
+            optimizationVersion: optimization_version,
+            groupVersion: group_version,
+            groupType: group_type,
+            groupArchived: group_archived,
+          }) || (media_changed ? { code: 'MEDIA_CHANGED', message: '部分原图片已失效，请检查素材并重新保存任务。' } : null)
           const candidate = candidates[index]
           return {
             ...item,
             status: item.status === 'waiting_sources' ? 'ready' : item.status,
-            available_count: Math.min(
+            ...(blocker ? { generation_blocker: blocker } : {}),
+            available_count: blocker ? 0 : Math.min(
               candidate.maximum,
               candidate.keys.filter((key) => candidate.repeat || !used.has(key)).length,
             ),

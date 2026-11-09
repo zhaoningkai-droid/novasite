@@ -19,6 +19,8 @@ import {
   translationViewLabel,
   type ProductTranslationView,
 } from '../../product-translation/job-view'
+import { submitTranslationBatch, translationBatchSize, translationSubmissionNotice } from '../../product-translation/submission'
+import { TranslationReviewAction } from '../WorkspaceTranslations/TranslationReviewAction'
 import { WorkspaceRowActions } from './WorkspaceRowActions'
 import './workspace-table.scss'
 
@@ -37,6 +39,7 @@ type Props = {
   bulkDeleteURL?: string
   bulkTranslateURL?: string
   asyncTranslation?: boolean
+  translationCompanySlug?: string
   columns: WorkspaceTableColumn[]
   editBaseHref?: string
   translationBaseHref?: string
@@ -63,6 +66,7 @@ export function WorkspaceTable({
   bulkDeleteURL,
   bulkTranslateURL,
   asyncTranslation = false,
+  translationCompanySlug,
   columns,
   editBaseHref,
   translationBaseHref,
@@ -86,9 +90,12 @@ export function WorkspaceTable({
   const dialogRef = useRef<HTMLDialogElement>(null)
   const openerRef = useRef<HTMLElement | null>(null)
   const requestInProgress = useRef(false)
+  const translationRequest = useRef<AbortController | null>(null)
   const [jobViews, setJobViews] = useState<Record<number, ProductTranslationView>>({})
   const [progressReadError, setProgressReadError] = useState('')
   const productIDs = rows.map((row) => row.id).join(',')
+  const hasInitialTranslationViews = rows.every((row) => row.translation)
+  const hasActiveTranslation = rows.some((row) => (jobViews[row.id] || row.translation)?.locked)
   const translationFor = (row: WorkspaceTableRow) => jobViews[row.id] || row.translation
   const rowBusy = (row: WorkspaceTableRow) => Boolean(translationFor(row)?.locked)
   const [selectedIDs, setSelectedIDs] = useState<number[]>([])
@@ -99,6 +106,7 @@ export function WorkspaceTable({
   const [translating, setTranslating] = useState(false)
   const [translationMessage, setTranslationMessage] = useState('')
   const [translationError, setTranslationError] = useState(false)
+  const [needsTranslationStatus, setNeedsTranslationStatus] = useState(false)
   const pageIDs = useMemo(() => rows.map((row) => row.id), [rows])
   const selectableIDs = rows.filter((row) => !rowBusy(row)).map((row) => row.id)
   const allPageRowsSelected =
@@ -119,6 +127,17 @@ export function WorkspaceTable({
     // A save/refresh supplies a new source snapshot; discard cached completion states.
     setJobViews({})
   }, [rows])
+
+  useEffect(() => {
+    setTranslating(false)
+    setNeedsTranslationStatus(false)
+    setTranslationMessage('')
+    setTranslationError(false)
+    return () => {
+      translationRequest.current?.abort()
+      translationRequest.current = null
+    }
+  }, [bulkTranslateURL])
 
   useEffect(() => {
     if (checkboxRef.current) {
@@ -159,38 +178,46 @@ export function WorkspaceTable({
       allPageRowsSelected ? [] : rows.filter((row) => !rowBusy(row)).map((row) => row.id),
     )
   useEffect(() => {
-    if (!asyncTranslation || !bulkTranslateURL || !productIDs) return
-    let disposed = false
+    if (!asyncTranslation || !bulkTranslateURL || !productIDs || translating) return
+    const controller = new AbortController()
     let timer: ReturnType<typeof setTimeout>
     const read = async () => {
       let count = 0
       try {
-        const response = await fetch(`${bulkTranslateURL}?ids=${productIDs}`, { cache: 'no-store' })
+        const response = await fetch(`${bulkTranslateURL}?ids=${productIDs}`, {
+          cache: 'no-store',
+          signal: controller.signal,
+        })
         if (!response.ok) throw new Error('进度暂时无法读取；后台任务仍会继续，请稍后刷新。')
         const result = (await response.json()) as {
           views: ProductTranslationView[]
           activeCount: number
         }
-        if (disposed) return
+        if (controller.signal.aborted) return
         setJobViews(Object.fromEntries(result.views.map((view) => [view.productID, view])))
         count = result.activeCount
         setProgressReadError('')
+        setNeedsTranslationStatus(false)
       } catch (error) {
-        if (!disposed)
+        if (!controller.signal.aborted)
           setProgressReadError(error instanceof Error ? error.message : '进度读取失败。')
       } finally {
-        if (!disposed) timer = setTimeout(() => void read(), count ? 3000 : 12000)
+        if (!controller.signal.aborted) timer = setTimeout(() => void read(), count ? 3000 : 12000)
       }
     }
-    void read()
+    if (hasInitialTranslationViews && !needsTranslationStatus) {
+      timer = setTimeout(() => void read(), hasActiveTranslation ? 3000 : 12000)
+    } else {
+      void read()
+    }
     return () => {
-      disposed = true
+      controller.abort()
       clearTimeout(timer)
     }
-  }, [asyncTranslation, bulkTranslateURL, productIDs, translating])
+  }, [asyncTranslation, bulkTranslateURL, hasActiveTranslation, hasInitialTranslationViews, needsTranslationStatus, productIDs, translating])
 
   const translateSelected = async () => {
-    if (!bulkTranslateURL || translating || selectedTranslatableRows.length === 0) return
+    if (!bulkTranslateURL || translating || needsTranslationStatus || translationRequest.current || selectedTranslatableRows.length === 0) return
     const selectedRows = selectedTranslatableRows
     const completedIDs: number[] = []
     const failed: string[] = []
@@ -198,21 +225,16 @@ export function WorkspaceTable({
     setTranslationMessage('')
     setTranslationError(false)
     if (asyncTranslation) {
+      const controller = new AbortController()
+      translationRequest.current = controller
       try {
-        const response = await fetch(bulkTranslateURL, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ ids: selectedRows.map((row) => row.id) }),
-          signal: AbortSignal.timeout(20_000),
-        })
-        const result = (await response.json()) as {
-          message?: string
-          accepted?: Array<{ productID: number; jobID: string }>
-        }
-        if (!response.ok) throw new Error(result.message || '任务提交失败。')
+        if (selectedRows.length > translationBatchSize)
+          throw new Error(`每批最多提交 ${translationBatchSize} 项，本批还未提交。请减少选择后再试。`)
+        const result = await submitTranslationBatch(bulkTranslateURL, selectedRows.map((row) => row.id), controller.signal)
+        if (controller.signal.aborted) return
         setJobViews((previous) => {
           const next = { ...previous }
-          for (const accepted of result.accepted || []) {
+          for (const accepted of result.accepted) {
             const row = rows.find((row) => row.id === accepted.productID)
             const existing = next[accepted.productID] || row?.translation
             next[accepted.productID] = {
@@ -229,19 +251,24 @@ export function WorkspaceTable({
           }
           return next
         })
-        setSelectedIDs([])
+        const submitted = new Set(selectedRows.map((row) => row.id))
+        setSelectedIDs((previous) => previous.filter((id) => !submitted.has(id)))
+        setTranslationMessage(translationSubmissionNotice(result))
         router.refresh()
       } catch (error) {
+        if (controller.signal.aborted) return
+        setNeedsTranslationStatus(true)
         setTranslationError(true)
         setTranslationMessage(
-          error instanceof Error && error.name === 'TimeoutError'
-            ? '提交响应超时，请刷新确认产品任务状态，避免重复提交。'
-            : error instanceof Error
+          error instanceof Error
               ? error.message
               : '任务提交失败。',
         )
       } finally {
-        setTranslating(false)
+        if (translationRequest.current === controller) {
+          translationRequest.current = null
+          setTranslating(false)
+        }
       }
       return
     }
@@ -268,6 +295,19 @@ export function WorkspaceTable({
     } finally {
       setTranslating(false)
     }
+  }
+
+  const markReviewed = (id: number, jobID: string) => {
+    const row = rows.find((item) => item.id === id)
+    const view = row && translationFor(row)
+    if (view?.jobID === jobID) {
+      setJobViews((previous) => ({ ...previous, [id]: {
+        ...view, status: 'queued', locked: true, canTranslate: false, needsAction: false, review: undefined,
+      } }))
+    }
+    setTranslationError(false)
+    setTranslationMessage('已重新排队，可以离开此页面。')
+    router.refresh()
   }
 
   const deleteSelected = async () => {
@@ -339,7 +379,7 @@ export function WorkspaceTable({
               {bulkTranslateURL && (
                 <button
                   className="workspace-table__toolbar-translate"
-                  disabled={selectedTranslatableRows.length === 0 || deleting || translating}
+                  disabled={selectedTranslatableRows.length === 0 || deleting || translating || needsTranslationStatus}
                   onClick={() => void translateSelected()}
                   type="button"
                 >
@@ -348,7 +388,7 @@ export function WorkspaceTable({
                   ) : (
                     <Languages aria-hidden="true" size={16} />
                   )}
-                  {translating ? '翻译中…' : '翻译'}
+                  {translating ? (asyncTranslation ? '提交中…' : '翻译中…') : '翻译'}
                 </button>
               )}
               {toolbarActionContent}
@@ -500,7 +540,7 @@ export function WorkspaceTable({
                         bulkDeleteURL ? () => openModal({ kind: 'delete', rows: [row] }) : undefined
                       }
                       onDetails={() => openModal({ kind: 'details', row })}
-                      showDetailsAction={showDetailsAction}
+                      showDetailsAction={showDetailsAction || Boolean(translationFor(row)?.review)}
                       translationHref={
                         translationBaseHref
                           ? translationBaseHref + '/' + row.id + '/translations'
@@ -616,6 +656,18 @@ export function WorkspaceTable({
                   </div>
                 ))}
               </dl>
+              {translationFor(modal.row)?.languages.some((language) => language.status === 'failed' && language.message) && (
+                <details>
+                  <summary>查看翻译失败原因</summary>
+                  <ul>{translationFor(modal.row)?.languages
+                    .filter((language) => language.status === 'failed' && language.message)
+                    .map((language) => <li key={language.locale}>{language.locale.toUpperCase()} · {language.message}</li>)}</ul>
+                </details>
+              )}
+              {translationCompanySlug && (
+                <TranslationReviewAction companySlug={translationCompanySlug} resource="products"
+                  documentID={modal.row.id} review={translationFor(modal.row)?.review} onQueued={markReviewed} />
+              )}
               <footer>
                 <button data-initial-focus onClick={closeModal} type="button">
                   关闭

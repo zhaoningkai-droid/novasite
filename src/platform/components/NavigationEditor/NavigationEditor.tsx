@@ -4,6 +4,7 @@ import { Languages, Plus, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useWorkspaceUnsaved } from '../WorkspaceEditor/useWorkspaceUnsaved'
 import { useWorkspacePermissions } from '../WorkspaceShell/WorkspacePermissions'
+import { TranslationReviewAction } from '../WorkspaceTranslations/TranslationReviewAction'
 import { useContentTranslation } from '../WorkspaceTranslations/useContentTranslation'
 import { translationViewLabel } from '@/platform/product-translation/job-view'
 import { isDefaultNavigation, type NavigationItem, type NavigationValue } from '@/platform/navigation-model'
@@ -94,11 +95,14 @@ export function NavigationEditor({ companySlug, initial }: { companySlug: string
       <div className="nav-editor__toolbar">
         <span role="status">{saving ? '保存中…' : dirty ? '待保存' : ''}</span>
         <button className="nav-editor__primary" disabled={!canManageSite || dirty || saving || !translation.ready || translation.submitting || !selected.some((id) => eligible.includes(id))}
-          onClick={() => { void translation.translate(selected); setSelected([]) }} type="button"><Languages size={19} />翻译</button>
+          onClick={() => { void translation.translate(selected).then((confirmed) => {
+            if (confirmed) setSelected((current) => current.filter((id) => !selected.includes(id)))
+          }) }} type="button"><Languages size={19} />{translation.submitting ? '提交中…' : '翻译'}</button>
         <button className="nav-editor__primary" disabled={!canManageSite || saving} onClick={() => { setNewItem({ label: '', href: '', sortOrder: 0 }); setAdding(true) }} type="button"><Plus size={19} />添加</button>
       </div>
       {(error || translation.error) && <p className="nav-editor__error" role="alert">{error || translation.error}
         {error && <button onClick={() => { setError(''); void persist() }} type="button">重新保存</button>}</p>}
+      {translation.notice && <p role="status">{translation.notice}</p>}
       <div className="nav-editor__table-wrap"><table><thead><tr>
         <th><input type="checkbox" aria-label="选择可翻译的全部栏目" checked={eligible.length > 0 && eligible.every((id) => selected.includes(id))}
           disabled={!canManageSite || !eligible.length || dirty || saving} onChange={(event) => setSelected(event.target.checked ? eligible : [])} /></th>
@@ -113,7 +117,7 @@ export function NavigationEditor({ companySlug, initial }: { companySlug: string
           <td><input className="nav-editor__inline nav-editor__name" aria-label={`${item.label}中文名称`} maxLength={80} required value={item.label}
             disabled={!canManageSite || locked} onChange={(event) => updateItem(item.id, { label: event.target.value })} /></td>
           <td>默认</td><td className="nav-editor__time">{time(item.modifiedAt || saved.updatedAt)}</td>
-          <td><span className="nav-editor__status" data-state={locked ? 'running' : translation.views[key]?.status || 'pending'}><i aria-hidden="true" />{translationViewLabel(translation.views[key])}</span></td>
+          <td><span className="nav-editor__status" data-state={locked ? 'running' : translation.views[key]?.status || 'pending'}><i aria-hidden="true" />{translationViewLabel(translation.views[key])}</span><TranslationReviewAction companySlug={companySlug} resource={'navigation-items'} documentID={key} review={translation.views[key]?.review} disabled={dirty || saving || locked} onQueued={translation.markReviewed} /></td>
           <td><div className="nav-editor__actions"><button type="button" disabled={!canManageSite || locked} onClick={() => setEditing(item.id || null)}>编辑</button>
             <button type="button" disabled={!canManageSite || locked || isDefaultNavigation(item.href)} onClick={() => remove(item)}>删除</button></div></td>
         </tr>

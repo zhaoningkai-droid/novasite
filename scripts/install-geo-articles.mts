@@ -4,7 +4,7 @@ import { lstat, open, realpath } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { createDatabasePoolOptions } from '../src/platform/adapters/database-pool'
-import { geoArticleSchemaSQL } from '../src/platform/geo/article-schema'
+import { geoArticleSchemaSQL, geoGenerationRecoverySQL } from '../src/platform/geo/article-schema'
 
 const args = process.argv.slice(2)
 const known = ['--apply', '--expected-database=', '--backup-file=']
@@ -65,6 +65,7 @@ try {
   const prerequisite = await client.query("SELECT to_regclass('platform_geo.task_revisions') IS NOT NULL AS tenants_ready")
   if (prerequisite.rows[0]?.tenants_ready !== true) throw new Error('GEO optimization storage must already be installed.')
   await client.query(geoArticleSchemaSQL)
+  await client.query(geoGenerationRecoverySQL)
   const committed = await client.query('COMMIT')
   if (committed.command !== 'COMMIT') throw new Error('Installation commit was not confirmed.')
   process.stdout.write('Local GEO article/generation storage installation committed. No existing customer content was changed.\n')

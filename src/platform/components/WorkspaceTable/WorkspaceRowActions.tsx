@@ -80,6 +80,7 @@ export function WorkspaceRowActions({
       aria-label={'维护 ' + label + ' 四语内容'}
       className="workspace-table__detail"
       href={translationHref}
+      prefetch={false}
       onClick={(event) => {
         if (disabled) event.preventDefault()
         else if (useMenu) closeMenu()
@@ -118,6 +119,7 @@ export function WorkspaceRowActions({
           aria-label={'编辑 ' + label}
           className="workspace-table__detail workspace-table__detail--primary"
           href={editHref}
+          prefetch={false}
           onClick={(event) => {
             if (disabled) event.preventDefault()
           }}

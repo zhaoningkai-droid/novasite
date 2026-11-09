@@ -43,7 +43,7 @@ try{
   const task=await createGeoTaskStore(pool,aTenant.id,user.id).save(randomUUID(),settings),articles=createGeoArticleStore(pool,aTenant.id,user.id)
   await articles.enqueue(randomUUID(),task.id,1,1)
   await runOneGeoArticle(pool,{key:'fixture-only',model:'fixture',authorize:async()=>true,refresh:async(_p,_t,c)=>c,
-    generate:async(c:ArticleContext)=>({content:validateGeoArticle({title:'配电柜安装资料',summary:'配电柜安装与维护条件。',html:`<h2>安装条件</h2><p>${source.excerpt}<a href="${source.url}">配电柜资料</a></p><p><img src="${c.materialGroup.images[0].url}"></p>`},c),warnings:[]})})
+    generate:async(c:ArticleContext)=>({content:validateGeoArticle({title:'配电柜安装资料',summary:'配电柜安装与维护条件。',html:`<h2>安装条件</h2><p>${source.excerpt}<a href="${values.website}">配电柜资料</a></p><p><img src="${c.materialGroup.images[0].url}"></p>`},c),warnings:[]})})
   const articleID=(await articles.list('',1,null)).items[0].id,first=await articles.find(articleID);assert.ok(first)
   let article=await articles.save(articleID,1,first,first.context,true,'已经逐项核对引用资料与设备示意图片。')
   const {loadGeoPublishTarget}=await import('../src/platform/geo/publish-target'),{commitGeoPublication}=await import('../src/platform/geo/publish-adapter'),{runOneGeoPublication}=await import('../src/platform/geo/publish-runner')
@@ -67,8 +67,8 @@ try{
   const published=await store.find(id);assert.equal(published?.state,'published');assert.ok(published?.target_id);assert.ok(published.target_url)
   const news=await payload.findByID({collection:'news',id:published.target_id,locale:'zh',fallbackLocale:false,depth:1,overrideAccess:false,user})
   assert.equal(news._status,'published');assert.equal(news.title,article.title);assert.equal(typeof news.tenant==='object'?news.tenant?.id:news.tenant,aTenant.id)
-  const {richTextToHTML}=await import('../src/platform/rich-text');const rendered=richTextToHTML(news.content);assert.ok(rendered.includes(source.url));assert.ok(rendered.includes('<img'));
-  const serialized=JSON.stringify(news.content);assert.ok(serialized.includes(source.url));assert.ok(serialized.includes('upload'))
+  const {richTextToHTML}=await import('../src/platform/rich-text');const rendered=richTextToHTML(news.content);assert.ok(rendered.includes(values.website));assert.ok(rendered.includes('<img'));
+  const serialized=JSON.stringify(news.content);assert.ok(serialized.includes(values.website));assert.ok(serialized.includes('upload'))
   assert.equal((await store.events(id)).at(-1)?.event,'published')
   await assert.rejects(()=>store.action(id,'retry'),code('ACTION_NOT_ALLOWED'));await assert.rejects(()=>store.action(id,'cancel'),code('ACTION_NOT_ALLOWED'))
   checks.push('实际Payload/Postgres新闻发布与回读成功，保留来源链接与素材组图片；被撤销权限不写CMS；成功记录不可重试或取消覆盖')
@@ -77,7 +77,7 @@ try{
   await runOneGeoPublication(payload,{authorize:async()=>user,refresh:async(_p,_t,c)=>c})
   const blog=await store.find(blogID);assert.equal(blog?.state,'published');assert.ok(blog?.target_id)
   const post=await payload.findByID({collection:'posts',id:blog.target_id,locale:'zh',fallbackLocale:false,depth:0,overrideAccess:false,user})
-  assert.equal(post.title,article.title);assert.equal(post._status,'published');assert.ok(JSON.stringify(post.content).includes(source.url))
+  assert.equal(post.title,article.title);assert.equal(post._status,'published');assert.ok(JSON.stringify(post.content).includes(values.website))
   checks.push('实际Payload Blog创建、分类、版本/搜索插件钩子及默认语言回读成功；没有禁用现有CMS钩子或修改集合')
   // New revision allows a distinct publication without overwriting the first CMS record.
   article=await articles.save(article.id,article.version,{...article,title:'配电柜资料更新'},article.context,true,'已经核对新版标题与现有资料。')
@@ -135,7 +135,16 @@ try{
   await planA.action(automaticPlan.id,'activate',automaticPlan.version)
   await pool.query(`UPDATE platform_geo.publish_plans SET next_run_at=clock_timestamp()-interval '1 second'
     WHERE tenant_id=$1 AND id=ANY($2::uuid[])`,[aTenant.id,[manualPlan.id,automaticPlan.id]])
-  const authPlan=async(actorID:number,tenantID:number)=>actorID===user.id&&tenantID===aTenant.id?user:null
+  const {createGeoPublishAuthorization}=await import('../src/platform/geo/publish-authorization')
+  const authPlan=createGeoPublishAuthorization(payload)
+  assert.equal((await authPlan(user.id,aTenant.id))?.id,user.id)
+  assert.equal(await authPlan(2147483647,aTenant.id),null)
+  const fault = new Error('fixture: authorization lookup unavailable')
+  const failedAuthorization=createGeoPublishAuthorization({findByID:async()=>{throw fault}})
+  await assert.rejects(()=>dispatchOneGeoPlan(pool,{authorize:failedAuthorization,canAuto:()=>true}),(error)=>error===fault)
+  assert.equal(Number((await pool.query("SELECT count(*) AS n FROM platform_geo.publish_plans WHERE state='active'")).rows[0].n),2)
+  assert.equal(Number((await pool.query('SELECT count(*) AS n FROM platform_geo.publish_plan_runs')).rows[0].n),0)
+  checks.push('真实 PostgreSQL：临时权限查询故障回滚且两个计划保持有效。缺失账号被拒绝，恢复查询后按正常规则派发。')
   assert.equal(await dispatchOneGeoPlan(pool,{authorize:authPlan,canAuto:()=>true}),true)
   assert.equal(await dispatchOneGeoPlan(pool,{authorize:authPlan,canAuto:()=>true}),true)
   const planRuns=await pool.query(`SELECT p.name,r.state,count(i.id)::int AS items
@@ -215,7 +224,7 @@ try{
   assert.equal(await dispatchOneGeoPlan(pool,{authorize:authPlan,canAuto:()=>true}),false,'Waiting AI must not requeue jobs or dispatch twice')
   assert.equal(Number((await pool.query("SELECT count(*) AS n FROM platform_geo.generation_jobs WHERE tenant_id=$1 AND task_id=$2::uuid",[aTenant.id,autoTask.id])).rows[0].n),1)
   await runOneGeoArticle(pool,{key:'fixture-only',model:'fixture',authorize:async()=>true,refresh:async(_p,_t,c)=>c,
-    generate:async(c:ArticleContext)=>({content:validateGeoArticle({title:'配电柜自动创作资料',summary:'配电柜安装条件。',html:`<h2>安装条件</h2><p>${source.excerpt}<a href="${source.url}">配电柜资料</a></p><p><img src="${c.materialGroup.images[0].url}"></p>`},c),warnings:[]})})
+    generate:async(c:ArticleContext)=>({content:validateGeoArticle({title:'配电柜自动创作资料',summary:'配电柜安装条件。',html:`<h2>安装条件</h2><p>${source.excerpt}<a href="${values.website}">配电柜资料</a></p><p><img src="${c.materialGroup.images[0].url}"></p>`},c),warnings:[]})})
   assert.equal((await pool.query('SELECT status FROM platform_geo.articles WHERE tenant_id=$1 AND task_id=$2::uuid',[aTenant.id,autoTask.id])).rows[0].status,'ready')
   assert.equal(await dispatchOneGeoPlan(pool,{authorize:authPlan,canAuto:()=>true}),true)
   assert.equal(await dispatchOneGeoPlan(pool,{authorize:authPlan,canAuto:()=>true}),false)

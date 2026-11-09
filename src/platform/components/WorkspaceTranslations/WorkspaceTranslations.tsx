@@ -19,6 +19,8 @@ export type TranslationLocale = {
   title: string
 }
 type Props = {
+  companySlug: string
+  productID: number
   locales: TranslationLocale[]
   returnHref: string
   saveURL: string
@@ -30,7 +32,7 @@ const changed = (item: TranslationLocale, saved?: TranslationLocale) =>
 export function WorkspaceTranslations(props: Props) {
   return <TranslationForm {...props} key={props.saveURL} />
 }
-function TranslationForm({ locales, returnHref, saveURL, sourceLocale = 'zh' }: Props) {
+function TranslationForm({ companySlug, productID, locales, returnHref, saveURL, sourceLocale = 'zh' }: Props) {
   const [items, setItems] = useState(locales)
   const [savedItems, setSavedItems] = useState(locales)
   const [activeCode, setActiveCode] = useState<TranslationLocale['code']>(
@@ -223,7 +225,9 @@ function TranslationForm({ locales, returnHref, saveURL, sourceLocale = 'zh' }: 
             </label>
             <AITranslateField
               key={`${active.code}:title`}
-              companySlug={saveURL.split('/')[3] || ''}
+              companySlug={companySlug}
+              productID={productID}
+              field="title"
               defaultSourceLocale={sourceLocale}
               sources={translationSources}
               targetLocale={active.code}
@@ -256,7 +260,9 @@ function TranslationForm({ locales, returnHref, saveURL, sourceLocale = 'zh' }: 
             </label>
             <AITranslateField
               key={`${active.code}:summary`}
-              companySlug={saveURL.split('/')[3] || ''}
+              companySlug={companySlug}
+              productID={productID}
+              field="summary"
               defaultSourceLocale={sourceLocale}
               sources={summarySources}
               targetLocale={active.code}

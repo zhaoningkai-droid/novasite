@@ -5,6 +5,7 @@
 .ai-translate-field__panel header,.ai-translate-field__panel footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .ai-translate-field__panel header button { display: grid; place-items: center; border: 0; background: transparent; color: #637089; cursor: pointer; }
 .ai-translate-field__panel label { display: grid; gap: 5px; color: #526078; font-size: 12px; }
+.ai-translate-field__panel .ai-translate-field__confirmation { display: flex; align-items: center; gap: 8px; }
 .ai-translate-field__panel select,.ai-translate-field__panel textarea { width: 100%; border: 1px solid #dce3ef; border-radius: 6px; background: white; color: #172033; font: inherit; }
 .ai-translate-field__panel select { height: 36px; padding: 0 9px; }
 .ai-translate-field__panel textarea { min-height: 100px; padding: 9px; resize: vertical; }

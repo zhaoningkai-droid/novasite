@@ -1,3 +1,16 @@
+export const geoGenerationRecoverySQL = `
+ALTER TABLE platform_geo.generation_jobs
+  ADD COLUMN IF NOT EXISTS next_run_at timestamptz,
+  ADD COLUMN IF NOT EXISTS authorization_retries integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS last_claimed_at timestamptz,
+  ADD COLUMN IF NOT EXISTS requires_review boolean NOT NULL DEFAULT false;
+CREATE TABLE IF NOT EXISTS platform_geo.generation_worker_heartbeat(
+  singleton boolean PRIMARY KEY DEFAULT true CHECK(singleton),
+  last_seen timestamptz NOT NULL
+);
+CREATE INDEX IF NOT EXISTS geo_generation_tenant_state ON platform_geo.generation_jobs(tenant_id,state);
+`
+
 export const geoArticleSchemaSQL = `
 CREATE TABLE IF NOT EXISTS platform_geo.generation_requests(
  id uuid PRIMARY KEY,tenant_id integer NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,

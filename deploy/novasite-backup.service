@@ -1,0 +1,9 @@
+[Unit]
+Description=NovaSite paired encrypted database and media backup
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/srv/novasite/backup-single-ecs.sh
+UMask=0077

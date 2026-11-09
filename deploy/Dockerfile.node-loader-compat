@@ -1,0 +1,5 @@
+# Reproduce the deployed Node 22 CLI-loader compatibility patch.
+# Build context must contain scripts/verify-v1-node-style-hook.mjs.
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+COPY --chown=nextjs:nodejs scripts/verify-v1-node-style-hook.mjs /app/scripts/verify-v1-node-style-hook.mjs

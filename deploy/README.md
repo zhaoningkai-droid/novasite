@@ -1,5 +1,7 @@
 # 测试服务器部署包
 
+本目录也收录了可用于独立环境演练的 Compose 和备份工具。平台示例使用 `docker-compose.platform.yml` 与 `.env.platform.example`，单机起步示例使用 `docker-compose.single-ecs.yml` 与 `.env.single-ecs.example`。单机示例覆盖 Web、翻译进程、数据库和反向代理，现有生产实例的服务清单和运行配置以各自发布记录为准。
+
 > **历史测试配置，非当前生产部署配置。** 此目录的 Compose/Caddy 设置来自较早的单客户测试方案，未与 2026-10 生产环境逐项比对，不支持当前多租户正式站点，也不得对 `admin.o669.com` 或任何有客户数据的环境运行。只有在负责人确认配置并使用全新、可丢弃的测试环境后，才可另行使用。当前已观察到的生产拓扑摘要见 [`docs/SELF_HOSTING.md`](../docs/SELF_HOSTING.md)。
 
 本目录最初用于第 7 步的单一测试站点部署：Docker 运行 Payload/Next.js，Caddy 负责 HTTPS 与反向代理，PostgreSQL 使用独立持久卷。以下历史步骤只描述当时的测试方案，不代表现行可部署操作。

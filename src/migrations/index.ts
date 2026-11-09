@@ -43,6 +43,15 @@ import * as migration_20260909_010000_strength_item_images from './20260909_0100
 import * as migration_20260927_010000_template_catalog_and_history from './20260927_010000_template_catalog_and_history'
 import * as migration_20260927_010001_template_history_locked_document_relations from './20260927_010001_template_history_locked_document_relations'
 
+import * as migration_partial_tenant_locales from './20261108_010000_partial_tenant_locales'
+
+import * as migration_translation_retry_schedule from './20261108_020000_translation_retry_schedule'
+
+import * as migration_field_translation_previews from './20261108_030000_field_translation_previews'
+import * as migration_translation_assistant from './20261109_010000_translation_assistant'
+
+import * as migration_geo_generation_recovery from './20261108_040000_geo_generation_recovery'
+
 export const migrations = [
   {
     up: migration_20260905_153403_initial_platform_schema.up,
@@ -263,5 +272,30 @@ export const migrations = [
     up: migration_geo_detection_storage.up,
     down: migration_geo_detection_storage.down,
     name: '20261023_010000_geo_detection_storage',
+  },
+  {
+    up: migration_partial_tenant_locales.up,
+    down: migration_partial_tenant_locales.down,
+    name: '20261108_010000_partial_tenant_locales',
+  },
+  {
+    up: migration_translation_retry_schedule.up,
+    down: migration_translation_retry_schedule.down,
+    name: '20261108_020000_translation_retry_schedule',
+  },
+  {
+    up: migration_field_translation_previews.up,
+    down: migration_field_translation_previews.down,
+    name: '20261108_030000_field_translation_previews',
+  },
+  {
+    up: migration_geo_generation_recovery.up,
+    down: migration_geo_generation_recovery.down,
+    name: '20261108_040000_geo_generation_recovery',
+  },
+  {
+    up: migration_translation_assistant.up,
+    down: migration_translation_assistant.down,
+    name: '20261109_010000_translation_assistant',
   },
 ]

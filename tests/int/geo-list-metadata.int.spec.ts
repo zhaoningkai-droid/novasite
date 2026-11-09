@@ -116,7 +116,10 @@ describe('GEO list metadata from the requested task and creation-record columns'
     }
     const query = vi
       .fn()
-      .mockResolvedValueOnce({ rows: [{ total: 21, items: [{ ...row, settings, snapshot }] }] })
+      .mockResolvedValueOnce({ rows: [{ total: 21, items: [{
+        ...row, settings, snapshot,
+        optimization_version: 1, group_version: 1, group_type: 'group', group_archived: false, media_changed: false,
+      }] }] })
       .mockResolvedValueOnce({ rows: [{ dedup_key: key }] })
     const result = await createGeoTaskStore({ query, connect: vi.fn() }, 101, 1).list(
       '配电柜',
@@ -132,7 +135,7 @@ describe('GEO list metadata from the requested task and creation-record columns'
     })
     expect(result.items[0]).not.toHaveProperty('settings')
     expect(result.items[0]).not.toHaveProperty('snapshot')
-    expect(query.mock.calls[0][1]).toEqual([101, '配电柜', 10, 'zh', 10])
+    expect(query.mock.calls[0][1]).toEqual([101, '配电柜', 10, 'zh', 10, ['image/jpeg', 'image/png', 'image/webp']])
     expect(query.mock.calls[1][1][0]).toBe(101)
     const sql = query.mock.calls[0][0] as string
     expect(sql).toContain('p.tenant_id=t.tenant_id')

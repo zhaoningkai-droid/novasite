@@ -7,7 +7,7 @@ import type { PostgresAdapter } from '@payloadcms/db-postgres'
 import { geoKeywordsSchemaSQL } from '../src/platform/geo/schema'
 import { geoMaterialSchemaSQL } from '../src/platform/geo/material-schema'
 import { geoTaskSchemaSQL } from '../src/platform/geo/task-schema'
-import { geoArticleSchemaSQL } from '../src/platform/geo/article-schema'
+import { geoArticleSchemaSQL, geoGenerationRecoverySQL } from '../src/platform/geo/article-schema'
 import { createGeoKeywordStore } from '../src/platform/geo/keyword-store'
 import { createGeoMaterialStore } from '../src/platform/geo/material-store'
 import { createGeoSourceStore } from '../src/platform/geo/source-store'
@@ -34,7 +34,7 @@ try {
       alt text,filename text,url text,thumbnail_u_r_l text,mime_type text,filesize integer);
     INSERT INTO public.media VALUES(1001,101,'设备示意图','a.jpg','/api/media/file/a.jpg','','image/jpeg',100),
       (2001,202,'乙设备示意图','b.jpg','/api/media/file/b.jpg','','image/jpeg',100);`)
-  for (const sql of [geoKeywordsSchemaSQL,geoMaterialSchemaSQL,geoTaskSchemaSQL,geoArticleSchemaSQL]) await pool.query(sql)
+  for (const sql of [geoKeywordsSchemaSQL,geoMaterialSchemaSQL,geoTaskSchemaSQL,geoArticleSchemaSQL,geoGenerationRecoverySQL]) await pool.query(sql)
   const fingerprint = async () => JSON.stringify((await pool.query("SELECT md5(string_agg(to_jsonb(t)::text,'' ORDER BY id)) AS hash FROM public.media t")).rows)
   const before = await fingerprint()
   const terms = Array.from({length:10},(_,i)=>`类型${i}配电柜`)

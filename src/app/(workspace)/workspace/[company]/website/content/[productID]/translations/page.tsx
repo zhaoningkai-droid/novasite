@@ -26,5 +26,5 @@ export default async function ProductTranslationsPage({ params }: Props) {
     const summary = typeof product?.summary === 'string' ? product.summary : ''
     return { ...localeDefinitions[index], complete: Boolean(title.trim() && summary.trim()), summary, title }
   })
-  return <WorkspaceTranslations locales={locales} returnHref={`/workspace/${slug}/website/content`} saveURL={`/api/workspace/${slug}/products/${productID}/translations`} sourceLocale={company.defaultLocale} />
+  return <WorkspaceTranslations companySlug={slug} productID={productID} locales={locales} returnHref={`/workspace/${slug}/website/content`} saveURL={`/api/workspace/${slug}/products/${productID}/translations`} sourceLocale={company.defaultLocale} />
 }

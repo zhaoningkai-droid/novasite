@@ -4,9 +4,9 @@ import { settingsEditorRoles, workspaceSettingsScope } from '@/platform/workspac
 import { contentTranslationViews, queueContentTranslations } from '@/platform/content-translation/jobs'
 import { isTranslationResource } from '@/platform/content-translation/resources'
 import { runOneProductTranslation } from '@/platform/product-translation/jobs'
+import { translationBatchSize, validTranslationIDs } from '@/platform/product-translation/submission'
 
 type Context = { params: Promise<{ company: string; resource: string }> }
-const validIDs = (ids: unknown): ids is number[] => Array.isArray(ids) && ids.length > 0 && ids.length <= 50 && ids.every((id) => Number.isSafeInteger(id) && id > 0 && id <= 67108862)
 export const maxDuration = 240
 export async function GET(request: Request, { params }: Context) {
   const { company: slug, resource } = await params
@@ -14,7 +14,7 @@ export async function GET(request: Request, { params }: Context) {
   const scope = await workspaceSettingsScope(slug)
   if ('error' in scope) return scope.error
   const ids = (new URL(request.url).searchParams.get('ids') || '').split(',').map(Number)
-  if (!validIDs(ids)) return NextResponse.json({ message: '请选择需要翻译的内容。' }, { status: 422 })
+  if (!validTranslationIDs(ids, 50, 67108862)) return NextResponse.json({ message: '请选择需要翻译的内容。' }, { status: 422 })
   try {
     const company = await scope.payload.findByID({ collection: 'tenants', id: scope.company.id, depth: 0, overrideAccess: false, user: scope.user, context: { skipContentTranslationOverlay: true } })
     const result = await contentTranslationViews(scope.payload, company, scope.user, resource, [...new Set(ids)])
@@ -34,9 +34,9 @@ export async function POST(request: Request, { params }: Context) {
   if ('error' in scope) return scope.error
   if (Number(request.headers.get('content-length') || 0) > 5000) return NextResponse.json({ message: '提交内容过大。' }, { status: 413 })
   const body = await request.json().catch(() => null)
-  if (!validIDs(body?.ids)) return NextResponse.json({ message: '请选择1至50项内容。' }, { status: 422 })
+  if (!validTranslationIDs(body?.ids, translationBatchSize, 67108862)) return NextResponse.json({ message: `请选择 1 至 ${translationBatchSize} 项有效内容。` }, { status: 422 })
   const company = await scope.payload.findByID({ collection: 'tenants', id: scope.company.id, depth: 0, overrideAccess: false, user: scope.user, context: { skipContentTranslationOverlay: true } })
   const response = await queueContentTranslations({ ...scope, company, resource, ids: body.ids })
-  if (response.status === 202) after(async () => { try { await runOneProductTranslation(scope.payload); revalidatePath(`/workspace/${slug}/website`, 'layout') } catch { /* Durable worker resumes the stored task. */ } })
+  if (response.status === 202 && process.env.TRANSLATION_WEB_ASSIST_ENABLED === 'true') after(async () => { try { await runOneProductTranslation(scope.payload); revalidatePath(`/workspace/${slug}/website`, 'layout') } catch { /* Durable worker resumes the stored task. */ } })
   return response
 }

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { settingsEditorRoles, settingsAPIError, workspaceSettingsScope } from '@/platform/workspace-settings-api'
 import { isSiteLocale, localeEnglishNames } from '@/platform/site-locales'
-import { standaloneTranslationMeter, translationBudgetReady } from '@/platform/translation-usage/budget'
+import { standaloneTranslationMeter, translationUsageReady } from '@/platform/translation-usage/budget'
 import { fetchMeteredTranslation } from '@/platform/translation-usage/provider-meter'
 import { TranslationUsageError, normalizeTranslationUsage } from '@/platform/translation-usage/types'
 
@@ -51,7 +51,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ com
     const apiKey = process.env.DEEPSEEK_API_KEY
     const model = process.env.DEEPSEEK_MODEL || 'deepseek-flash'
     if (!apiKey) return NextResponse.json({ message: 'AI 翻译暂不可用，请联系管理员配置服务。' }, { status: 503 })
-    if (!(await translationBudgetReady(scope.payload))) return NextResponse.json({ message: '翻译用量保护尚未准备好，请联系管理员完成配置和批准后的安装。' }, { status: 503 })
+    if (!(await translationUsageReady(scope.payload))) return NextResponse.json({ message: '翻译用量记录暂不可用，请联系管理员。' }, { status: 503 })
 
     const response = await fetchMeteredTranslation(fetch, 'https://api.deepseek.com/chat/completions', {
       method: 'POST',
@@ -72,7 +72,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ com
     }, standaloneTranslationMeter(scope.payload, { tenantID: scope.company.id }))
     if (!response.ok) {
       if (response.status === 401) return NextResponse.json({ message: 'AI 翻译服务配置无效，请联系管理员。' }, { status: 503 })
-      if (response.status === 402) return NextResponse.json({ message: 'AI 翻译额度不足，请稍后再试。' }, { status: 503 })
+      if (response.status === 402) return NextResponse.json({ message: 'AI 服务账户余额不足，请联系管理员。' }, { status: 503 })
       if (response.status === 429) return NextResponse.json({ message: 'AI 翻译请求较多，请稍后重试。' }, { status: 429 })
       return NextResponse.json({ message: 'AI 翻译服务暂时不可用，请稍后重试。' }, { status: 502 })
     }

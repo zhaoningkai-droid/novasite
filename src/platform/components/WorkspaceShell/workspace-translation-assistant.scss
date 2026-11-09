@@ -24,3 +24,4 @@
 .workspace-translation-assistant__spinner { animation: ws-spin .8s linear infinite; }
 @media (max-width: 600px) { .workspace-translation-assistant__backdrop { padding: 10px; } .workspace-translation-assistant { padding: 16px; } }
 @media (prefers-reduced-motion: reduce) { .workspace-translation-assistant__spinner { animation-duration: 4s; } }
+.workspace-translation-assistant .workspace-translation-assistant__confirmation { display: flex; align-items: center; gap: 8px; }

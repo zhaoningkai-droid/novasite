@@ -8,6 +8,7 @@ export class TranslationProviderError extends Error {
     message: string,
     readonly code: string,
     readonly retryable = false,
+    readonly retryAfterAt?: number,
   ) {
     super(message)
   }
@@ -52,11 +53,20 @@ export function protectTranslationText(text: string) {
   }
 }
 
+function retryAfterAt(header: string | null) {
+  if (!header) return undefined
+  const timestamp = /^\d+$/.test(header) ? Date.now() + Number(header) * 1000 : Date.parse(header)
+  return Number.isFinite(timestamp) && timestamp < 8.64e15 ? timestamp : undefined
+}
+
 type Progress = (completed: Record<string, string>, done: number, total: number) => Promise<void>
 export type TranslationOptions = {
   fetcher?: typeof fetch
   checkpoint?: Record<string, string>
   onProgress?: Progress
+  onDispatch?: () => Promise<void>
+  onKnownFailure?: () => void
+  deferProviderRetries?: boolean
   signal?: AbortSignal
   context?: string
   retries?: number
@@ -139,13 +149,18 @@ export async function translateProductContent(
     .filter(Boolean)
     .join('\n')
     .slice(0, 2000)
-  const fetcher = options.fetcher || fetch
+  const fetcher: typeof fetch = async (input, init) => {
+    options.signal?.throwIfAborted()
+    await options.onDispatch?.()
+    return (options.fetcher || fetch)(input, init)
+  }
   const delay =
     options.delay || ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)))
   for (const batch of batches) {
     let translated: Record<string, string> | undefined
     for (let attempt = 0; attempt <= (options.retries ?? 2); attempt++) {
       options.signal?.throwIfAborted()
+      let responseReceived = false
       try {
         const protectedValues = batch.map((piece) => ({
           ...piece,
@@ -184,15 +199,17 @@ export async function translateProductContent(
             ],
           }),
         }, options.meter)
+        responseReceived = true
         if (!response.ok) {
           if (response.status === 401)
             throw new TranslationProviderError('AI服务密钥无效，请联系管理员。', 'PROVIDER_AUTH')
           if (response.status === 402)
-            throw new TranslationProviderError('AI服务额度不足，请联系管理员。', 'PROVIDER_BALANCE')
+            throw new TranslationProviderError('AI 服务账户余额不足，请联系管理员。', 'PROVIDER_BALANCE')
           throw new TranslationProviderError(
             response.status === 429 ? 'AI服务繁忙，稍后自动重试。' : 'AI服务暂时不可用。',
             `PROVIDER_${response.status}`,
             response.status === 429 || response.status >= 500,
+            retryAfterAt(response.headers.get('retry-after')),
           )
         }
         const result = (await response.json()) as {
@@ -231,9 +248,13 @@ export async function translateProductContent(
             ? error
             : error instanceof TranslationUsageError
               ? new TranslationProviderError(error.message, error.code)
-            : new TranslationProviderError('AI连接中断或响应超时。', 'PROVIDER_TIMEOUT', true)
-        if (!normalized.retryable || attempt === (options.retries ?? 2)) throw normalized
-        await delay(1000 * 2 ** attempt)
+            : responseReceived
+                ? new TranslationProviderError('AI 响应无法读取，结果需要确认。', 'PROVIDER_UNCERTAIN')
+                : new TranslationProviderError('AI 连接中断或超时，结果需要确认。', 'PROVIDER_UNCERTAIN')
+        if (responseReceived && normalized.code !== 'PROVIDER_UNCERTAIN') options.onKnownFailure?.()
+        const deferred = options.deferProviderRetries && /^PROVIDER_(429|5[0-9]{2})$/.test(normalized.code)
+        if (deferred || !normalized.retryable || attempt === (options.retries ?? 2)) throw normalized
+        await delay(Math.max(1000 * 2 ** attempt, (normalized.retryAfterAt ?? 0) - Date.now()))
       }
     }
     Object.assign(completed, translated)

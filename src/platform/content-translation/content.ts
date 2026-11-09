@@ -155,3 +155,34 @@ export function mergeContentPatch(base: Record<string, unknown>, patch: Record<s
     ? mergeContentPatch(objectValue(base[key]), value as Record<string, unknown>) : value
   return result
 }
+
+/** Tenant arrays share row identities across languages. Keep the target rows and hand-written values. */
+export function tenantTranslationWrite(
+  source: ContentSnapshot,
+  translated: Record<string, unknown>,
+  target: Record<string, unknown>,
+) {
+  const write: Record<string, unknown> = {}
+  for (const entry of source.entries) {
+    if (entry.overlay || typeof valueAt(translated, entry.path) !== 'string') continue
+    const targetPath: Path = []
+    for (const part of entry.path) {
+      if (typeof part !== 'number') {
+        targetPath.push(part)
+        continue
+      }
+      const rowID = objectValue(valueAt(source.write, entry.path.slice(0, targetPath.length + 1))).id
+      const rows = valueAt(target, targetPath)
+      const index = rowID && Array.isArray(rows)
+        ? rows.findIndex((row) => objectValue(row).id === rowID)
+        : -1
+      if (!Array.isArray(rows) || index < 0) return null
+      if (valueAt(write, targetPath) === undefined) setValueAt(write, targetPath, clone(rows))
+      targetPath.push(index)
+    }
+    const existing = valueAt(target, targetPath)
+    if (typeof existing === 'string' && existing.trim()) continue
+    setValueAt(write, targetPath, valueAt(translated, entry.path))
+  }
+  return write
+}

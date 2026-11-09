@@ -4,7 +4,12 @@ import { Copy, Search, X } from 'lucide-react'
 import { useEffect, useRef, useState, type ClipboardEvent, type FormEvent } from 'react'
 import type { WorkspaceCompany } from '@/platform/workspace'
 import type { GeoArticleListItem, GeoArticleUseFilter } from '@/platform/geo/article-store'
-import { cleanGeoArticleHTML, escapeGeoHTML, type GeoArticle } from '@/platform/geo/articles'
+import {
+  cleanGeoArticleHTML,
+  escapeGeoHTML,
+  MAX_GEO_ARTICLE_SUMMARY_LENGTH,
+  type GeoArticle,
+} from '@/platform/geo/articles'
 import { useWorkspaceUnsaved } from '../WorkspaceEditor/useWorkspaceUnsaved'
 import { GeoRichTextToolbar } from './GeoRichTextToolbar'
 import './geo-workspace.scss'
@@ -336,7 +341,7 @@ export function GeoArticles({
               <label htmlFor="article-summary">摘要</label>
               <textarea
                 id="article-summary"
-                maxLength={1600}
+                maxLength={MAX_GEO_ARTICLE_SUMMARY_LENGTH}
                 rows={3}
                 value={form.summary}
                 onChange={(e) => change({ summary: e.target.value })}

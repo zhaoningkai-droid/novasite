@@ -7,6 +7,9 @@ import type { WorkspaceCompany } from '@/platform/workspace'
 import { localeOptions } from '@/platform/site-locales'
 import type { GeoKeyword } from '@/platform/geo/keywords'
 import type { GeoAIOperation } from '@/platform/geo/ai-store'
+import type { GeoGenerationBatch } from '@/platform/geo/article-store'
+import type { GeoGenerationHealth } from '@/platform/geo/generation-health'
+import { geoGenerationConfigErrors } from '@/platform/geo/generation-retry'
 import {
   editGeoQuestionLines,
   mergeGeoQuestionResults,
@@ -42,6 +45,18 @@ type TaskItem = {
   used_count: number
   related_plan_count: number
   generation_state: string
+  generation_blocker?: { code: string; message: string }
+}
+type GenerationJob = {
+  id: string
+  question: string
+  state: string
+  message: string | null
+  error_code: string | null
+  next_run_at: string | null
+  updated_at: string
+  article_id: string | null
+  attempts: unknown[]
 }
 type RelatedPlan = {
   id: string
@@ -137,6 +152,52 @@ export function GeoCreation({
     relatedPlanDialog = useRef<HTMLDialogElement | null>(null)
   const [generationTarget, setGenerationTarget] = useState<TaskItem | null>(null),
     [generationCount, setGenerationCount] = useState<number | ''>(1)
+  const generationHistoryDialog = useRef<HTMLDialogElement>(null)
+  const [historyTask, setHistoryTask] = useState<TaskItem | null>(null)
+  const [historyJobs, setHistoryJobs] = useState<GenerationJob[] | null>(null)
+  const [historyError, setHistoryError] = useState('')
+  const [historyRetryError, setHistoryRetryError] = useState('')
+  const [historyHealth, setHistoryHealth] = useState<GeoGenerationHealth | null>(null)
+  const [historyBatch, setHistoryBatch] = useState<GeoGenerationBatch | null>(null)
+  const [historyReload, setHistoryReload] = useState(0)
+  useEffect(() => {
+    if (!historyTask) return
+    if (!generationHistoryDialog.current?.open) generationHistoryDialog.current?.showModal()
+    const controller = new AbortController()
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let wasPending = false
+    const load = async () => {
+      try {
+        const result = await readJSON(`${endpoint}/generation?taskID=${encodeURIComponent(historyTask.id)}`, { signal: controller.signal })
+        if (controller.signal.aborted) return
+        const jobs: GenerationJob[] = result.items
+        setHistoryJobs(jobs)
+        setHistoryHealth(result.health)
+        setHistoryBatch(result.batch)
+        setHistoryError('')
+        if (result.batch?.pending || jobs.some((job) => job.state === 'queued' || job.state === 'running')) {
+          wasPending = true
+          timer = setTimeout(load, 5000)
+        } else if (wasPending) {
+          setReload((value) => value + 1)
+        }
+      } catch (error) {
+        if (controller.signal.aborted) return
+        setHistoryError(error instanceof Error ? error.message : '生成记录暂不可用。')
+        timer = setTimeout(load, 10000)
+      }
+    }
+    void load()
+    return () => { controller.abort(); clearTimeout(timer) }
+  }, [endpoint, historyTask, historyReload])
+  const openGenerationHistory = (item: TaskItem) => {
+    setHistoryJobs(null)
+    setHistoryHealth(null)
+    setHistoryBatch(null)
+    setHistoryError('')
+    setHistoryRetryError('')
+    setHistoryTask(item)
+  }
   const active = useRef(true),
     lock = useRef(false),
     mutation = useRef<AbortController | null>(null)
@@ -456,6 +517,18 @@ export function GeoCreation({
     setSourceText('')
     setTranslatedText('')
   }
+  const adoptCurrentConfig = () => {
+    if (!draft || !selectedConfig || selectedConfig.id !== draft.optimizationID) return
+    const allowed = new Set([selectedConfig.core, ...selectedConfig.terms])
+    const questions = draft.questions.filter((question) => allowed.has(question.term))
+    const removed = draft.questions.length - questions.length
+    if (removed && !window.confirm(`${removed} 条问题使用了已移除的关键词。采用最新配置会从当前草稿移除这些问题，已保存的历史不受影响。继续吗？`)) return
+    setSelectedTerms([...new Set([selectedConfig.core, ...questions.map((question) => question.term)])])
+    if (removed) replaceQuestions(questions)
+    aiRequest.current = null
+    patch({ optimizationVersion: selectedConfig.version })
+    setNotice('已采用最新优化词配置，请保存任务后再生成。')
+  }
   const mergeQuestions = (questions: GeoQuestion[]) => {
     if (!draft) return
     const result = mergeGeoQuestionResults(draft.questions, questions)
@@ -511,6 +584,26 @@ export function GeoCreation({
       lock.current = false
       if (active.current) setBusy(false)
     }
+  }
+  const retryGeneration = (job: GenerationJob) => {
+    const acknowledgeUnknown = job.state === 'unknown'
+    if (acknowledgeUnknown && !window.confirm('前次模型调用可能已发生并产生用量。确认重新排队？新生成的文章将进入待审核。')) return
+    void action(async (signal) => {
+      setHistoryRetryError('')
+      try {
+        await readJSON(`${endpoint}/generation`, {
+          signal,
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'retry', jobID: job.id, acknowledgeUnknown }),
+        })
+        if (signal.aborted) return
+        setHistoryReload((value) => value + 1)
+        setReload((value) => value + 1)
+      } catch (cause) {
+        if (!signal.aborted) setHistoryRetryError(cause instanceof Error ? cause.message : '重试提交失败。')
+      }
+    })
   }
   const copyTask = (item: TaskItem) =>
     action(async (signal) => {
@@ -569,7 +662,7 @@ export function GeoCreation({
       })
       generationRequests.current.delete(requestKey)
       generationDialog.current?.close()
-      setNotice(`已提交${result.count || 0}篇文章生成。`)
+      if (result.count > 0) openGenerationHistory(item)
       setReload((value) => value + 1)
     })
   const selectableItems = items.filter((item) => item.related_plan_count === 0)
@@ -691,6 +784,7 @@ export function GeoCreation({
     queued: '排队中',
     running: '生成中',
     failed: '生成失败',
+    partial: '部分生成成功',
     unknown: '结果待确认',
     succeeded: '已生成',
   }
@@ -1058,7 +1152,7 @@ export function GeoCreation({
                         <button
                           type="button"
                           className="geo-workspace__link"
-                          onClick={() => selectConfig(selectedConfig.id)}
+                          onClick={adoptCurrentConfig}
                         >
                           使用最新配置
                         </button>
@@ -1428,11 +1522,11 @@ export function GeoCreation({
                     </td>
                     <td>{item.used_count ?? 0}/篇</td>
                     <td>
-                      {item.status === 'ready'
+                      {item.generation_blocker?.message || (item.status === 'ready'
                         ? ['queued', 'running'].includes(item.generation_state)
                           ? '生成中'
                           : generationLabels[item.generation_state] || '未生成'
-                        : '待生成'}
+                        : '待生成')}
                     </td>
                     <td>
                       {item.related_plan_count ? (
@@ -1468,14 +1562,19 @@ export function GeoCreation({
                         <Link
                           href={`${base}/${item.id}${item.related_plan_count ? '?view=1' : ''}`}
                         >
-                          {item.related_plan_count ? '查看' : '编辑'}
+                          {item.related_plan_count ? '查看' : item.generation_blocker ? '更新配置' : '编辑'}
                         </Link>
                         <Link
                           href={`${articlesBase}?taskID=${encodeURIComponent(item.id)}`}
                           title={`查看“${item.name}”生成的文章`}
                         >
-                          记录
+                          文章
                         </Link>
+                        {item.generation_state !== 'idle' && (
+                          <button type="button" className="geo-workspace__link" onClick={() => openGenerationHistory(item)}>
+                            生成记录
+                          </button>
+                        )}
                         <details className="geo-creation__task-menu">
                           <summary aria-label={`更多任务操作：${item.name}`}>⋯</summary>
                           <div>
@@ -1573,6 +1672,57 @@ export function GeoCreation({
         </div>
       )}
       <dialog
+        ref={generationHistoryDialog}
+        className="geo-workspace__dialog"
+        aria-labelledby="geo-generation-history-title"
+        onClose={() => setHistoryTask(null)}
+      >
+        <header>
+          <h2 id="geo-generation-history-title">生成记录</h2>
+          <button type="button" aria-label="关闭生成记录" onClick={() => generationHistoryDialog.current?.close()}>×</button>
+        </header>
+        <p>{historyTask?.name} · 最近 100 条</p>
+        {historyError && <p role="alert">{historyError}</p>}
+        {historyRetryError && <p role="alert">{historyRetryError}</p>}
+        {!historyJobs && !historyError && <p>正在读取…</p>}
+        {historyJobs?.length === 0 && <p>暂无生成记录。</p>}
+        {historyBatch && <p>最近一批：{historyBatch.succeeded} 成功 / {historyBatch.pending} 待处理 / {historyBatch.failed} 失败 / {historyBatch.unknown} 待确认</p>}
+        {historyJobs?.some((job) => job.state === 'queued' || job.state === 'running') && (
+          <p>{historyHealth?.workerReady === true ? '后台任务已排队或正在处理，可以离开页面。'
+            : historyHealth?.workerReady === false ? '生成进程心跳已过期，任务仍保留在队列中。'
+              : '任务已入队，暂时无法确认生成进程状态。'}</p>
+        )}
+        {historyHealth && (
+          <details>
+            <summary>当前公司的队列状态</summary>
+            {historyHealth.oldestQueuedAt && <p>最早入队：{new Date(historyHealth.oldestQueuedAt).toLocaleString()}</p>}
+            {historyHealth.lastClaimedAt && <p>最近领取：{new Date(historyHealth.lastClaimedAt).toLocaleString()}</p>}
+            {historyHealth.lastSucceededAt && <p>最近成功：{new Date(historyHealth.lastSucceededAt).toLocaleString()}</p>}
+          </details>
+        )}
+        <ul>
+          {historyJobs?.map((job) => {
+            const configChanged = geoGenerationConfigErrors.includes(job.error_code || '')
+            return (
+              <li key={job.id}>
+                <strong>{job.question}</strong> · {generationLabels[job.state] || job.state}
+                <div>{new Date(job.updated_at).toLocaleString()}{job.message ? ` · ${job.message}` : ''}</div>
+                {job.state === 'queued' && job.next_run_at && <div>预计重试：{new Date(job.next_run_at).toLocaleString()}</div>}
+                {job.state === 'failed' && job.attempts.length === 0 && <div>此记录没有发起模型调用。</div>}
+                {job.state === 'unknown' && <div>前次模型可能已调用，请先核对结果。</div>}
+                {job.article_id ? <Link href={`${articlesBase}/${encodeURIComponent(job.article_id)}`}>打开文章</Link>
+                  : configChanged && historyTask ? <Link href={`${base}/${historyTask.id}${historyTask.related_plan_count ? '?view=1' : ''}`}>
+                    {historyTask.related_plan_count ? '查看任务配置' : '更新任务配置'}
+                  </Link>
+                    : ['failed', 'unknown'].includes(job.state) && <button type="button" className="geo-workspace__link" disabled={busy} onClick={() => retryGeneration(job)}>
+                      {job.state === 'unknown' ? '确认后重试' : '重试'}
+                    </button>}
+              </li>
+            )
+          })}
+        </ul>
+      </dialog>
+      <dialog
         ref={generationDialog}
         className="geo-workspace__dialog geo-creation__generation-dialog"
         aria-labelledby="geo-generation-count-title"
@@ -1589,6 +1739,7 @@ export function GeoCreation({
             ×
           </button>
         </header>
+        {generationTarget && error && <p className="geo-workspace__error" role="alert">{error}</p>}
         {generationTarget && (
           <form
             onSubmit={(event) => {

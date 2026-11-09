@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { stat } from 'node:fs/promises'
-import path from 'node:path'
+import { geoGenerationHealth } from './generation-health'
 import type { PostgresAdapter } from '@payloadcms/db-postgres'
 import { workspaceSettingsScope, settingsEditorRoles } from '../workspace-settings-api'
 import { assertGeoWriteRequest, readGeoBody, geoAPIError, geoReply } from './keyword-api'
@@ -10,6 +9,8 @@ import { geoPublicationLinks, parseArticleContent, type ArticleContext } from '.
 import { refreshArticleContext } from './article-context'
 import { isSiteLocale } from '../site-locales'
 import { geoTaskText, type GeoQuestion } from './tasks'
+
+const MAX_GEO_ARTICLE_REQUEST_BYTES = 16 * 1024 * 1024
 
 async function manualArticleContext(
   pool: PostgresAdapter['pool'],
@@ -122,18 +123,6 @@ async function manualArticleContext(
   context.publicationLinks = geoPublicationLinks(context.optimization, term)
   return context
 }
-export async function geoArticleWorkerReady() {
-  try {
-    return (
-      Date.now() -
-        (await stat(path.join(process.cwd(), '.codex-runtime/geo-article-worker.heartbeat')))
-          .mtimeMs <
-      35000
-    )
-  } catch {
-    return false
-  }
-}
 export async function handleGeoGeneration(request: Request, company: string) {
   const requestId = randomUUID()
   try {
@@ -141,25 +130,25 @@ export async function handleGeoGeneration(request: Request, company: string) {
     const scope = await workspaceSettingsScope(company, settingsEditorRoles)
     if (scope.error)
       return geoReply({ ...(await scope.error.json()), requestId }, scope.error.status)
-    const store = createGeoArticleStore(
-      (scope.payload.db as unknown as PostgresAdapter).pool,
-      scope.company.id,
-      scope.user.id,
-    )
-    if (request.method === 'GET')
-      return geoReply({
-        items: await store.jobs(geoID(new URL(request.url).searchParams.get('taskID'))),
-        workerReady: await geoArticleWorkerReady(),
-        requestId,
-      })
+    const pool = (scope.payload.db as unknown as PostgresAdapter).pool
+    const store = createGeoArticleStore(pool, scope.company.id, scope.user.id)
+    if (request.method === 'GET') {
+      const taskID = geoID(new URL(request.url).searchParams.get('taskID'))
+      const items = await store.jobs(taskID)
+      const [health, batch] = await Promise.all([
+        geoGenerationHealth(pool, scope.company.id),
+        items[0] ? store.batch(taskID, items[0].request_id) : null,
+      ])
+      return geoReply({ items, batch, health, workerReady: health?.workerReady ?? null, requestId })
+    }
     if (request.method !== 'POST') throw new GeoError('METHOD_NOT_ALLOWED', '不支持此操作。', 405)
     const b = await readGeoBody(request)
-    if (b.action === 'retry') {
-      await store.retry(geoID(b.jobID), b.acknowledgeUnknown === true)
-      return geoReply({ message: '该条记录已重新排队，不覆盖已生成文章。', requestId })
-    }
     if (!process.env.DEEPSEEK_API_KEY)
       throw new GeoError('AI_NOT_CONFIGURED', '正文生成服务尚未配置。', 503)
+    if (b.action === 'retry') {
+      await store.retry(geoID(b.jobID), b.acknowledgeUnknown === true)
+      return geoReply({ message: '该条记录已重新排队，生成成功后进入待审核。', requestId })
+    }
     const result = await store.enqueue(
       geoID(b.requestId),
       geoID(b.taskID),
@@ -169,7 +158,6 @@ export async function handleGeoGeneration(request: Request, company: string) {
     return geoReply(
       {
         ...result,
-        workerReady: await geoArticleWorkerReady(),
         message: '生成任务已排队，可在生成记录查看进度。',
         requestId,
       },
@@ -239,7 +227,7 @@ export async function handleGeoArticles(request: Request, company: string, id?: 
       })
     }
     if (request.method === 'POST' && !id) {
-      const b = await readGeoBody(request, 262144)
+      const b = await readGeoBody(request, MAX_GEO_ARTICLE_REQUEST_BYTES)
       const parsed = parseArticleContent(b)
       const content = {
         ...parsed,
@@ -270,7 +258,7 @@ export async function handleGeoArticles(request: Request, company: string, id?: 
     }
     if (request.method !== 'PATCH' || !id)
       throw new GeoError('METHOD_NOT_ALLOWED', '不支持此操作。', 405)
-    const b = await readGeoBody(request, 262144),
+    const b = await readGeoBody(request, MAX_GEO_ARTICLE_REQUEST_BYTES),
       key = geoID(id),
       version = geoVersion(b.version)
     if ('context' in b || 'snapshot' in b || 'status' in b)

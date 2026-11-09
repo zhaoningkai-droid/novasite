@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import type { PostgresAdapter } from '@payloadcms/db-postgres'
 import { GeoError } from './keywords'
 import type { ArticleContext } from './articles'
-import { assertArticleMedia } from './article-context'
+import { assertArticleMedia, assertGenerationSnapshot } from './article-context'
 import type { generateGeoArticle } from './article-provider'
 import type { TranslationRequestUsage } from '../translation-usage/types'
 type Pool = Pick<PostgresAdapter['pool'], 'query' | 'connect'>
@@ -16,6 +16,8 @@ export type GeoGenerationJob = {
   context: ArticleContext
   lease_owner: string
   current_attempt: string | null
+  authorization_retries: number
+  requires_review: boolean
 }
 export function createGeoGenerationQueue(pool: Pool) {
   const lease = async (job: GeoGenerationJob) =>
@@ -54,10 +56,10 @@ export function createGeoGenerationQueue(pool: Pool) {
         const row = (
           await client.query<GeoGenerationJob>(
             `WITH candidate AS (SELECT j.id FROM platform_geo.generation_jobs j
-          WHERE j.state='queued' AND NOT EXISTS(SELECT 1 FROM platform_geo.generation_jobs r WHERE r.tenant_id=j.tenant_id AND r.state='running')
+          WHERE j.state='queued' AND (j.next_run_at IS NULL OR j.next_run_at<=clock_timestamp()) AND NOT EXISTS(SELECT 1 FROM platform_geo.generation_jobs r WHERE r.tenant_id=j.tenant_id AND r.state='running')
           ORDER BY created_at,id FOR UPDATE SKIP LOCKED LIMIT 1)
           UPDATE platform_geo.generation_jobs j SET state='running',lease_owner=$1::uuid,
-          lease_until=clock_timestamp()+interval '240 seconds',updated_at=now() FROM candidate c WHERE j.id=c.id RETURNING j.*`,
+          lease_until=clock_timestamp()+interval '240 seconds',next_run_at=NULL,last_claimed_at=clock_timestamp(),updated_at=now() FROM candidate c WHERE j.id=c.id RETURNING j.*`,
             [randomUUID()],
           )
         ).rows[0]
@@ -69,6 +71,17 @@ export function createGeoGenerationQueue(pool: Pool) {
       } finally {
         client.release()
       }
+    },
+    async deferAuthorization(job: GeoGenerationJob, delaySeconds: number) {
+      await pool.query(
+        `UPDATE platform_geo.generation_jobs SET state='queued',
+          next_run_at=clock_timestamp()+$4::int*interval '1 second',authorization_retries=authorization_retries+1,
+          error_code='AUTH_LOOKUP_UNAVAILABLE',message='暂时无法核对账号权限，后台将自动重试。',
+          lease_owner=NULL,lease_until=NULL,updated_at=now()
+        WHERE tenant_id=$1 AND id=$2::uuid AND lease_owner=$3::uuid AND state='running'
+          AND lease_until>clock_timestamp() AND current_attempt IS NULL`,
+        [job.tenant_id, job.id, job.lease_owner, delaySeconds],
+      )
     },
     async dispatch(job: GeoGenerationJob, context: ArticleContext, model: string) {
       const client = await pool.connect(),
@@ -84,7 +97,8 @@ export function createGeoGenerationQueue(pool: Pool) {
           )
         ).rows[0]
         if (!row) throw new GeoError('LEASE_LOST', '生成执行权已失效，未重复调用。', 409)
-        await assertArticleMedia(client, job.tenant_id, context)
+        await assertGenerationSnapshot(client, job.tenant_id, context, true)
+        await assertArticleMedia(client, job.tenant_id, context, true)
         await client.query(
           `INSERT INTO platform_geo.generation_attempts(id,tenant_id,job_id,actor_id,model,state) VALUES($1::uuid,$2,$3::uuid,$4,$5,'running')`,
           [attempt, job.tenant_id, job.id, job.actor_id, model],
@@ -155,7 +169,7 @@ export function createGeoGenerationQueue(pool: Pool) {
               JSON.stringify(output.content.issues),
               JSON.stringify(output.warnings),
               job.actor_id,
-              output.content.issues.length ? 'needs_edit' : 'ready',
+              job.requires_review || output.content.issues.length ? 'needs_edit' : 'ready',
             ],
           )
         ).rows[0]

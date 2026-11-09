@@ -95,23 +95,6 @@ const mediaScanLimit = process.env.MEDIA_REFERENCE_SCAN_LIMIT || '5000'
 if (!/^\d+$/.test(mediaScanLimit) || !Number.isSafeInteger(Number(mediaScanLimit)) || Number(mediaScanLimit) < 100 || Number(mediaScanLimit) > 50000) errors.push('MEDIA_REFERENCE_SCAN_LIMIT 必须为100至50000的整数。')
 if (process.env.MEDIA_PRIVATE_DIRECTORY && (!process.env.MEDIA_PRIVATE_DIRECTORY.startsWith('/') || /[\u0000-\u001f\u007f]/.test(process.env.MEDIA_PRIVATE_DIRECTORY))) errors.push('MEDIA_PRIVATE_DIRECTORY 必须是私有目录的绝对路径。')
 if (process.env.PRODUCT_TRANSLATION_QUEUE_ENABLED !== 'true') errors.push('必须启用持久翻译任务。')
-if (process.env.TRANSLATION_BUDGET_ENABLED !== 'true') errors.push('正式部署必须在批准安装用量表后启用 TRANSLATION_BUDGET_ENABLED。')
-const translationLimits = Object.fromEntries([
-  ['TRANSLATION_GLOBAL_DAILY_UNITS', 1_000_000_000],
-  ['TRANSLATION_GLOBAL_MONTHLY_UNITS', 10_000_000_000],
-  ['TRANSLATION_COMPANY_DAILY_UNITS', 1_000_000_000],
-  ['TRANSLATION_COMPANY_MONTHLY_UNITS', 10_000_000_000],
-  ['TRANSLATION_MAX_REQUESTS_PER_JOB', 1000],
-].map(([name, maximum]) => {
-  const value = process.env[name] || ''
-  const number = Number(value)
-  if (!/^\d+$/.test(value) || !Number.isSafeInteger(number) || number < 1 || number > maximum) errors.push(`${name} 必须填写有效的正整数额度。`)
-  return [name, number]
-}))
-if (translationLimits.TRANSLATION_GLOBAL_DAILY_UNITS > translationLimits.TRANSLATION_GLOBAL_MONTHLY_UNITS ||
-    translationLimits.TRANSLATION_COMPANY_DAILY_UNITS > translationLimits.TRANSLATION_COMPANY_MONTHLY_UNITS ||
-    translationLimits.TRANSLATION_COMPANY_DAILY_UNITS > translationLimits.TRANSLATION_GLOBAL_DAILY_UNITS ||
-    translationLimits.TRANSLATION_COMPANY_MONTHLY_UNITS > translationLimits.TRANSLATION_GLOBAL_MONTHLY_UNITS) errors.push('翻译每日/每月额度关系不正确，公司额度不得超过平台额度。')
 if (process.env.INQUIRY_PERSISTENCE_ENABLED !== 'true') errors.push('正式部署必须在迁移后启用持久询盘 INQUIRY_PERSISTENCE_ENABLED。')
 if (process.env.INQUIRY_NOTIFICATIONS_ENABLED === 'true') {
   const smtpHost = requireValue('SMTP_HOST')

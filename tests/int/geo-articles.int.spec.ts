@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   articleDirection,
   cleanGeoArticleHTML,
+  parseArticleContent,
   validateGeoArticle,
   type ArticleContext,
 } from '../../src/platform/geo/articles'
@@ -159,7 +160,13 @@ describe('GEO article references, media and readiness constraints', () => {
     )
     expect(result.issues.join('')).toContain('2张')
   })
-  it('blocks unsupported numbers, incompatible scripts and oversized bodies', () => {
+  it('flags unsupported numbers, incompatible scripts and short bodies, and accepts long bodies', () => {
+    expect(
+      validateGeoArticle(
+        { title: 'Cabinet', summary: '', html: `<p><a href="${source.url}">Reference</a></p>` },
+        context,
+      ).issues.join(''),
+    ).toContain('长度')
     expect(
       validateGeoArticle(
         { title: '9999 patents', summary: '', html: validHTML },
@@ -177,11 +184,9 @@ describe('GEO article references, media and readiness constraints', () => {
       ).issues.join(''),
     ).toContain('语言')
     expect(
-      validateGeoArticle(
-        { title: 'Cabinet', summary: '', html: validHTML.repeat(15) },
-        context,
-      ).issues.join(''),
-    ).toContain('长度')
+      validateGeoArticle({ title: 'Cabinet', summary: '', html: validHTML.repeat(15) }, context)
+        .issues,
+    ).toEqual([])
   })
   it('requires particular evidence for rankings, experiences and news; matching is deterministic', () => {
     for (const direction of ['企业榜单', '体验分享', '新闻报道', '企业推荐'])
@@ -375,6 +380,58 @@ describe('keyword writing without website evidence', () => {
 })
 
 describe('complete template rendering', () => {
+  it('retains long multiline prose and accepts sparse model sections without a second call', async () => {
+    const keyword = {
+      ...buildArticleContext(settings, snapshot, settings.questions[0]),
+      settings: { ...settings, locale: 'zh' as const },
+    }
+    const longText = '工业设备选型时，应先核对安装条件和制造商资料。'.repeat(4700)
+    const fetcher = provider({
+      title: '工业设备选型',
+      summary: '首先核对安装条件。\n再确认设备尺寸。',
+      sections: [
+        { heading: '空白章节', paragraphs: [] },
+        {
+          heading: '安装条件',
+          paragraphs: [null, { text: ' ' }, { content: `安装前准备。\r\n${longText}最终核对。` }],
+        },
+        {
+          heading: '实用建议',
+          body: '请逐项核对现场安装空间。',
+          subsections: [{ heading: '空白小节' }],
+        },
+      ],
+    })
+    const { content } = await generateGeoArticle(keyword, {
+      key: 'fixture',
+      model: 'fixture',
+      fetcher,
+      onUsage: async () => {},
+    })
+    expect(content.html).toContain(`<p>安装前准备。<br>${longText}最终核对。</p>`)
+    expect(content.html).toContain('<p>请逐项核对现场安装空间。</p>')
+    expect(content.html).not.toMatch(/空白章节|空白小节/u)
+    expect(content.issues).toEqual([])
+    expect(content.html.length).toBeGreaterThan(100000)
+    expect(parseArticleContent(content).html).toBe(content.html)
+    expect(fetcher).toHaveBeenCalledTimes(1)
+  })
+
+  it('reports an empty article separately from an empty section', async () => {
+    const keyword = buildArticleContext(settings, snapshot, settings.questions[0])
+    await expect(
+      generateGeoArticle(keyword, {
+        key: 'fixture',
+        model: 'fixture',
+        onUsage: async () => {},
+        fetcher: provider({
+          ...output(),
+          sections: [{ heading: 'Outline', paragraphs: ['\n', null] }],
+        }),
+      }),
+    ).rejects.toMatchObject({ code: 'EMPTY_ARTICLE_BODY' })
+  })
+
   it('keeps long bodies, many chapters, nested questions and complete tables', async () => {
     const keyword = {
       ...buildArticleContext(settings, snapshot, settings.questions[0]),

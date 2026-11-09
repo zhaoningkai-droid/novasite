@@ -3,6 +3,8 @@ import { geoTaskText } from './tasks'
 import {
   appendGeoPublicationLinks,
   escapeGeoHTML,
+  MAX_GEO_ARTICLE_HTML_LENGTH,
+  MAX_GEO_ARTICLE_SUMMARY_LENGTH,
   validateGeoArticle,
   type ArticleContext,
 } from './articles'
@@ -21,6 +23,22 @@ type ArticleProviderOptions = {
   onUsage: (usage?: TranslationRequestUsage) => Promise<void>
 }
 type ArticleMessage = { role: string; content: string }
+
+function articleText(value: unknown): string {
+  if (typeof value === 'string') {
+    return value
+      .replace(/\r\n?/gu, '\n')
+      .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/gu, ' ')
+      .trim()
+  }
+  if (Array.isArray(value)) return value.map(articleText).filter(Boolean).join('\n')
+  if (!value || typeof value !== 'object') return ''
+  const block = value as Record<string, unknown>
+  return articleText(block.text) || articleText(block.content) || articleText(block.body)
+}
+
+const proseHTML = (text: string) => escapeGeoHTML(text).replace(/\n/gu, '<br>')
+
 function parseArticleObject(content: string) {
   const text = content.trim()
   const fenced = text.match(/^```(?:json)?\s*\n?([\s\S]*?)\n?\s*```$/i)
@@ -183,8 +201,13 @@ export async function generateGeoArticle(context: ArticleContext, options: Artic
     }
   }
   const title = geoTaskText(output.title, '文章标题', 180),
-    summary = geoTaskText(output.summary, '摘要', 12000, true)
-  if (!Array.isArray(output.sections) || output.sections.length < 2)
+    summary = geoTaskText(
+      articleText(output.summary).replace(/\s+/gu, ' '),
+      '摘要',
+      MAX_GEO_ARTICLE_SUMMARY_LENGTH,
+      true,
+    )
+  if (!Array.isArray(output.sections) || output.sections.length < (keywordWriting ? 1 : 2))
     throw new GeoError('INVALID_SECTIONS', '正文缺少必要章节。', 502)
   const selectedDirection =
     context.direction === 'AI匹配' &&
@@ -194,27 +217,41 @@ export async function generateGeoArticle(context: ArticleContext, options: Artic
       ? String(output.selectedDirection)
       : context.direction
   let html = keywordWriting && summary ? `<p>${escapeGeoHTML(summary)}</p>` : ''
-  function renderSection(section: Record<string, unknown>, level: number) {
-    const paragraphs = Array.isArray(section.paragraphs) ? section.paragraphs : []
+  function append(fragment: string) {
+    if (html.length + fragment.length > MAX_GEO_ARTICLE_HTML_LENGTH)
+      throw new GeoError('OUTPUT_TOO_LARGE', '正文数据超过处理容量。', 502)
+    html += fragment
+  }
+  function renderSection(section: Record<string, unknown>, level: number): boolean {
+    const prose = section.paragraphs
+    const paragraphs = Array.isArray(prose) ? prose : keywordWriting ? [prose] : []
     if (!keywordWriting && paragraphs.length > 6)
       throw new GeoError('INVALID_PARAGRAPHS', '正文段落结构不正确。', 502)
     if (!keywordWriting && (section.bullets !== undefined || section.table !== undefined))
       throw new GeoError('INVALID_SECTIONS', '来源核查模式不接受未逐段引用依据的列表或表格。', 502)
     let sectionContent = false
     for (const raw of paragraphs) {
-      const p = typeof raw === 'string' ? { text: raw } : geoObject(raw)
-      if (keywordWriting && p.text == null && (p.table || p.bullets)) {
-        renderSection(p, level)
-        sectionContent = true
-        continue
-      }
-      const text = geoTaskText(p.text, '段落', keywordWriting ? 100000 : 2500)
-      sectionContent = true
       if (keywordWriting) {
-        html += `<p>${escapeGeoHTML(text)}</p>`
+        const text = articleText(raw)
+        if (text) {
+          append(`<p>${proseHTML(text)}</p>`)
+          sectionContent = true
+        }
+        if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+          const { table, bullets } = geoObject(raw)
+          if (table || bullets)
+            sectionContent = renderSection({ table, bullets }, level) || sectionContent
+        }
         continue
       }
-      const quote = geoTaskText(p.quote, '事实依据摘录', 800)
+      const p = geoObject(raw)
+      const text = typeof p.text === 'string' ? articleText(p.text) : ''
+      if (!text) throw new GeoError('INVALID_PARAGRAPHS', '正文段落缺少文字。', 502)
+      const quote = geoTaskText(
+        typeof p.quote === 'string' ? p.quote.replace(/\s+/gu, ' ').trim() : p.quote,
+        '事实依据摘录',
+        800,
+      )
       const sourceIndex = context.sources.findIndex((_s, i) => `S${i + 1}` === p.sourceID),
         source = context.sources[sourceIndex]
       if (!source || !source.excerpt.replace(/\s+/gu, ' ').includes(quote.replace(/\s+/gu, ' ')))
@@ -224,17 +261,24 @@ export async function generateGeoArticle(context: ArticleContext, options: Artic
           502,
         )
       const citationLabel = source.title.split(/\s+[-|｜]\s*/u)[0].trim() || source.title
-      html += `<p>${escapeGeoHTML(text)} <a href="${escapeGeoHTML(source.url)}">${escapeGeoHTML(citationLabel)}</a></p>`
+      append(
+        `<p>${proseHTML(text)} <a href="${escapeGeoHTML(source.url)}">${escapeGeoHTML(citationLabel)}</a></p>`,
+      )
+      sectionContent = true
+    }
+    if (keywordWriting && !sectionContent) {
+      const text = articleText(section)
+      if (text) {
+        append(`<p>${proseHTML(text)}</p>`)
+        sectionContent = true
+      }
     }
     if (keywordWriting && section.bullets != null) {
-      if (!Array.isArray(section.bullets))
-        throw new GeoError('INVALID_LIST', '正文列表结构不正确。', 502)
-      if (section.bullets.length) {
-        html += '<ul>'
-        for (const item of section.bullets) {
-          html += `<li>${escapeGeoHTML(geoTaskText(item, '列表项', 800))}</li>`
-        }
-        html += '</ul>'
+      const bullets = (Array.isArray(section.bullets) ? section.bullets : [section.bullets])
+        .map(articleText)
+        .filter(Boolean)
+      if (bullets.length) {
+        append(`<ul>${bullets.map((item) => `<li>${proseHTML(item)}</li>`).join('')}</ul>`)
         sectionContent = true
       }
     }
@@ -256,7 +300,7 @@ export async function generateGeoArticle(context: ArticleContext, options: Artic
         const rows = table.rows.map((row) =>
           Array.isArray(row) ? row : Object.values(geoObject(row)),
         )
-        const width = Math.max(table.headers.length, ...rows.map((row) => row.length))
+        const width = rows.reduce((max, row) => Math.max(max, row.length), table.headers.length)
         const tableText = (value: unknown) =>
           value == null
             ? ''
@@ -272,13 +316,13 @@ export async function generateGeoArticle(context: ArticleContext, options: Artic
             (context.settings.locale === 'zh'
               ? `补充信息${column - table.headers.length + 1}`
               : `Additional information ${column - table.headers.length + 1}`)
-          html += `<th>${escapeGeoHTML(tableText(header))}</th>`
+          append(`<th>${escapeGeoHTML(tableText(header))}</th>`)
         }
         html += '</tr></thead><tbody>'
         for (const row of rows) {
           html += '<tr>'
           for (let column = 0; column < width; column++)
-            html += `<td>${escapeGeoHTML(tableText(row[column]))}</td>`
+            append(`<td>${escapeGeoHTML(tableText(row[column]))}</td>`)
           html += '</tr>'
         }
         html += '</tbody></table>'
@@ -287,35 +331,57 @@ export async function generateGeoArticle(context: ArticleContext, options: Artic
     }
     if (keywordWriting && Array.isArray(section.subsections)) {
       for (const childRaw of section.subsections) {
-        const child = geoObject(childRaw)
-        const heading = geoTaskText(child.heading, '子章节标题', 300)
+        const child =
+          childRaw && typeof childRaw === 'object' && !Array.isArray(childRaw)
+            ? geoObject(childRaw)
+            : { text: childRaw, heading: undefined }
+        const heading = articleText(child.heading).replace(/\s+/gu, ' ')
         const normalizeHeading = (text: string) => text.replace(/[\s：:（）()]/gu, '')
         const chapter = geoArticleTemplateSections(selectedDirection).some(
           (name) => normalizeHeading(name) === normalizeHeading(heading),
         )
         const childLevel = chapter ? 2 : Math.min(level + 1, 6)
-        html += `<h${childLevel}>${escapeGeoHTML(heading)}</h${childLevel}>`
-        renderSection(child, childLevel)
-        sectionContent = true
+        const start = html.length
+        if (heading) append(`<h${childLevel}>${escapeGeoHTML(heading)}</h${childLevel}>`)
+        if (renderSection(child, childLevel)) sectionContent = true
+        else html = html.slice(0, start)
       }
     }
-    if (!sectionContent)
+    if (!sectionContent && !keywordWriting)
       throw new GeoError('INVALID_PARAGRAPHS', '正文章节缺少段落、列表或表格。', 502)
+    return sectionContent
   }
-  for (const [index, raw] of output.sections.entries()) {
-    const section = geoObject(raw)
-    html += `<h2>${escapeGeoHTML(geoTaskText(section.heading, '章节标题', 180))}</h2>`
-    renderSection(section, 2)
-    if (index === 0)
-      html += context.materialGroup.images
-        .map(
-          (image) =>
-            `<p><img src="${escapeGeoHTML(image.url)}" alt="${escapeGeoHTML(image.alt || image.filename)}"></p>`,
-        )
-        .join('')
+  let hasBody = false
+  for (const raw of output.sections) {
+    const section =
+      keywordWriting && (!raw || typeof raw !== 'object' || Array.isArray(raw))
+        ? { text: raw, heading: undefined }
+        : geoObject(raw)
+    const heading = keywordWriting
+      ? articleText(section.heading).replace(/\s+/gu, ' ')
+      : geoTaskText(section.heading, '章节标题', 180)
+    const start = html.length
+    if (heading) append(`<h2>${escapeGeoHTML(heading)}</h2>`)
+    if (!renderSection(section, 2)) {
+      html = html.slice(0, start)
+      continue
+    }
+    if (!hasBody)
+      append(
+        context.materialGroup.images
+          .map(
+            (image) =>
+              `<p><img src="${escapeGeoHTML(image.url)}" alt="${escapeGeoHTML(image.alt || image.filename)}"></p>`,
+          )
+          .join(''),
+      )
+    hasBody = true
   }
-  if (keywordWriting) html = appendGeoPublicationLinks(html, context.publicationLinks)
-  if (html.length > 100000) throw new GeoError('OUTPUT_TOO_LARGE', '正文超过编辑处理上限。', 502)
+  if (!hasBody) throw new GeoError('EMPTY_ARTICLE_BODY', '模型未返回可用正文，请重试。', 502)
+  if (keywordWriting) {
+    const linkedHTML = appendGeoPublicationLinks(html, context.publicationLinks)
+    append(linkedHTML.slice(html.length))
+  }
   const warnings = Array.isArray(output.reviewNotes)
     ? output.reviewNotes.slice(0, 10).map((n) => geoTaskText(n, '待核查事项', 300))
     : []

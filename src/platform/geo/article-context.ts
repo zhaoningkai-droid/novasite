@@ -41,35 +41,61 @@ export function buildArticleContext(
     publicationLinks: geoPublicationLinks(optimization, question.term),
   }
 }
-/** Recheck current tenant-owned configuration and media; publication URLs are not fetched as evidence. */
+type Snapshot = Pick<ArticleContext, 'optimization' | 'materialGroup'>
+type CurrentSnapshot = {
+  optimizationVersion?: number | null
+  groupVersion?: number | null
+  groupType?: string | null
+  groupArchived?: boolean | null
+}
+
+export function generationSnapshotProblem(
+  snapshot: Snapshot,
+  current: CurrentSnapshot,
+  optionalGroup = false,
+) {
+  if (!snapshot.optimization || current.optimizationVersion !== snapshot.optimization.version)
+    return { code: 'OPTIMIZATION_VERSION_CHANGED', message: '优化词配置已更新或不可用，请更新任务后再生成。' }
+  if (!optionalGroup && (!snapshot.materialGroup || current.groupType !== 'group' || current.groupArchived !== false))
+    return { code: 'MATERIAL_GROUP_UNAVAILABLE', message: '原素材组不可用，请重新选择素材组并保存任务。' }
+  if (!optionalGroup && current.groupVersion !== snapshot.materialGroup.version)
+    return { code: 'MATERIAL_GROUP_VERSION_CHANGED', message: '素材组已更新，请采用当前素材配置并保存任务。' }
+  return null
+}
+
+export async function assertGenerationSnapshot(
+  pool: Pick<PostgresAdapter['pool'], 'query'>,
+  tenantID: number,
+  context: Snapshot & { settings: GeoTaskValues },
+  lock = false,
+) {
+  const lockSQL = lock ? ' FOR SHARE' : ''
+  const optionalGroup = context.settings.name === '手动创作' && !context.materialGroup.id
+  const config = (await pool.query(
+    'SELECT version FROM platform_geo.optimizations WHERE tenant_id=$1 AND id=$2::uuid' + lockSQL,
+    [tenantID, context.optimization.id],
+  )).rows[0]
+  const group = optionalGroup ? null : (await pool.query(
+    'SELECT version,archived,entry_type FROM platform_geo.material_groups WHERE tenant_id=$1 AND id=$2::uuid' + lockSQL,
+    [tenantID, context.materialGroup.id],
+  )).rows[0]
+  const problem = generationSnapshotProblem(context, {
+    optimizationVersion: config?.version,
+    groupVersion: group?.version,
+    groupType: group?.entry_type,
+    groupArchived: group?.archived,
+  }, optionalGroup)
+  if (problem) throw new GeoError(problem.code, problem.message, 409)
+}
+
+/** Recheck current tenant-owned configuration and media before model dispatch. */
 export async function refreshArticleContext(
   pool: Pick<PostgresAdapter['pool'], 'query'>,
   tenantID: number,
   context: ArticleContext,
   discover = discoverGeoSources,
 ): Promise<ArticleContext> {
-  const config = (
-    await pool.query(
-      'SELECT version FROM platform_geo.optimizations WHERE tenant_id=$1 AND id=$2::uuid',
-      [tenantID, context.optimization.id],
-    )
-  ).rows[0]
-  const optionalManualGroup = context.settings.name === '手动创作' && !context.materialGroup.id
-  const group = optionalManualGroup
-    ? null
-    : (
-        await pool.query(
-          'SELECT archived,entry_type FROM platform_geo.material_groups WHERE tenant_id=$1 AND id=$2::uuid',
-          [tenantID, context.materialGroup.id],
-        )
-      ).rows[0]
-  // Old tasks keep their saved image IDs; assertArticleMedia below rejects removed or cross-tenant images.
-  if (
-    !config ||
-    config.version !== context.optimization.version ||
-    (!optionalManualGroup && (!group || group.entry_type !== 'group' || group.archived))
-  )
-    throw new GeoError('SNAPSHOT_CHANGED', '优化词或素材组已变更，请更新任务后重新创建本批生成。')
+  await assertGenerationSnapshot(pool, tenantID, context)
   await assertArticleMedia(pool, tenantID, context)
   // Keep the optional discovery argument for existing callers; article generation does not invoke it.
   void discover
@@ -83,7 +109,8 @@ export async function refreshArticleContext(
 export async function assertArticleMedia(
   pool: Pick<PostgresAdapter['pool'], 'query'>,
   tenantID: number,
-  context: ArticleContext,
+  context: Pick<ArticleContext, 'settings' | 'materialGroup'>,
+  lock = false,
 ) {
   const images = context.materialGroup.images
   if (context.settings.name === '手动创作' && images.length === 0) return
@@ -92,7 +119,7 @@ export async function assertArticleMedia(
       `SELECT m.id,m.url FROM public.media m JOIN platform_geo.material_items i
     ON i.media_id=m.id AND i.tenant_id=m.tenant_id JOIN platform_geo.material_groups g ON g.id=i.group_id AND g.tenant_id=i.tenant_id
     WHERE m.tenant_id=$1 AND i.group_id=$2::uuid AND m.id=ANY($3::int[]) AND m.mime_type=ANY($4::text[])
-      AND coalesce(m.filesize,0)<=512000 AND NOT g.archived AND g.entry_type='group'`,
+      AND coalesce(m.filesize,0)<=512000 AND NOT g.archived AND g.entry_type='group'` + (lock ? ' FOR SHARE OF m,i' : ''),
       [tenantID, context.materialGroup.id, images.map((i) => i.id), geoImageTypes],
     )
   ).rows
@@ -100,5 +127,5 @@ export async function assertArticleMedia(
     rows.length !== images.length ||
     images.some((i) => !rows.some((row) => row.id === i.id && row.url === i.url))
   )
-    throw new GeoError('MEDIA_CHANGED', '部分任务图片已失效或不再属于本客户素材组，请更新任务。')
+    throw new GeoError('MEDIA_CHANGED', '部分任务图片已失效或不再属于本客户素材组，请更新任务。', 409)
 }

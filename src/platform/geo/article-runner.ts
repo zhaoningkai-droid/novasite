@@ -5,6 +5,8 @@ import { refreshArticleContext } from './article-context'
 import { generateGeoArticle } from './article-provider'
 import { attachArticleKnowledge } from '../knowledge/article-knowledge'
 import type { TranslationRequestUsage } from '../translation-usage/types'
+class AuthorizationLookupError extends Error {}
+
 export async function runOneGeoArticle(
   pool: Pick<PostgresAdapter['pool'], 'query' | 'connect'>,
   options: {
@@ -28,16 +30,23 @@ export async function runOneGeoArticle(
         })
         .catch(() => abort.abort())
     }, 20_000)
+  const requireAuthorization = async () => {
+    let allowed: boolean
+    try {
+      allowed = await options.authorize(job.actor_id, job.tenant_id)
+    } catch (cause) {
+      throw new AuthorizationLookupError('Authorization lookup failed', { cause })
+    }
+    if (!allowed) throw new GeoError('ACTOR_REVOKED', '提交账号已失去本客户编辑权限。', 403)
+  }
   let dispatched = false
   try {
     if (!options.key)
       throw new GeoError('AI_NOT_CONFIGURED', '正文服务尚未配置，没有调用模型。', 503)
-    if (!(await options.authorize(job.actor_id, job.tenant_id)))
-      throw new GeoError('ACTOR_REVOKED', '提交账号已失去本客户编辑权限。', 403)
+    await requireAuthorization()
     let context = await (options.refresh || refreshArticleContext)(pool, job.tenant_id, job.context)
     abort.signal.throwIfAborted()
-    if (!(await options.authorize(job.actor_id, job.tenant_id)))
-      throw new GeoError('ACTOR_REVOKED', '提交账号已失去本客户编辑权限。', 403)
+    await requireAuthorization()
     await queue.dispatch(job, context, options.model)
     dispatched = true
     const retrievalUsage: (TranslationRequestUsage | undefined)[] = []
@@ -76,8 +85,7 @@ export async function runOneGeoArticle(
       },
     })
     abort.signal.throwIfAborted()
-    if (!(await options.authorize(job.actor_id, job.tenant_id)))
-      throw new GeoError('ACTOR_REVOKED', '提交账号已失去本客户编辑权限。', 403)
+    await requireAuthorization()
     await queue.execution(job, context)
     const output = await (options.generate || generateGeoArticle)(context, {
       key: options.key,
@@ -89,6 +97,17 @@ export async function runOneGeoArticle(
     if (output.direction) context.direction = output.direction
     await queue.complete(job, context, output)
   } catch (error) {
+    if (error instanceof AuthorizationLookupError) {
+      const delay = [30, 120, 600][job.authorization_retries]
+      if (dispatched) {
+        await queue.fail(job, true, 'AUTH_LOOKUP_AFTER_DISPATCH', '核对权限时发生故障，模型可能已调用。请核对记录后再重试。')
+      } else if (delay) {
+        await queue.deferAuthorization(job, delay)
+      } else {
+        await queue.fail(job, false, 'AUTH_LOOKUP_UNAVAILABLE', '暂时无法核对账号权限，自动重试已结束。可稍后手动重试。')
+      }
+      return true
+    }
     const known = error instanceof GeoError
     await queue.fail(
       job,

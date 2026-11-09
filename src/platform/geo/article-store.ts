@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto'
 import type { PostgresAdapter } from '@payloadcms/db-postgres'
 import { GeoError, normalizeGeoText } from './keywords'
-import { buildArticleContext, assertArticleMedia } from './article-context'
+import { buildArticleContext, assertArticleMedia, assertGenerationSnapshot } from './article-context'
 import { parseGeoTask } from './tasks'
 import {
   appendGeoPublicationLinks,
@@ -13,7 +13,9 @@ import {
   type GeoArticle,
 } from './articles'
 import { isSourceInScope } from './source-policy'
+import { geoGenerationConfigErrors } from './generation-retry'
 type Pool = Pick<PostgresAdapter['pool'], 'query' | 'connect'>
+export type GeoGenerationBatch = { succeeded: number; pending: number; failed: number; unknown: number }
 export type GeoArticlePublicationStatus = 'unused' | 'occupied' | 'published'
 export type GeoArticleUseFilter = 'all' | GeoArticlePublicationStatus
 export type GeoArticleListItem = {
@@ -76,7 +78,11 @@ export async function enqueueGeoArticleJobs(
   if (old) {
     if (old.input_hash !== hash)
       throw new GeoError('IDEMPOTENCY_CONFLICT', '同一生成请求不能用于不同任务、版本或数量。', 409)
-    return { replayed: true, requestID: id }
+    const { rows } = await client.query<{ count: number }>(
+      'SELECT count(*)::int AS count FROM platform_geo.generation_jobs WHERE tenant_id=$1 AND request_id=$2::uuid',
+      [tenantID, id],
+    )
+    return { replayed: true, requestID: id, count: rows[0].count }
   }
   const task = (
     await client.query(
@@ -104,6 +110,14 @@ export async function enqueueGeoArticleJobs(
     } catch (error) {
       reasons.push(error instanceof Error ? error.message : '问题来源不足。')
     }
+  }
+  if (eligible.length) {
+    const { context } = eligible[0]
+    await assertGenerationSnapshot(client, tenantID, context, true)
+    await assertArticleMedia(client, tenantID, {
+      settings,
+      materialGroup: (task.snapshot as Pick<ArticleContext, 'materialGroup'>).materialGroup,
+    }, true)
   }
   const used = (
     await client.query(
@@ -346,7 +360,7 @@ export function createGeoArticleStore(pool: Pool, tenantID: number, actorID: num
       return (
         await pool.query(
           `SELECT j.id,j.request_id,j.task_version,j.question_id,j.context->'question'->>'original' AS question,
-        j.state,j.message,j.error_code,j.updated_at,a.id AS article_id,
+        j.state,j.message,j.error_code,j.updated_at,j.next_run_at,a.id AS article_id,
         (SELECT coalesce(jsonb_agg(t ORDER BY t.started_at),'[]'::jsonb) FROM (SELECT model,state,usage,error_code,started_at,finished_at
           FROM platform_geo.generation_attempts x WHERE x.tenant_id=j.tenant_id AND x.job_id=j.id) t) AS attempts
         FROM platform_geo.generation_jobs j LEFT JOIN platform_geo.articles a ON a.job_id=j.id AND a.tenant_id=j.tenant_id
@@ -354,6 +368,17 @@ export function createGeoArticleStore(pool: Pool, tenantID: number, actorID: num
           [tenantID, taskID],
         )
       ).rows
+    },
+    async batch(taskID: string, requestID: string): Promise<GeoGenerationBatch> {
+      const { rows: [row] } = await pool.query<GeoGenerationBatch>(
+        `SELECT count(*) FILTER (WHERE state='succeeded')::int AS succeeded,
+          count(*) FILTER (WHERE state IN ('queued','running'))::int AS pending,
+          count(*) FILTER (WHERE state='failed')::int AS failed,
+          count(*) FILTER (WHERE state='unknown')::int AS unknown
+        FROM platform_geo.generation_jobs WHERE tenant_id=$1 AND task_id=$2::uuid AND request_id=$3::uuid`,
+        [tenantID, taskID, requestID],
+      )
+      return row
     },
     async enqueue(id: string, taskID: string, version: number, count: number) {
       const client = await pool.connect()
@@ -378,19 +403,34 @@ export function createGeoArticleStore(pool: Pool, tenantID: number, actorID: num
       }
     },
     async retry(id: string, acknowledgeUnknown: boolean) {
-      const result = await pool.query(
-        `UPDATE platform_geo.generation_jobs j SET state='queued',lease_owner=NULL,lease_until=NULL,
-        current_attempt=NULL,execution=NULL,error_code=NULL,message=NULL,actor_id=$4,updated_at=now()
+      const client = await pool.connect()
+      try {
+        await client.query('BEGIN')
+        const { rows: [row] } = await client.query<{ context: ArticleContext }>(
+          `SELECT j.context FROM platform_geo.generation_jobs j
         WHERE tenant_id=$1 AND id=$2::uuid AND (state='failed' OR (state='unknown' AND $3))
-          AND NOT EXISTS(SELECT 1 FROM platform_geo.articles a WHERE a.tenant_id=j.tenant_id AND a.job_id=j.id) RETURNING id`,
-        [tenantID, id, acknowledgeUnknown, actorID],
-      )
-      if (!result.rows[0])
-        throw new GeoError(
-          'RETRY_NOT_ALLOWED',
-          '记录不属于当前客户、尚未失败，或未知结果尚未确认；已生成文章不能被重试覆盖。',
-          409,
+          AND NOT (coalesce(error_code,'')=ANY($4::text[]))
+          AND NOT EXISTS(SELECT 1 FROM platform_geo.articles a WHERE a.tenant_id=j.tenant_id AND a.job_id=j.id)
+          FOR UPDATE OF j`,
+          [tenantID, id, acknowledgeUnknown, geoGenerationConfigErrors],
         )
+        if (!row)
+          throw new GeoError('RETRY_NOT_ALLOWED', '此记录不能直接重试。配置或素材已变更时，请更新任务后重新生成。', 409)
+        await assertGenerationSnapshot(client, tenantID, row.context, true)
+        await assertArticleMedia(client, tenantID, row.context, true)
+        await client.query(
+          `UPDATE platform_geo.generation_jobs SET state='queued',lease_owner=NULL,lease_until=NULL,
+          current_attempt=NULL,execution=NULL,error_code=NULL,message=NULL,next_run_at=NULL,authorization_retries=0,
+          requires_review=true,actor_id=$3,updated_at=now()
+          WHERE tenant_id=$1 AND id=$2::uuid`, [tenantID, id, actorID],
+        )
+        await client.query('COMMIT')
+      } catch (error) {
+        await client.query('ROLLBACK').catch(() => {})
+        throw error
+      } finally {
+        client.release()
+      }
     },
     async save(
       id: string,

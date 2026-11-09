@@ -4,6 +4,7 @@ import { FolderTree, Languages, Plus, Search, X } from 'lucide-react'
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { useWorkspaceUnsaved } from '../WorkspaceEditor/useWorkspaceUnsaved'
 import { useWorkspacePermissions } from '../WorkspaceShell/WorkspacePermissions'
+import { TranslationReviewAction } from '../WorkspaceTranslations/TranslationReviewAction'
 import { useContentTranslation } from '../WorkspaceTranslations/useContentTranslation'
 import { translationViewLabel } from '../../product-translation/job-view'
 import { localeOptions } from '../../site-locales'
@@ -159,15 +160,20 @@ export function WorkspaceCategories({ categories, companyName, companySlug, endp
     <section className="workspace-categories__panel"><div className="workspace-categories__toolbar">
       <label><Search size={17} aria-hidden="true" /><input aria-label="搜索分类" onChange={(event) => setQuery(event.target.value)}
         placeholder="搜索分类名称或地址标识" type="search" value={query} /></label>
-      <div className="content-translation-header-actions"><button className="content-translation-batch" type="button" disabled={busy || !canEditContent || !translation.ready || translation.submitting || !selectedIDs.some((id) => translation.views[id]?.canTranslate)} onClick={() => { void translation.translate(selectedIDs); setSelectedIDs([]) }}><Languages size={16} />翻译</button><span>共 {allRows.length} 个分类 · 当前 {rows.length} 个</span></div></div>
+      <div className="content-translation-header-actions"><button className="content-translation-batch" type="button" disabled={busy || !canEditContent || !translation.ready || translation.submitting || !selectedIDs.some((id) => translation.views[id]?.canTranslate)} onClick={() => {
+        void translation.translate(selectedIDs).then((confirmed) => {
+          if (confirmed) setSelectedIDs((current) => current.filter((id) => !selectedIDs.includes(id)))
+        })
+      }}><Languages size={16} />{translation.submitting ? '提交中…' : '翻译'}</button><span>共 {allRows.length} 个分类 · 当前 {rows.length} 个</span></div></div>
       {translation.error && <p className="workspace-categories__feedback is-error" role="alert">{translation.error}</p>}
+      {translation.notice && <p className="workspace-categories__feedback" role="status">{translation.notice}</p>}
       <div className="workspace-categories__table-wrap">{rows.length ? <table><thead><tr>
         <th scope="col"><input type="checkbox" aria-label="选择当前筛选的全部分类" disabled={busy || !canEditContent} checked={rows.some((row) => !translation.locked(row.id)) && rows.filter((row) => !translation.locked(row.id)).every((row) => selectedIDs.includes(row.id))} onChange={(event) => setSelectedIDs(event.target.checked ? rows.filter((row) => !translation.locked(row.id)).map((row) => row.id) : [])} /></th><th scope="col">分类名称</th><th scope="col">级别</th><th scope="col">{definition.plural}</th>
         <th scope="col">排序</th><th scope="col">更新时间</th><th scope="col">翻译状态</th><th scope="col">操作</th>
       </tr></thead><tbody>{rows.map((row) => <tr key={row.id}><td><input aria-label={'选择 ' + row.name} type="checkbox" disabled={busy || !canEditContent || translation.locked(row.id)} checked={selectedIDs.includes(row.id)} onChange={(event) => setSelectedIDs((current) => event.target.checked ? [...current, row.id] : current.filter((id) => id !== row.id))} /></td><td><strong className={row.level === 2 ? 'is-child' : ''}>
         {row.level === 2 && <FolderTree size={14} />}{row.name}</strong></td>
         <td>{row.level === 2 ? '二级' : '一级'}</td><td>{row.contentCount}</td><td>{row.sortOrder}</td><td>{formatTime(row.updatedAt)}</td>
-        <td><span>{translationViewLabel(translation.views[row.id])}</span></td><td><div className="workspace-categories__actions">
+        <td><span>{translationViewLabel(translation.views[row.id])}</span><TranslationReviewAction companySlug={companySlug} resource={translationKinds[kind]} documentID={row.id} review={translation.views[row.id]?.review} disabled={busy} onQueued={translation.markReviewed} /></td><td><div className="workspace-categories__actions">
           {row.level === 1 && <button disabled={busy || loadingTranslations || !canEditContent || translation.locked(row.id)} onClick={() => open({ ...blank, parentID: row.id })}
             type="button">添加二级</button>}<button disabled={busy || loadingTranslations || !canEditContent || translation.locked(row.id)} onClick={() => void openTranslations(row)}
               type="button"><Languages size={13} />语言</button><button disabled={busy || loadingTranslations || !canEditContent || translation.locked(row.id)}

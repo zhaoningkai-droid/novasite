@@ -127,6 +127,42 @@ afterEach(() => {
 })
 
 describe('GEO creation controls follow task and reference state', () => {
+  it('requires acknowledgment before retrying an uncertain result and sends stale jobs to their configuration', async () => {
+    const defaults = fetchMock.getMockImplementation()!
+    const when = '2026-11-08T09:00:00Z'
+    const job = { updated_at: when, attempts: [], message: null, article_id: null, next_run_at: null }
+    fetchMock.mockImplementation(async (input, init) => {
+      if (new URL(String(input), 'http://localhost:3100').pathname.endsWith('/generation')) {
+        if (init?.method === 'POST') return Response.json({ message: '已排队' })
+        return Response.json({
+          items: [
+            { ...job, id: 'stale', question: '过期问题', state: 'failed', error_code: 'MEDIA_CHANGED' },
+            { ...job, id: 'unknown', question: '待确认问题', state: 'unknown', error_code: 'AUTH_LOOKUP_AFTER_DISPATCH' },
+          ],
+          batch: { succeeded: 0, pending: 0, failed: 1, unknown: 1 },
+          health: { workerReady: true },
+        })
+      }
+      return defaults(input, init)
+    })
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true)
+    render(createElement(GeoCreation, { company }))
+    fireEvent.click(await screen.findByRole('button', { name: '生成记录' }))
+    const dialog = within(await screen.findByRole('dialog', { name: '生成记录' }))
+    expect(await dialog.findByText('最近一批：0 成功 / 0 待处理 / 1 失败 / 1 待确认')).toBeTruthy()
+    expect(dialog.getByRole('link', { name: '查看任务配置' }).getAttribute('href')).toContain(taskID)
+    expect(dialog.queryByRole('button', { name: '重试' })).toBeNull()
+    const retry = dialog.getByRole('button', { name: '确认后重试' })
+    fireEvent.click(retry)
+    expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false)
+    fireEvent.click(retry)
+    await waitFor(() => {
+      const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')
+      expect(JSON.parse(post?.[1]?.body)).toEqual({ action: 'retry', jobID: 'unknown', acknowledgeUnknown: true })
+    })
+    expect(confirm).toHaveBeenCalledTimes(2)
+  })
+
   it('opens a plan-linked task as a read-only view and cannot submit changes', async () => {
     render(createElement(GeoCreation, { company, recordId: taskID, readOnly: true }))
 

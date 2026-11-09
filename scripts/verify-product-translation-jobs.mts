@@ -26,6 +26,10 @@ const [
 const payload = await getPayload({ config })
 const pool = (payload.db as any).pool
 await up({ db: (payload.db as any).drizzle } as never)
+const { translationRetryScheduleSQL } = await import('../src/migrations/20261108_020000_translation_retry_schedule')
+const { translationUsageSchemaSQL } = await import('../src/migrations/20261001_020000_translation_usage')
+await pool.query(translationRetryScheduleSQL)
+await pool.query(translationUsageSchemaSQL)
 const report: Array<{ scenario: string; passed: boolean; details?: unknown }> = []
 function check(condition: unknown, scenario: string, details?: unknown) {
   if (!condition) throw new Error(`FAILED: ${scenario}`)

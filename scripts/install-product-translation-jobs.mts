@@ -1,6 +1,7 @@
 /** Explicit queue-only installer. Defaults to read-only; never initializes Payload schema push. */
 import { open, stat } from 'node:fs/promises'
 import { createRequire } from 'node:module'
+import { translationRetryScheduleSQL } from '../src/migrations/20261108_020000_translation_retry_schedule'
 import { productTranslationSchemaSQL } from '../src/migrations/20260930_030000_product_translation_jobs'
 
 const require = createRequire(import.meta.url)
@@ -40,6 +41,7 @@ try {
     await client.query('BEGIN')
     await client.query('SELECT pg_advisory_xact_lock(57293,0)')
     await client.query(productTranslationSchemaSQL)
+    await client.query(translationRetryScheduleSQL)
     await client.query('COMMIT')
   }
   const result = await client.query(

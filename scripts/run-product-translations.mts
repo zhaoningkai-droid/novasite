@@ -7,21 +7,29 @@ import {
   runOneProductTranslation,
   translationQueueAvailable,
 } from '../src/platform/product-translation/jobs'
-import { translationBudgetReady } from '../src/platform/translation-usage/budget'
+import {
+  fieldPreviewReady,
+  pruneFieldTranslationPreviews,
+  runOneFieldTranslationPreview,
+} from '../src/platform/product-translation/field-preview'
+import { translationUsageReady } from '../src/platform/translation-usage/budget'
 
 const payload = await getPayload({ config })
 if (!(await translationQueueAvailable(payload))) {
   process.stderr.write(
-    'Product translation worker is disabled or queue storage has not been installed.\n',
+    'Product translation worker is disabled or queue storage is missing the current schema.\n',
   )
   await payload.destroy()
   process.exit(1)
 }
-if (!(await translationBudgetReady(payload))) {
-  process.stderr.write('Translation budget is enabled but its approved storage/configuration is not ready. No jobs were claimed.\n')
+if (!(await translationUsageReady(payload))) {
+  process.stderr.write('Translation usage storage is not ready. No jobs were claimed.\n')
   await payload.destroy()
   process.exit(1)
 }
+const previewEnabled = await fieldPreviewReady(payload)
+if (!previewEnabled) process.stderr.write('Field translation previews are awaiting their database migration.\n')
+let nextPreviewCleanup = 0
 let stopping = false
 const heartbeatFile = process.env.TRANSLATION_WORKER_HEARTBEAT_FILE
 const heartbeat = async () => {
@@ -39,10 +47,20 @@ process.on('SIGINT', () => {
 process.on('SIGTERM', () => {
   stopping = true
 })
-async function work() {
+async function work(index: number) {
+  let previewFirst = index % 2 === 0
   while (!stopping) {
     try {
-      if (!(await runOneProductTranslation(payload))) await setTimeout(2000)
+      if (previewEnabled && Date.now() >= nextPreviewCleanup) {
+        nextPreviewCleanup = Date.now() + 60_000
+        await pruneFieldTranslationPreviews(payload)
+      }
+      const preview = () => previewEnabled ? runOneFieldTranslationPreview(payload) : false
+      const ran = previewFirst
+        ? await preview() || await runOneProductTranslation(payload)
+        : await runOneProductTranslation(payload) || await preview()
+      previewFirst = !previewFirst
+      if (!ran) await setTimeout(2000)
     } catch {
       process.stderr.write('Translation worker connection failed; will retry.\n')
       await setTimeout(5000)
@@ -54,7 +72,7 @@ async function work() {
 const concurrency = process.env.TRANSLATION_WORKER_CONCURRENCY || '2'
 if (!['1', '2'].includes(concurrency)) throw new Error('TRANSLATION_WORKER_CONCURRENCY must be 1 or 2.')
 process.stdout.write(`Translation worker ready (${concurrency} workers, per-company 1).\n`)
-await Promise.all(Array.from({ length: Number(concurrency) }, () => work()))
+await Promise.all(Array.from({ length: Number(concurrency) }, (_, index) => work(index)))
 if (heartbeatTimer) clearInterval(heartbeatTimer)
 if (heartbeatFile) await unlink(heartbeatFile).catch(() => {})
 await payload.destroy()

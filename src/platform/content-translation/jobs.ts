@@ -6,12 +6,26 @@ import { userHasRole } from '@/access/roles'
 import type { Tenant, User } from '@/payload-types'
 import { companyTranslationTargets, isSiteLocale, type SiteLocale } from '../site-locales'
 import type { LanguageTranslationState, ProductTranslationView } from '../product-translation/job-view'
-import { translateProductContent, TranslationProviderError } from '../product-translation/provider'
-import { buildContentSnapshot, contentFingerprint, objectValue, setValueAt, translatedContentPatch, type ContentSnapshot } from './content'
+import { translateProductContent } from '../product-translation/provider'
+import { buildContentSnapshot, contentFingerprint, objectValue, setValueAt, tenantTranslationWrite, translatedContentPatch, type ContentSnapshot } from './content'
 import { contentTaskKey, translationResources, type TranslationResource } from './resources'
 import { syncNavigationItems } from '../navigation-sync'
 import { sortedNavigation } from '../navigation-model'
-import { translationBudgetReady, translationJobMeter } from '../translation-usage/budget'
+import {
+  durableTranslationProgress,
+  finishTranslationJob,
+  resetTranslationFailures,
+  resumableTranslationJob,
+  shouldWorkOnTranslation,
+  translationFailure,
+  translationReview,
+  uncertainTranslation,
+  uncertainTranslationMessage,
+  type TranslationStage,
+} from '../product-translation/recovery'
+import { withTenantTranslationWrite } from './tenant-validation'
+import { translationUsageReady, translationJobMeter } from '../translation-usage/budget'
+import type { TranslationAdmission, TranslationSubmission } from '../product-translation/submission'
 
 const pool = (payload: Payload) => (payload.db as unknown as PostgresAdapter).pool
 export const contentQueueEnabled = () => process.env.PRODUCT_TRANSLATION_QUEUE_ENABLED === 'true'
@@ -25,11 +39,11 @@ type State = LanguageTranslationState & { overlay?: Array<{ path: Array<string |
 export type ContentJob = {
   id: string; tenant_id: number; product_id: number; actor_id: number
   source_locale: SiteLocale; source_hash: string; targets: SiteLocale[]
-  source: ContentSnapshot; states: Record<string, State>; status: string; lease_owner: string | null
+  source: ContentSnapshot; states: Record<string, State>; status: string; lease_owner: string | null; next_run_at?: Date | string | null; review_revision?: string; admission_revision?: string
 }
 export async function contentQueueAvailable(payload: Payload) {
   if (!contentQueueEnabled()) return false
-  return (await pool(payload).query("SELECT to_regclass('platform_jobs.product_translation') IS NOT NULL AS ready")).rows[0]?.ready === true
+  return (await pool(payload).query("SELECT EXISTS (SELECT 1 FROM pg_attribute WHERE attrelid=to_regclass('platform_jobs.product_translation') AND attname='next_run_at' AND NOT attisdropped) AS ready")).rows[0]?.ready === true
 }
 
 export const contentSourceLocale = (resource: TranslationResource, company: Tenant): SiteLocale => resource === 'navigation-items' ? 'zh' : company.defaultLocale
@@ -81,10 +95,10 @@ export async function readContentSource(payload: Payload, company: Tenant, user:
 async function jobsFor(payload: Payload, companyID: number, resource: TranslationResource, ids: number[], req?: Partial<PayloadRequest>) {
   const keys = ids.map((id) => contentTaskKey(resource, id))
   if (req?.transactionID) {
-    const result = await contentTransaction({ ...req, payload }).execute(sql`SELECT * FROM platform_jobs.product_translation WHERE tenant_id=${companyID} AND product_id IN (${sql.join(keys.map((key) => sql`${key}`), sql`,`)}) ORDER BY created_at DESC`) as { rows: ContentJob[] }
+    const result = await contentTransaction({ ...req, payload }).execute(sql`SELECT *,updated_at::text AS admission_revision FROM platform_jobs.product_translation WHERE tenant_id=${companyID} AND product_id IN (${sql.join(keys.map((key) => sql`${key}`), sql`,`)}) ORDER BY created_at DESC`) as { rows: ContentJob[] }
     return result.rows
   }
-  return (await pool(payload).query('SELECT * FROM platform_jobs.product_translation WHERE tenant_id=$1 AND product_id=ANY($2::int[]) ORDER BY created_at DESC', [companyID, keys])).rows as ContentJob[]
+  return (await pool(payload).query('SELECT *,extract(epoch from updated_at)::text AS review_revision FROM platform_jobs.product_translation WHERE tenant_id=$1 AND product_id=ANY($2::int[]) ORDER BY created_at DESC', [companyID, keys])).rows as ContentJob[]
 }
 function successfulLocales(jobs: ContentJob[], fingerprint: string, sourceLocale: SiteLocale) {
   const completed = new Set<SiteLocale>()
@@ -107,7 +121,10 @@ export async function contentTranslationViews(payload: Payload, company: Tenant,
     const languages = targets.map((locale) => ({ locale, status: completed.has(locale) ? 'succeeded' as const : last?.states[locale]?.status || 'queued' as const, message: last?.states[locale]?.message }))
     const count = languages.filter((item) => item.status === 'succeeded').length
     const failed = languages.some((item) => item.status === 'failed')
-    views.push({ productID: id, jobID: last?.id, locked: Boolean(active), canTranslate: Boolean(targets.length && !active && count < targets.length && fresh.snapshot.entries.some((item) => item.value.trim())), completed: count, total: targets.length, languages, status: active ? active.status as 'queued' | 'running' : targets.length && count === targets.length ? 'completed' : failed ? count ? 'partial' : 'failed' : 'pending' })
+    const needsAction = Boolean(last && uncertainTranslation(last, fresh.fingerprint, targets.filter((locale) => !completed.has(locale))))
+    const retryAt = active?.next_run_at ? new Date(active.next_run_at).toISOString() : undefined
+    const review = active ? undefined : translationReview(last, fresh.fingerprint, targets, user, company.id)
+    views.push({ productID: id, jobID: last?.id, locked: Boolean(active), retryAt, needsAction, review, canTranslate: Boolean(targets.length && !active && !needsAction && count < targets.length && fresh.snapshot.entries.some((item) => item.value.trim())), completed: count, total: targets.length, languages, status: active ? active.status as 'queued' | 'running' : targets.length && count === targets.length ? 'completed' : failed ? count ? 'partial' : 'failed' : 'pending' })
   }
   return { enabled, views, activeCount: views.filter((view) => view.locked).length }
 }
@@ -116,27 +133,38 @@ export async function queueContentTranslations({ payload, company, user, resourc
   if (!canWork(user, company.id, resource)) return NextResponse.json({ message: '当前账号没有修改这个模块的权限，未提交翻译任务。' }, { status: 403 })
   if (!(await contentQueueAvailable(payload))) return NextResponse.json({ message: '后台翻译任务尚未启用。' }, { status: 503 })
   if (!process.env.DEEPSEEK_API_KEY) return NextResponse.json({ message: 'AI翻译服务尚未配置。' }, { status: 503 })
-  if (!(await translationBudgetReady(payload))) return NextResponse.json({ message: '翻译用量保护尚未准备好，请联系管理员完成配置和批准后的安装。' }, { status: 503 })
+  if (!(await translationUsageReady(payload))) return NextResponse.json({ message: '翻译用量记录暂不可用，请联系管理员。' }, { status: 503 })
   const targets = contentTargetLocales(resource, company)
   if (!targets.length) return NextResponse.json({ message: '请先在站点与模板中启用目标语言站点。' }, { status: 422 })
   const transactionID = await payload.db.beginTransaction()
   if (transactionID === null) return NextResponse.json({ message: '任务保存事务暂不可用。' }, { status: 503 })
   const req = { payload, transactionID, user } as PayloadRequest
-  const accepted: Array<{ productID: number; jobID: string }> = []
+  const accepted: TranslationAdmission[] = []
   const skipped: number[] = []
+  const skipReasons: TranslationSubmission['skipReasons'] = {}
+  const previousRevisions: Record<string, string> = {}
   try {
     const transaction = contentTransaction(req)
     await transaction.execute(sql`SELECT pg_advisory_xact_lock(57291, ${company.id})`)
     for (const id of [...new Set(ids)].sort((a, b) => a - b)) {
       const own = await jobsFor(payload, company.id, resource, [id], req)
       const active = own.find((job) => job.status === 'queued' || job.status === 'running')
-      if (active) { accepted.push({ productID: id, jobID: active.id }); continue }
+      if (active) { accepted.push({ productID: id, jobID: active.id, existing: true }); continue }
       const fresh = await readContentSource(payload, company, user, resource, id, req)
-      if (!fresh.snapshot.entries.some((item) => item.value.trim())) { skipped.push(id); continue }
+      if (!fresh.snapshot.entries.some((item) => item.value.trim())) { skipped.push(id); skipReasons[id] = 'no_source'; continue }
       if (JSON.stringify(fresh.snapshot.content).length > 250_000) throw new APIError('文字内容超过任务处理上限。', 422)
       const completed = successfulLocales(own, fresh.fingerprint, contentSourceLocale(resource, company))
       const pending = targets.filter((locale) => !completed.has(locale))
-      if (!pending.length) { skipped.push(id); continue }
+      if (!pending.length) { skipped.push(id); skipReasons[id] = 'completed'; continue }
+      if (own.some((job) => uncertainTranslation(job, fresh.fingerprint, pending)))
+        throw new APIError(uncertainTranslationMessage, 409)
+      const resume = resumableTranslationJob(own, fresh.fingerprint, contentSourceLocale(resource, company), pending)
+      if (resume) {
+        await transaction.execute(sql`UPDATE platform_jobs.product_translation SET status='queued',actor_id=${user.id},next_run_at=NULL,states=${JSON.stringify(resetTranslationFailures(resume))}::jsonb,updated_at=clock_timestamp() WHERE id=${resume.id}::uuid AND tenant_id=${company.id}`)
+        previousRevisions[resume.id] = resume.admission_revision!
+        accepted.push({ productID: id, jobID: resume.id })
+        continue
+      }
       const jobID = randomUUID()
       const states = Object.fromEntries(pending.map((locale) => [locale, { status: 'queued' }]))
       await transaction.execute(sql`INSERT INTO platform_jobs.product_translation(id,tenant_id,product_id,actor_id,source_locale,source_hash,targets,source,states,status) VALUES (${jobID}::uuid,${company.id},${contentTaskKey(resource, id)},${user.id},${contentSourceLocale(resource, company)},${fresh.fingerprint},${JSON.stringify(pending)}::jsonb,${JSON.stringify(fresh.snapshot)}::jsonb,${JSON.stringify(states)}::jsonb,'queued')`)
@@ -144,17 +172,18 @@ export async function queueContentTranslations({ payload, company, user, resourc
     }
     await payload.db.commitTransaction(transactionID)
     if (accepted.length) {
-      const confirmed = await pool(payload).query('SELECT id FROM platform_jobs.product_translation WHERE tenant_id=$1 AND id=ANY($2::uuid[])', [company.id, accepted.map((item) => item.jobID)])
+      const confirmed = await pool(payload).query(`SELECT id FROM platform_jobs.product_translation WHERE tenant_id=$1 AND id=ANY($2::uuid[])
+         AND updated_at IS DISTINCT FROM ($3::jsonb ->> id::text)::timestamptz`, [company.id, accepted.map((item) => item.jobID), JSON.stringify(previousRevisions)])
       if (confirmed.rowCount !== accepted.length) throw new APIError('翻译任务保存尚未确认，请刷新后重试。', 503)
     }
-    return NextResponse.json({ accepted, skipped }, { status: accepted.length ? 202 : 200 })
+    return NextResponse.json({ accepted, skipped, skipReasons }, { status: accepted.length ? 202 : 200 })
   } catch (error) {
     await payload.db.rollbackTransaction(transactionID)
     return NextResponse.json({ message: error instanceof APIError ? error.message : '翻译任务提交失败，请稍后重试。' }, { status: error instanceof APIError ? error.status : 500 })
   }
 }
 
-function canWork(user: User, companyID: number, resource: TranslationResource) {
+export function canWork(user: User, companyID: number, resource: TranslationResource) {
   if (user.expiresAt && new Date(user.expiresAt).getTime() <= Date.now()) return false
   // Tenant settings already require siteAdmins. Do not spend AI credits on a
   // task whose actor cannot save its result under the existing collection ACL.
@@ -212,19 +241,34 @@ export async function runContentTranslationJob(payload: Payload, job: ContentJob
   try {
     const resource = job.source.resource
     const definition = translationResources[resource]
-    if (!definition) throw new APIError('翻译任务内容类型无效。', 422)
+    if (!definition) {
+      for (const locale of job.targets) job.states[locale] = { status: 'failed', code: 'INVALID_RESOURCE', message: '翻译任务内容类型无效。' }
+      await finishTranslationJob(pool(payload), job)
+      return true
+    }
     for (const locale of job.targets) {
       abort.signal.throwIfAborted()
-      if (job.states[locale]?.status === 'succeeded') continue
+      if (!shouldWorkOnTranslation(job.states[locale])) continue
+      let stage: TranslationStage = 'prepare'
       try {
+        if (job.states[locale]?.providerInFlight) {
+          stage = 'provider'
+          throw new Error('Unconfirmed provider dispatch')
+        }
         const [company, user] = await Promise.all([
           payload.findByID({ collection: 'tenants', id: job.tenant_id, depth: 0, overrideAccess: true, context: { skipContentTranslationOverlay: true } }),
           payload.findByID({ collection: 'users', id: job.actor_id, depth: 0, overrideAccess: true }),
         ])
         if (!canWork(user, company.id, resource)) throw new APIError('账号已失去当前公司的编辑权限。', 403)
         if (contentSourceLocale(resource, company) !== job.source_locale || !contentTargetLocales(resource, company).includes(locale)) throw new APIError('站点语言设置已改变，本次没有覆盖译文。', 409)
-        job.states[locale] = { ...job.states[locale], status: 'running', message: undefined, code: undefined }; await saveStates()
-        const translated = await translateProductContent(job.source.content, job.source_locale, locale, process.env.DEEPSEEK_API_KEY || '', process.env.DEEPSEEK_MODEL || 'deepseek-flash', { signal: abort.signal, checkpoint: job.states[locale].checkpoint, meter: translationJobMeter(payload, job), context: `${definition.label}; Company: ${company.name}; ${job.source.entries.filter((entry) => ['title', 'summary', 'question', 'intro'].includes(String(entry.path.at(-1)))).map((entry) => entry.value).join(' ').slice(0, 1200)}`, onProgress: async (checkpoint, done, total) => { job.states[locale] = { status: 'running', checkpoint, done, total }; await saveStates() } })
+        job.states[locale] = { ...job.states[locale], status: 'running', retryAt: undefined, message: undefined, code: undefined }; await saveStates()
+        const currentSource = await readContentSource(payload, company, user, resource, job.source.documentID)
+        if (currentSource.fingerprint !== job.source_hash) throw new APIError('源内容已修改，请重新提交翻译。', 409)
+        stage = 'provider'
+        const translated = job.states[locale].prepared || await translateProductContent(job.source.content, job.source_locale, locale, process.env.DEEPSEEK_API_KEY || '', process.env.DEEPSEEK_MODEL || 'deepseek-flash', { signal: abort.signal, checkpoint: job.states[locale].checkpoint, meter: translationJobMeter(payload, job), context: `${definition.label}; Company: ${company.name}; ${job.source.entries.filter((entry) => ['title', 'summary', 'question', 'intro'].includes(String(entry.path.at(-1)))).map((entry) => entry.value).join(' ').slice(0, 1200)}`, ...durableTranslationProgress(job.states, locale, saveStates) })
+        stage = 'save'
+        job.states[locale] = { ...job.states[locale], prepared: translated, stage }
+        await saveStates()
         const transactionID = await payload.db.beginTransaction()
         if (transactionID === null) throw new APIError('译文保存事务暂不可用。', 503)
         const req = { payload, transactionID, user } as PayloadRequest
@@ -244,6 +288,16 @@ export async function runContentTranslationJob(payload: Payload, job: ContentJob
           const context = { disableRevalidate: true, workspaceContentTranslationJobID: job.id, workspaceContentTranslationLease: owner, skipContentTranslationOverlay: true }
           if (resource === 'navigation-items') await saveNavigationItem(payload, currentCompany, actor, locale, job.source.documentID, patch.write, req, context)
           else if (resource === 'navigation') await saveNavigation(payload, currentCompany, actor, locale, patch.write, req, context)
+          else if (resource === 'homepage' || resource === 'about' || resource === 'settings') {
+            const target = await payload.findByID({ collection: 'tenants', id: company.id, locale, fallbackLocale: false, depth: 0, overrideAccess: false, user: actor, req, context })
+            const write = tenantTranslationWrite(job.source, patch.write, objectValue(target))
+            if (!write) throw new APIError('目标语言的模块结构已变化，请检查模块后重试。', 409)
+            if (Object.keys(write).length) {
+              await withTenantTranslationWrite(req, { tenantID: company.id, resource, locale }, () =>
+                payload.update({ collection: 'tenants', id: company.id, data: write, locale, fallbackLocale: false, context, overrideAccess: false, user: actor, req }),
+              )
+            }
+          }
           else if (Object.keys(patch.write).length) await payload.update({ collection: definition.collection, id: job.source.documentID, data: patch.write, locale, ...(payload.collections[definition.collection].config.versions && (payload.collections[definition.collection].config.versions as { drafts?: unknown }).drafts ? { draft: fresh.document._status !== 'published' } : {}), context, overrideAccess: false, user: actor, req })
           await payload.create({ collection: 'audit-logs', data: { action: 'update', collection: definition.collection, documentId: String(job.source.documentID), actorEmail: actor.email, summary: `content-translation:v1:${company.id}:${resource}:${job.source_locale}:${job.source_hash}`, metadata: { companyID: company.id, resource, targets: [locale], sourceLocale: job.source_locale, jobID: job.id } }, overrideAccess: true, user: actor, req })
           const savedStates = { ...job.states, [locale]: { status: 'succeeded' as const, overlay: patch.overlay } }
@@ -262,16 +316,13 @@ export async function runContentTranslationJob(payload: Payload, job: ContentJob
         } catch (error) { await payload.db.rollbackTransaction(transactionID); throw error }
       } catch (error) {
         if (abort.signal.aborted || (error instanceof Error && error.message === 'LEASE_LOST')) throw error
-        job.states[locale] = { ...job.states[locale], status: 'failed', message: error instanceof APIError || error instanceof TranslationProviderError ? error.message : '译文生成或保存失败，请重试。', code: error instanceof TranslationProviderError ? error.code : 'SAVE_FAILED' }; await saveStates()
+        job.states[locale] = { ...job.states[locale], ...translationFailure(payload, error, stage, job.id, job.tenant_id, locale, job.states[locale] || { status: 'queued' }) }
+        await saveStates()
       }
     }
-    const count = Object.values(job.states).filter((state) => state.status === 'succeeded').length
-    await pool(payload).query("UPDATE platform_jobs.product_translation SET status=$3,states=$4::jsonb,lease_owner=NULL,lease_until=NULL,updated_at=now() WHERE id=$1 AND lease_owner=$2 AND status='running' AND lease_until>clock_timestamp()", [job.id, owner, count === job.targets.length ? 'completed' : count ? 'partial' : 'failed', JSON.stringify(job.states)])
+    await finishTranslationJob(pool(payload), job)
   } catch (error) {
-    if (!abort.signal.aborted && !(error instanceof Error && error.message === 'LEASE_LOST')) {
-      for (const locale of job.targets) if (job.states[locale]?.status !== 'succeeded') job.states[locale] = { status: 'failed', message: error instanceof APIError ? error.message : '任务未完成，请重试。' }
-      await pool(payload).query("UPDATE platform_jobs.product_translation SET status='failed',states=$3::jsonb,lease_owner=NULL,lease_until=NULL,updated_at=now() WHERE id=$1 AND lease_owner=$2 AND status='running' AND lease_until>clock_timestamp()", [job.id, owner, JSON.stringify(job.states)])
-    }
+    if (!abort.signal.aborted && !(error instanceof Error && error.message === 'LEASE_LOST')) throw error
   } finally { clearInterval(heartbeat) }
   return true
 }

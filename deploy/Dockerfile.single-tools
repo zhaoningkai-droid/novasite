@@ -1,0 +1,6 @@
+# Reuse the exact worker dependency/source layers; no second Next build tree
+# is needed to initialize or migrate the single-server installation.
+ARG WORKER_IMAGE
+FROM ${WORKER_IMAGE}
+COPY --chown=nextjs:nodejs platform-preflight.mjs bootstrap-single-ecs.mts /app/scripts/
+CMD ["node", "node_modules/payload/bin.js", "migrate"]

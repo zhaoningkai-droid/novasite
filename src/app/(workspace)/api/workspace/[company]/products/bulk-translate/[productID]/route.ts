@@ -22,7 +22,7 @@ import {
   queueProductTranslations,
   translationQueueEnabled,
 } from '@/platform/product-translation/jobs'
-import { translationBudgetEnabled } from '@/platform/translation-usage/budget'
+import { standaloneTranslationMeter, translationUsageReady } from '@/platform/translation-usage/budget'
 
 type Context = { params: Promise<{ company: string; productID: string }> }
 export const maxDuration = 240
@@ -45,7 +45,7 @@ export async function POST(_request: Request, { params }: Context) {
   if (translationQueueEnabled()) {
     return queueProductTranslations({ company, payload, user, productIDs: [productID] })
   }
-  if (translationBudgetEnabled()) return NextResponse.json({ message: '已启用翻译用量保护，请先启用持久翻译任务；旧请求内翻译入口不再直接调用 AI。' }, { status: 503 })
+  if (!(await translationUsageReady(payload))) return NextResponse.json({ message: '翻译用量记录暂不可用，请联系管理员。' }, { status: 503 })
   const sourceLocale = company.defaultLocale
   const targetLocales = companyTranslationTargets(company)
   if (!isSiteLocale(sourceLocale))
@@ -130,7 +130,7 @@ export async function POST(_request: Request, { params }: Context) {
     for (const locale of targetLocales) {
       translations.push({
         locale,
-        content: await translateContent(source.content, sourceLocale, locale, apiKey, model),
+        content: await translateContent(source.content, sourceLocale, locale, apiKey, model, { meter: standaloneTranslationMeter(payload, { tenantID: company.id }) }),
       })
     }
   } catch (error) {
